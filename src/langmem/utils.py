@@ -40,28 +40,39 @@ def get_conversation(messages: list):
     merged = merge_message_runs(messages)
     return "\n\n".join(m.pretty_repr() for m in merged)
 
+# List[Tuple[List[AnyMessage], Dict[str, Any]]]
+
 
 def format_sessions(
     sessions: (
         list[list[AnyMessage]]
         | list[AnyMessage]
-        | list[tuple[list[AnyMessage], str]]
-        | tuple[list[AnyMessage], str]
+        | list[tuple[list[AnyMessage], str | dict[str, typing.Any]]]
+        | tuple[list[AnyMessage], str | dict[str, typing.Any]]
+        | str
     ),
 ):
-    # Get into list[tuple[list[AnyMessage], str]]
     if not sessions:
         return ""
-    # TODO: Handle others
+
     if isinstance(sessions, str):
         sessions = [(sessions, "")]
-    elif isinstance(sessions, list) and isinstance(sessions[0], list):
-        sessions = [(session, "") for session in sessions]
     elif isinstance(sessions, tuple) and isinstance(sessions[0], list):
         sessions = [sessions]
+    if not isinstance(sessions, list):
+        raise ValueError(
+            f"Expected list of session, feedback pairs, but got: {type(sessions)} {sessions}"
+        )
+    collected = []
+    for session_ in sessions:
+        if isinstance(session_, (list, tuple)) and len(session_) > 1:
+            collected.append((session_[0], session_[1]))
+        else:
+            collected.append((session_, ""))
+
     acc = []
     ids_ = [uuid.uuid4().hex for _ in sessions]
-    for id_, (session, feedback) in zip(ids_, sessions):
+    for id_, (session, feedback) in zip(ids_, collected):
         if feedback:
             feedback = (
                 f"\n\nFeedback for session {id_}:\n<FEEDBACK>\n{feedback}\n</FEEDBACK>"

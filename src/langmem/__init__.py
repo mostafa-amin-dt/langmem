@@ -29,9 +29,16 @@ def create_manage_memory_tool(
 2. Receive an explicit USER request to remember something or otherwise alter your behavior.
 3. Are working and want to record important context.
 4. Identify that an existing MEMORY is incorrect or outdated.""",
-    namespace_prefix: tuple[str, ...] = ("memories", "{user_id}"),
+    namespace_prefix: tuple[str, ...] | utils.NamespaceTemplate = (
+        "memories",
+        "{user_id}",
+    ),
 ):
-    namespacer = utils.NamespaceTemplate(namespace_prefix)
+    namespacer = (
+        utils.NamespaceTemplate(namespace_prefix)
+        if isinstance(namespace_prefix, tuple)
+        else namespace_prefix
+    )
 
     @tool
     async def manage_memory(

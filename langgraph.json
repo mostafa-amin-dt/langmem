@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "optimize_prompts": "./src/langmem/graphs/prompts.py:optimize_prompts"
+  },
+  "env": ".env"
+}

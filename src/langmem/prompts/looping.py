@@ -103,6 +103,7 @@ def create_multi_prompt_optimizer(
     typing.Awaitable[list[Prompt]],
 ]:
     _optimizer = create_prompt_optimizer(model, kind, config)
+    # list[tuple[list[AnyMessage], typing.Optional[dict[str, str]]]]
 
     @ls.traceable
     async def process_multi_prompt_sessions(
@@ -363,13 +364,7 @@ def create_gradient_prompt_optimizer(
 
     @ls.traceable(metadata={"kind": "gradient"})
     async def optimize_prompt(
-        sessions: (
-            list[list[AnyMessage]]
-            | list[AnyMessage]
-            | list[tuple[list[AnyMessage], dict[str, str]]]
-            | tuple[list[AnyMessage], dict[str, str]]
-            | str
-        ),
+        sessions: list[tuple[list[AnyMessage], dict[str, str] | str]] | str,
         prompt: str | Prompt,
     ):
         prompt_str = prompt if isinstance(prompt, str) else prompt.get("prompt", "")
@@ -545,13 +540,7 @@ def create_metaprompt_optimizer(
 
     @ls.traceable(metadata={"kind": "metaprompt"})
     async def optimize_prompt(
-        sessions: (
-            list[list[AnyMessage]]
-            | list[AnyMessage]
-            | list[tuple[list[AnyMessage], dict[str, str]]]
-            | tuple[list[AnyMessage], dict[str, str]]
-            | str
-        ),
+        sessions: list[tuple[list[AnyMessage], dict[str, str]] | str] | str,
         prompt: str | Prompt,
     ) -> str:
         """

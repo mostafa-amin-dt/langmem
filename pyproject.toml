@@ -9,6 +9,7 @@ dependencies = [
     "langchain-openai>=0.3.1",
     "trustcall>=0.0.28",
     "langgraph>=0.2.66",
+    "langchain-anthropic>=0.3.3",
 ]
 
 [dependency-groups]
