@@ -1,16 +1,20 @@
 [project]
 name = "langmem"
-version = "0.0.5rc5"
+version = "0.0.5rc6"
 description = "Prebuilt utilities for memory management and retrieval."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "langchain>=0.3.15",
     "langchain-openai>=0.3.1",
-    "trustcall>=0.0.28",
+    "trustcall>=0.0.30",
     "langgraph>=0.2.66",
     "langchain-anthropic>=0.3.3",
 ]
 
 [dependency-groups]
-dev = ["langchain-anthropic>=0.3.3", "langchain-openai>=0.3.1"]
+dev = [
+    "langchain-anthropic>=0.3.3",
+    "langchain-openai>=0.3.1",
+    "langgraph-cli[inmem]>=0.1.70",
+]
