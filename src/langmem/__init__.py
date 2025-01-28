@@ -12,7 +12,7 @@ from langgraph.utils.config import get_store
 from pydantic import BaseModel, Field, model_validator
 from trustcall import create_extractor
 from langmem import utils
-from langmem.prompts.looping import (
+from langmem.prompts.optimization import (
     create_prompt_optimizer,
     create_multi_prompt_optimizer,
     Prompt,
