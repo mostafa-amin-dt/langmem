@@ -562,7 +562,7 @@ wheels = [
 
 [[package]]
 name = "langchain"
-version = "0.3.16"
+version = "0.3.17"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -576,14 +576,14 @@ dependencies = [
     { name = "sqlalchemy" },
     { name = "tenacity" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/40/ae/9ba2dc1339a7f4c21a607d75d38383a04bb4dbd09a4bbf287bdae6dfc5d7/langchain-0.3.16.tar.gz", hash = "sha256:17d35ee6991e0ebd980c1be86c34b2d48e961213ca89e7b585f6333c90cdbdb4", size = 421658 }
+sdist = { url = "https://files.pythonhosted.org/packages/76/71/7082a79379105c0c3c327a817a58075686e6f31b05f823dbcce3f04831f4/langchain-0.3.17.tar.gz", hash = "sha256:cef56f0a7c8369f35f1fa2690ecf0caa4504a36a5383de0eb29b8a5e26f625a0", size = 421568 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9e/42/1e98ac16fe273be60d1bc199f61ece9b751158ff65e65329221397b5fc8a/langchain-0.3.16-py3-none-any.whl", hash = "sha256:9a9c1a0604b599e929a5a823ee1491065dc8758fc1802d3df344214ab765f555", size = 1010034 },
+    { url = "https://files.pythonhosted.org/packages/e9/65/e5cc2876078fa5f1a621c8429f0174855c7e9831060d350626dbf8d2a10c/langchain-0.3.17-py3-none-any.whl", hash = "sha256:4d6d3cf454cc261a5017fd1fa5014cffcc7aeaccd0ec0530fc10c5f71e6e97a0", size = 1010032 },
 ]
 
 [[package]]
 name = "langchain-anthropic"
-version = "0.3.4"
+version = "0.3.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anthropic" },
@@ -591,14 +591,14 @@ dependencies = [
     { name = "langchain-core" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/dd/da/30d386991629d448365140b87294c472ba02fde9d226d217361963cffb9a/langchain_anthropic-0.3.4.tar.gz", hash = "sha256:c80c4972f577ff5c0f92006273d706be23728a32c5eb884a0528515a9a969697", size = 21015 }
+sdist = { url = "https://files.pythonhosted.org/packages/7f/48/af6c45d6a1fc09669e6fd85ca8a75659c4ee7fb626eda34fb37b2990b8f2/langchain_anthropic-0.3.5.tar.gz", hash = "sha256:2aa1673511056061680492871f386d68a8b62947e0eb1f15303ef10db16c8357", size = 21051 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9b/58/752da06e0bf1c46ef5a899a92058e88f2fc0694e93386be87802d27ae324/langchain_anthropic-0.3.4-py3-none-any.whl", hash = "sha256:1d244b8d33aae43096fda64b9153195dcac8ff211dc2cdf1930393dbaf48476d", size = 22493 },
+    { url = "https://files.pythonhosted.org/packages/d5/af/ee03b8ce598de240daf22b16fa6ac372e69968654414692b0f5b00916155/langchain_anthropic-0.3.5-py3-none-any.whl", hash = "sha256:bad34b02d7b4bdca9a9471bc391b01269fd8dc4600b83ca2a3e76925b7c27fe6", size = 22526 },
 ]
 
 [[package]]
 name = "langchain-core"
-version = "0.3.32"
+version = "0.3.33"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jsonpatch" },
@@ -609,23 +609,23 @@ dependencies = [
     { name = "tenacity" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/37/96/5ac1277e4e7bb0e134ae3c91a970556458fa6a54bd9c4a2ac9d13b098697/langchain_core-0.3.32.tar.gz", hash = "sha256:4eb85d8428585e67a1766e29c6aa2f246c6329d97cb486e8d6f564ab0bd94a4f", size = 331235 }
+sdist = { url = "https://files.pythonhosted.org/packages/57/b3/426268e07273c395affc6dd02cdf89803888121cfc59ce60922f363aeff8/langchain_core-0.3.33.tar.gz", hash = "sha256:b5dd93a4e7f8198d2fc6048723b0bfecf7aaf128b0d268cbac19c34c1579b953", size = 331492 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3f/bb/f4a7a98ae965acacd75dcbc85a714589a20e910906691b3ebc03089e6962/langchain_core-0.3.32-py3-none-any.whl", hash = "sha256:c050bd1e6dd556ae49073d338aca9dca08b7b55f4778ddce881a12224bc82a7e", size = 412416 },
+    { url = "https://files.pythonhosted.org/packages/98/78/463bc92174555cc04b3e234faa169bb8b58f36fff77892d7b8ae2b4f58e4/langchain_core-0.3.33-py3-none-any.whl", hash = "sha256:269706408a2223f863ff1f9616f31903a5712403199d828b50aadbc4c28b553a", size = 412656 },
 ]
 
 [[package]]
 name = "langchain-openai"
-version = "0.3.2"
+version = "0.3.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "langchain-core" },
     { name = "openai" },
     { name = "tiktoken" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2e/b6/711dc59041ca3a93461ccc176f90f6ab321cc41b24b70031a68928d3086f/langchain_openai-0.3.2.tar.gz", hash = "sha256:c2c80ac0208eb7cefdef96f6353b00fa217979ffe83f0a21cc8666001df828c1", size = 48415 }
+sdist = { url = "https://files.pythonhosted.org/packages/28/07/cdd02d4e8e4bf28963f4d191af35486a8c78ac429285392ba7b168a1564c/langchain_openai-0.3.3.tar.gz", hash = "sha256:aaaee691f145d4ed3035fe23dce69e3212c8de7e208e650c1ce292960287725c", size = 48482 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/00/9f/00b39a6b782e6a05b3536fc82d2a3cd50402ad273c6c742b180538abcc63/langchain_openai-0.3.2-py3-none-any.whl", hash = "sha256:8674183805e26d3ae3f78cc44f79fe0b2066f61e2de0e7e18be3b86f0d3b2759", size = 54447 },
+    { url = "https://files.pythonhosted.org/packages/16/e6/5a0841a3792c2cd8e9991f76920298af01be9afffc08681bfdeae66fc20b/langchain_openai-0.3.3-py3-none-any.whl", hash = "sha256:979ef0d9eca9a34d7c39cd9d0f66d1d38f2f10a5a8c723bbc7e7a8275259c71a", size = 54511 },
 ]
 
 [[package]]
@@ -727,7 +727,7 @@ wheels = [
 
 [[package]]
 name = "langmem"
-version = "0.0.5rc5"
+version = "0.0.5rc7"
 source = { virtual = "." }
 dependencies = [
     { name = "langchain" },
@@ -750,7 +750,7 @@ requires-dist = [
     { name = "langchain-anthropic", specifier = ">=0.3.3" },
     { name = "langchain-openai", specifier = ">=0.3.1" },
     { name = "langgraph", specifier = ">=0.2.66" },
-    { name = "trustcall", specifier = ">=0.0.30" },
+    { name = "trustcall", specifier = ">=0.0.32" },
 ]
 
 [package.metadata.requires-dev]
@@ -1370,16 +1370,16 @@ wheels = [
 
 [[package]]
 name = "trustcall"
-version = "0.0.30"
+version = "0.0.32"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dydantic" },
     { name = "jsonpatch" },
     { name = "langgraph" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3f/c5/8d6fdf48833ad8a4c966fc55f4824b1e3ab2d5482b579fb2934dbf6a8817/trustcall-0.0.30.tar.gz", hash = "sha256:132cbbb15927c86f3be91bad37e0f1a4010e0edb7b066c29abcfa62c1a6b4390", size = 34770 }
+sdist = { url = "https://files.pythonhosted.org/packages/c5/26/78223386caf91ac62ca43867e59d6628dabd53ed6dbfd54eb226b974ebb9/trustcall-0.0.32.tar.gz", hash = "sha256:57a3f11e5d030be3e1fa83d11302d39a282270077b798656d04a87afc086bc95", size = 35577 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/88/38/652c43e1b617d5bce5d9f6581249eae61b2339d55a162fd831c100781cc7/trustcall-0.0.30-py3-none-any.whl", hash = "sha256:495ee37c6e74061c27222cba0a0345aa75331f7e6bf36f6ca05ad931d86bd090", size = 25673 },
+    { url = "https://files.pythonhosted.org/packages/b6/da/c6e99cbf44d48bfba0d4bae2fda7db3428e12e384756762fa89db9a08022/trustcall-0.0.32-py3-none-any.whl", hash = "sha256:718733fb15119ec3acbf81675eb079bb09ab01a6623b94958adf56eb13e85c37", size = 26357 },
 ]
 
 [[package]]

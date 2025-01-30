@@ -44,7 +44,32 @@ def create_prompt_optimizer(
     model: str | BaseChatModel,
     kind: typing.Literal["gradient"] = "gradient",
     config: typing.Optional[GradientOptimizerConfig] = None,
-) -> PromptOptimizerProto: ...
+) -> PromptOptimizerProto:
+    """Create a prompt optimizer that improves prompt effectiveness.
+
+    This function creates an optimizer that can analyze and improve prompts for better
+    performance with language models. It uses gradient-based techniques to suggest
+    improvements to prompt structure, clarity, and effectiveness.
+
+    Args:
+        model (Union[str, BaseChatModel]): The language model to use for optimization.
+            Can be a model name string or a BaseChatModel instance.
+        kind (Literal["gradient"], optional): The optimization strategy to use.
+            Currently only supports "gradient". Defaults to "gradient".
+        config (Optional[GradientOptimizerConfig], optional): Configuration options
+            for the gradient optimizer. Defaults to None.
+
+    Returns:
+        PromptOptimizerProto: A callable that takes a prompt and returns an optimized version.
+
+    Example:
+        >>> optimizer = create_prompt_optimizer("anthropic:claude-3-sonnet-20240229")
+        >>> original_prompt = "Tell me about the solar system"
+        >>> optimized = await optimizer(original_prompt)
+        >>> print(optimized)
+        'Provide a comprehensive overview of the solar system...'
+    """
+    ...
 
 
 @typing.overload
@@ -52,7 +77,32 @@ def create_prompt_optimizer(
     model: str | BaseChatModel,
     kind: typing.Literal["metaprompt"] = "metaprompt",
     config: typing.Optional[MetapromptOptimizerConfig] = None,
-) -> PromptOptimizerProto: ...
+) -> PromptOptimizerProto:
+    """Create a prompt optimizer that improves prompt effectiveness.
+
+    This function creates an optimizer that can analyze and improve prompts for better
+    performance with language models. It uses meta-prompting techniques to suggest
+    improvements to prompt structure, clarity, and effectiveness.
+
+    Args:
+        model (Union[str, BaseChatModel]): The language model to use for optimization.
+            Can be a model name string or a BaseChatModel instance.
+        kind (Literal["metaprompt"], optional): The optimization strategy to use.
+            Currently only supports "metaprompt". Defaults to "metaprompt".
+        config (Optional[MetapromptOptimizerConfig], optional): Configuration options
+            for the meta-prompt optimizer. Defaults to None.
+
+    Returns:
+        PromptOptimizerProto: A callable that takes a prompt and returns an optimized version.
+
+    Example:
+        >>> optimizer = create_prompt_optimizer("anthropic:claude-3-sonnet-20240229")
+        >>> original_prompt = "Tell me about the solar system"
+        >>> optimized = await optimizer(original_prompt)
+        >>> print(optimized)
+        'Provide a comprehensive overview of the solar system...'
+    """
+    ...
 
 
 @typing.overload
@@ -60,7 +110,32 @@ def create_prompt_optimizer(
     model: str | BaseChatModel,
     kind: typing.Literal["prompt_memory"] = "prompt_memory",
     config: None = None,
-) -> PromptOptimizerProto: ...
+) -> PromptOptimizerProto:
+    """Create a prompt optimizer that improves prompt effectiveness.
+
+    This function creates an optimizer that can analyze and improve prompts for better
+    performance with language models. It uses prompt memory techniques to suggest
+    improvements to prompt structure, clarity, and effectiveness.
+
+    Args:
+        model (Union[str, BaseChatModel]): The language model to use for optimization.
+            Can be a model name string or a BaseChatModel instance.
+        kind (Literal["prompt_memory"], optional): The optimization strategy to use.
+            Currently only supports "prompt_memory". Defaults to "prompt_memory".
+        config (None, optional): Configuration options for the prompt memory optimizer.
+            Defaults to None.
+
+    Returns:
+        PromptOptimizerProto: A callable that takes a prompt and returns an optimized version.
+
+    Example:
+        >>> optimizer = create_prompt_optimizer("anthropic:claude-3-sonnet-20240229")
+        >>> original_prompt = "Tell me about the solar system"
+        >>> optimized = await optimizer(original_prompt)
+        >>> print(optimized)
+        'Provide a comprehensive overview of the solar system...'
+    """
+    ...
 
 
 def create_prompt_optimizer(
@@ -103,7 +178,39 @@ def create_multi_prompt_optimizer(
         list[Prompt],
     ],
     typing.Awaitable[list[Prompt]],
-]: ...
+]:
+    """Create an optimizer for multiple prompts with shared context.
+
+    This function creates an optimizer that can improve multiple related prompts
+    while maintaining consistency and leveraging shared context between them.
+    It's particularly useful for optimizing chains of prompts or prompt templates
+    that work together.
+
+    Args:
+        model (Union[str, BaseChatModel]): The language model to use for optimization.
+            Can be a model name string or a BaseChatModel instance.
+        kind (Literal["gradient"], optional): The optimization strategy to use.
+            Currently only supports "gradient". Defaults to "gradient".
+        config (Optional[GradientOptimizerConfig], optional): Configuration options
+            for the gradient optimizer. Defaults to None.
+
+    Returns:
+        Callable: An async function that takes multiple prompts or messages and returns
+            a list of optimized prompts.
+
+    Example:
+        >>> optimizer = create_multi_prompt_optimizer("anthropic:claude-3-sonnet-20240229")
+        >>> prompts = [
+        ...     "Extract key information from the text",
+        ...     "Summarize the extracted information",
+        ...     "Generate insights based on the summary"
+        ... ]
+        >>> optimized = await optimizer(prompts)
+        >>> for orig, opt in zip(prompts, optimized):
+        ...     print(f"Original: {orig}")
+        ...     print(f"Optimized: {opt}\n")
+    """
+    ...
 
 
 @typing.overload
@@ -120,7 +227,39 @@ def create_multi_prompt_optimizer(
         list[Prompt],
     ],
     typing.Awaitable[list[Prompt]],
-]: ...
+]:
+    """Create an optimizer for multiple prompts with shared context.
+
+    This function creates an optimizer that can improve multiple related prompts
+    while maintaining consistency and leveraging shared context between them.
+    It's particularly useful for optimizing chains of prompts or prompt templates
+    that work together.
+
+    Args:
+        model (Union[str, BaseChatModel]): The language model to use for optimization.
+            Can be a model name string or a BaseChatModel instance.
+        kind (Literal["metaprompt"], optional): The optimization strategy to use.
+            Currently only supports "metaprompt". Defaults to "metaprompt".
+        config (Optional[MetapromptOptimizerConfig], optional): Configuration options
+            for the meta-prompt optimizer. Defaults to None.
+
+    Returns:
+        Callable: An async function that takes multiple prompts or messages and returns
+            a list of optimized prompts.
+
+    Example:
+        >>> optimizer = create_multi_prompt_optimizer("anthropic:claude-3-sonnet-20240229")
+        >>> prompts = [
+        ...     "Extract key information from the text",
+        ...     "Summarize the extracted information",
+        ...     "Generate insights based on the summary"
+        ... ]
+        >>> optimized = await optimizer(prompts)
+        >>> for orig, opt in zip(prompts, optimized):
+        ...     print(f"Original: {orig}")
+        ...     print(f"Optimized: {opt}\n")
+    """
+    ...
 
 
 @typing.overload
@@ -137,7 +276,39 @@ def create_multi_prompt_optimizer(
         list[Prompt],
     ],
     typing.Awaitable[list[Prompt]],
-]: ...
+]:
+    """Create an optimizer for multiple prompts with shared context.
+
+    This function creates an optimizer that can improve multiple related prompts
+    while maintaining consistency and leveraging shared context between them.
+    It's particularly useful for optimizing chains of prompts or prompt templates
+    that work together.
+
+    Args:
+        model (Union[str, BaseChatModel]): The language model to use for optimization.
+            Can be a model name string or a BaseChatModel instance.
+        kind (Literal["prompt_memory"], optional): The optimization strategy to use.
+            Currently only supports "prompt_memory". Defaults to "prompt_memory".
+        config (None, optional): Configuration options for the prompt memory optimizer.
+            Defaults to None.
+
+    Returns:
+        Callable: An async function that takes multiple prompts or messages and returns
+            a list of optimized prompts.
+
+    Example:
+        >>> optimizer = create_multi_prompt_optimizer("anthropic:claude-3-sonnet-20240229")
+        >>> prompts = [
+        ...     "Extract key information from the text",
+        ...     "Summarize the extracted information",
+        ...     "Generate insights based on the summary"
+        ... ]
+        >>> optimized = await optimizer(prompts)
+        >>> for orig, opt in zip(prompts, optimized):
+        ...     print(f"Original: {orig}")
+        ...     print(f"Optimized: {opt}\n")
+    """
+    ...
 
 
 def create_multi_prompt_optimizer(

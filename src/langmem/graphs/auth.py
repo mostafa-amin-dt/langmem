@@ -50,14 +50,15 @@ async def block(
     ctx: Auth.types.AuthContext,
     value: dict,
 ):
-    logger.warning(
-        f"Accepting (should be blocking) {ctx.user.identity} with {ctx.resource} / {ctx.action}"
-    )
+    if isinstance(ctx.user, Auth.types.StudioUser):
+        return True
     assert False
 
 
 @auth.on.threads
 async def accept(ctx: Auth.types.AuthContext, value: Auth.types.on.threads.value):
+    if isinstance(ctx.user, Auth.types.StudioUser):
+        return True
     logger.warning(f"Accepting {ctx.user.identity} with {ctx.resource} / {ctx.action}.")
     filters = {"owner": ctx.user.identity}
     metadata = value.setdefault("metadata", {})
@@ -69,6 +70,11 @@ async def accept(ctx: Auth.types.AuthContext, value: Auth.types.on.threads.value
 async def filter_store_requests(
     ctx: Auth.types.AuthContext, value: Auth.types.on.store.value
 ):
-    assert ctx.user.identity == value["namespace"][1]
-    logger.warning(f"Accepting {ctx.user.identity} with {ctx.resource} / {ctx.action}.")
-    return None
+    if isinstance(ctx.user, Auth.types.StudioUser):
+        return True
+    namespace = value.get("namespace") or ()
+    if not namespace:
+        value["namespace"] = (ctx.user.identity,)
+    elif ctx.user.identity != namespace[0]:
+        value["namespace"] = (ctx.user.identity, *namespace)
+    return True

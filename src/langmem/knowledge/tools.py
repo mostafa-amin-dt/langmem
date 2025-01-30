@@ -1,23 +1,9 @@
-import asyncio
 import typing
 import uuid
 
-from langchain.chat_models import init_chat_model
-from langchain_core.language_models import BaseChatModel
 from langchain_core.tools import tool
-from langchain_core.messages import AnyMessage
-from langchain_core.prompts import ChatPromptTemplate
-from langgraph.prebuilt import ToolNode
 from langgraph.utils.config import get_store
-from pydantic import BaseModel, Field, model_validator
-from trustcall import create_extractor
 from langmem import utils
-from langmem.prompts.optimization import (
-    create_prompt_optimizer,
-    create_multi_prompt_optimizer,
-    Prompt,
-)
-import langsmith as ls
 
 ## LangGraph Tools
 
@@ -32,7 +18,48 @@ def create_manage_memory_tool(
         "memories",
         "{user_id}",
     ),
+    kind: typing.Literal["single", "multi"] = "multi",
 ):
+    """Create a tool for managing persistent memories in conversations.
+
+    This function creates a tool that allows AI assistants to create, update, and delete
+    persistent memories that carry over between conversations. The tool helps maintain
+    context and user preferences across sessions.
+
+    Args:
+        instructions (str, optional): Custom instructions for when to use the memory tool.
+            Defaults to a predefined set of guidelines for proactive memory management.
+        namespace_prefix (Union[tuple[str, ...], NamespaceTemplate], optional): Storage namespace
+            structure for organizing memories. Defaults to ("memories", "{user_id}").
+        kind (Literal["single", "multi"], optional): Whether to support single or multiple
+            memories per conversation. Defaults to "multi".
+
+    Returns:
+        Callable: A decorated async function that can be used as a tool for memory management.
+            The tool supports creating, updating, and deleting memories with proper validation.
+
+    Example:
+        >>> memory_tool = create_manage_memory_tool(
+        ...     namespace_prefix=("project_memories", "{team_id}")
+        ... )
+        >>> 
+        >>> # Create a new memory
+        >>> result = await memory_tool(
+        ...     action="create",
+        ...     content="Team prefers to use Python for backend development"
+        ... )
+        >>> print(result)
+        'created memory 123e4567-e89b-12d3-a456-426614174000'
+        >>> 
+        >>> # Update an existing memory
+        >>> result = await memory_tool(
+        ...     action="update",
+        ...     id=uuid.UUID('123e4567-e89b-12d3-a456-426614174000'),
+        ...     content="Team uses Python for backend and TypeScript for frontend"
+        ... )
+        >>> print(result)
+        'updated memory 123e4567-e89b-12d3-a456-426614174000'
+    """
     namespacer = (
         utils.NamespaceTemplate(namespace_prefix)
         if isinstance(namespace_prefix, tuple)
@@ -59,10 +86,11 @@ def create_manage_memory_tool(
             raise ValueError(
                 "You must provide a MEMORY ID when deleting or updating a MEMORY."
             )
-        if action == "delete":
-            await store.adelete(namespace_prefix, key=str(id))
-            return f"Deleted memory {id}"
         namespace = namespacer()
+        if action == "delete":
+            await store.adelete(namespace, key=str(id))
+            return f"Deleted memory {id}"
+
         id = id or uuid.uuid4()
         await store.aput(
             namespace,

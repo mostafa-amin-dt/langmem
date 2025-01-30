@@ -1,3 +1,132 @@
+#%%
+%load_ext autoreload
+%autoreload 2
+#%%
+inputs = {
+  "messages": [
+    {
+      "content": "Draft a response to this email:\n\nFrom: Sam Sharaf <samuel.sharaf@salesforce.com>\nTo: Harrison Chase <harrison@langchain.dev>\nSubject: Re: Agent Protocol\n\nThank you Harrison for sharing the agent protocol docs and introduction to\r\nNuno Campos. Also thank you for spending time with us to brainstorm ideas\r\non the agent interoperability topic. We are impressed by the work you and\r\nteam have done to date.\r\nWe would love to hear more about Cisco's multi-agent use cases/scenarios\r\nwhich you and team have been working on.\r\n\r\nBest,\r\nSam\r\n\r\nOn Mon, Jan 27, 2025 at 8:50 AM Harrison Chase <harrison@langchain.dev>\r\nwrote:\r\n\r\n> Hi all -\r\n>\r\n> Thanks for the time last week. I wanted to follow up:\r\n>\r\n> - Agent Protocol Docs: https://github.com/langchain-ai/agent-protocol\r\n> - I wanted to introduce you to @Nuno Campos <nuno@langchain.dev> - he\r\n> leads the protocol work. As you start playing around with it, if you have\r\n> any feedback or questions - he's the guy!\r\n>\r\n> Would love to hear initial thoughts and impressions. Happy to set up time\r\n> later this week if you've had time to dive into it\r\n>\r\n> - Harrison\r\n>\r\n\r\n\r\n-- \r\nSam Sharaf | Sr. Director, Product Management - Frontier AI Innovation\r\nPhone: 925-964-7049 | salesforce <http://salesforce.com/> |\r\nsamuel.sharaf@salesforce.com <mhammel@salesforce.com>\r\n*Certified Distinguished Enterprise Architect*\r\n",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "human",
+      "id": "af9902c0-5d54-474a-a609-42f215bee380",
+      "example": False
+    },
+    {
+      "content": "Great to hear you're interested in Cisco's multi-agent use cases! I've looped in Jayesh to provide more insights. \n\n- Harrison",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "ai",
+      "id": "3844e5c9-ac44-4b33-b92e-6d3f6b5c1139",
+      "example": False,
+      "tool_calls": [],
+      "invalid_tool_calls": []
+    },
+    {
+      "role": "user",
+      "content": "A better response would have been: I introduced Jayesh to them in a separate email!\n\n- Harrison"
+    }
+  ],
+  "existing": [
+    [
+      "eacdf504-e1e8-4998-b280-1bef00e42f94",
+      "Memory",
+      {
+        "content": "As of January 2025, ongoing collaboration with Salesforce team (including Sam Sharaf, Sr. Director of Product Management - Frontier AI Innovation) regarding agent interoperability and agent protocol. Key details:\n- Shared agent protocol documentation\n- Introduced them to Jayesh for agent protocol work\n- Discussing Cisco's multi-agent use cases\n- Sam's contact: samuel.sharaf@salesforce.com, Phone: 925-964-7049"
+      }
+    ],
+    [
+      "415c9b3d-b7be-4923-9e73-dd472ac91d84",
+      "Memory",
+      {
+        "content": "Response preferences update based on feedback: When coordinating meetings, while maintaining enthusiasm, keep responses exceptionally concise. A good pattern is: 1) Express excitement, 2) Acknowledge received information/availability, 3) Provide relevant context (e.g., who will attend), 4) Sign off. Avoid repeating availability times in response since they're in the email thread."
+      }
+    ],
+    [
+      "fd33e04a-4d0e-4fb3-b53e-32cd598320bb",
+      "Memory",
+      {
+        "content": "Response to meeting requests from important clients should include: 1) Clear confirmation of availability, 2) Expression of enthusiasm/excitement, 3) Proactive suggestion for next steps (e.g., calendar invites), 4) Professional but warm tone."
+      }
+    ],
+    [
+      "15c5ee85-c5b0-478e-b3da-fca2844c371f",
+      "Memory",
+      {
+        "content": "Important technical discussion with MongoDB senior leadership initiated after SF meeting with Sahir Azam (CPO):\n- Topic: Technical deployment challenges, Kubernetes infrastructure\n- Contact: Andrew Davidson (SVP Products, MongoDB, 12+ years experience, +1-650-269-7773)\n- Key Questions: \n  * Technical deployment challenges in customer environments\n  * Kubernetes vs non-Kubernetes deployments\n  * MongoDB Enterprise deployment patterns\n  * Control plane changes and upgrade handling\n  * Future deployment model recommendations\n- Mukil (LangChain Head of Infrastructure) to lead discussion\n- Coordinating through EA Viv Chacon (viv.chacon@mongodb.com, 516-543-2548)"
+      }
+    ],
+    [
+      "791dbf4d-80d8-422a-9994-9edd33fcc369",
+      "Memory",
+      {
+        "content": "When responding to meeting coordination emails: 1) Keep responses extremely short and direct, 2) Only share availability times if explicitly requested, 3) Avoid repeating details already in thread. This pattern was reinforced through feedback - a good response simply clarifies attendees without volunteering additional information."
+      }
+    ],
+    [
+      "09fa79cb-fe6a-4a9f-964c-97b3abe2dde6",
+      "Memory",
+      {
+        "content": "Contact information for commercial real estate agent Jay Shaffer: Managing Partner at Colton Commercial & Partners, contact info - Direct: (415) 590-7871, Cell: (415) 407-3997, Email: jshaffer@coltoncommercialsf.com. Has prior experience working with Suzie Ng for 555 19th street location and is partners with Shabber (Riffat's husband) who handled their Menlo office."
+      }
+    ],
+    [
+      "6763d5b8-2131-4c21-8855-8979a0637d68",
+      "Memory",
+      {
+        "content": "When corresponding with high-value potential customers like JPMorgan Chase (JPMC): 1) Maintain an enthusiastic and warm tone in communications, explicitly expressing excitement about opportunities to meet, 2) Be proactive about meeting logistics, including suggesting calendar placeholders and confirmations, 3) Ensure communications demonstrate both eagerness to collaborate and professional competence."
+      }
+    ],
+    [
+      "bee69702-d4c6-466b-a35c-87247e332b84",
+      "Memory",
+      {
+        "content": "Key contacts at Mercor as of Jan 2025: Adarsh Hiremath (adarsh@mercor.com) and Aksh Garg (aksh@mercor.com). They are authorized to work with LangSmith's tools and have special pricing arrangements."
+      }
+    ],
+    [
+      "408616ee-98ac-4772-aa8a-2bde4f8b2830",
+      "Memory",
+      {
+        "content": "A meeting with JPMorgan Chase's CDAO leadership, including Teresa, has been confirmed for March 3rd, 2024 at 2:15 PM at their Mission Street office. JPMC is a significant potential customer requiring enthusiastic engagement. Key contact: Joe Kane (Managing Director - Global Technology Strategy, Innovation & Partnerships), contact: joseph.f.kane@jpmorgan.com, T: 212-622-9651, M: 917-841-3888. His EA is Liz Persaud (elizabeth.x.persaud@jpmchase.com)."
+      }
+    ],
+    [
+      "30596b36-a43c-4c84-8a69-13d7f16fdcde",
+      "Memory",
+      {
+        "content": "Maintain an enthusiastic and warm tone in professional communications, especially with important clients like JPMorgan Chase. This includes expressing excitement about meetings and proactively suggesting next steps like calendar placeholders."
+      }
+    ]
+  ]
+}
+#%%
+from langmem import create_memory_enricher
+
+enricher = create_memory_enricher(
+    "gpt-4o",
+)
+results = await enricher(inputs["messages"], existing=inputs["existing"])
+
+#%%
+
+#%%
+results[0]
+#%%
+consolidator = create_memory_enricher(
+    "gpt-4o",
+    instructions="Your task is to deduplicate, conslidate,"
+    " and enrich the provided memories for future use. Try to compress without loss of information."
+    " Extract new memories if you see patterns to generalize.",
+    enable_deletes=True,
+)
+consolidated = await consolidator([], existing=inputs["existing"] + results)
+#%%
+import json
+print(json.dumps([m.model_dump_json() for _, m in consolidated], indent=2)) #print(json.dumps(results, indent=2))
+#%%
+print(json.dumps(inputs, indent=2))
+#%%
 # # %% [markdown]
 # # # LangMem Examples
 # # This notebook demonstrates the key functionality of LangMem, a library for managing conversational memory.
@@ -378,3 +507,5 @@
 # print("Optimized Prompt:")
 # print(result[0]["prompt"])
 # # %%
+
+# %%

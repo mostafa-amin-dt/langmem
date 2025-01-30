@@ -157,7 +157,7 @@ def get_prompt_extraction_schema(
         )
         improved_prompt: typing.Optional[str] = Field(
             description="Finally, generate the full updated prompt to address the identified issues. "
-            f" <TO_OPTIMIZE> and </TO_OPTIMIZE> tags, in f-string format. Do not include <TO_OPTIMIZE> in your response. {prompt_description}"
+            f" {prompt_description}"
         )
 
         @model_validator(mode="before")
