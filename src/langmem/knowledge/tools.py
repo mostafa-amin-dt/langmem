@@ -171,6 +171,7 @@ def create_search_memory_tool(
     instructions: str = _MEMORY_SEARCH_INSTRUCTIONS,
     namespace: tuple[str, ...] = ("memories", "{langgraph_user_id}"),
 ):
+    """Searches for memories based on a query and returns them."""
     namespacer = utils.NamespaceTemplate(namespace)
 
     async def asearch_memory(

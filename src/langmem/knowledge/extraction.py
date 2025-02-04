@@ -841,12 +841,7 @@ def create_memory_store_enricher(
     namespace: tuple[str, ...] = ("memories", "{langgraph_user_id}"),
     phases: list[MemoryPhase] | None = None,
 ) -> MemoryStoreEnricher:
-    """End-to-end memory management system with automatic storage integration.
-
-    This function creates a comprehensive memory management system that combines:
-    1. Automatic memory search based on conversation context
-    2. Memory extraction and enrichment
-    3. Persistent storage operations with versioning
+    """Enriches memories stored in the configured BaseStore.
 
     The system automatically searches for relevant memories, extracts new information,
     updates existing memories, and maintains a versioned history of all changes.
@@ -997,14 +992,10 @@ def create_memory_store_enricher(
             down processing. Defaults to 5.
         namespace (tuple[str, ...], optional): Storage namespace structure for
             organizing memories. Supports templated values like "{langgraph_user_id}" which are
-            populated from the runtime context. Defaults to ("memories", "{langgraph_user_id}").
+            populated from the runtime context. Defaults to `("memories", "{langgraph_user_id}")`.
 
     Returns:
-        enricher: An runnable that processes conversations and automatically manages memories in the BaseStore. The function works by:
-
-            - Searching for relevant memories
-            - Extracting & updating memories based on the new conversational context and the existing data
-            - Storing the updated memories back to the BaseStore
+        enricher: An runnable that processes conversations and automatically manages memories in the LangGraph BaseStore.
     """
     return MemoryStoreEnricher(
         model,
