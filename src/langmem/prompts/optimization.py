@@ -78,6 +78,111 @@ def create_prompt_optimizer(
     performance with language models. It supports multiple optimization strategies to
     iteratively enhance prompt quality and effectiveness.
 
+    ## Optimization Strategies
+
+    ### 1. Gradient Optimizer
+    ```mermaid
+    sequenceDiagram
+        participant U as User
+        participant O as Optimizer
+        participant T as Think
+        participant C as Critique
+        participant R as Reflect
+        participant F as Final
+
+        U->>O: Initial Prompt + Feedback
+        loop For min_steps to max_steps
+            O->>T: Analyze Current State
+            T-->>O: Improvement Ideas
+            O->>C: Evaluate Ideas
+            C-->>O: Critiques
+            O->>R: Synthesize Feedback
+            R-->>O: Refinements
+            alt Sufficient Quality
+                O->>F: Generate Final
+                F-->>U: Optimized Prompt
+            end
+        end
+    ```
+
+    The gradient optimizer uses an iterative reflection process:
+
+    1. Analyzes current prompt and feedback
+    2. Generates improvements through think/critique cycles
+    3. Applies incremental refinements
+
+    Configuration (GradientOptimizerConfig):
+
+    - gradient_prompt: Custom prompt for predicting "what to improve"
+    - metaprompt: Custom prompt for applying the improvements to the existing prompt
+    - max_reflection_steps: Maximum reflection iterations (default: 3)
+    - min_reflection_steps: Minimum reflection iterations (default: 1)
+
+    ### 2. Meta-Prompt Optimizer
+    ```mermaid
+    sequenceDiagram
+        participant U as User
+        participant M as MetaOptimizer
+        participant A as Analysis
+        participant R as Rules
+        participant E as Extractor
+        participant F as Final
+
+        U->>M: Prompt + Examples
+        M->>A: Meta Analysis
+        A-->>M: Patterns
+        loop For each pattern
+            M->>R: Generate Rules
+            R-->>M: Improvement Rules
+        end
+        M->>E: Extract Principles
+        E-->>M: Optimization Rules
+        M->>F: Apply Rules
+        F-->>U: Enhanced Prompt
+    ```
+
+    Uses meta-learning to understand and improve prompts:
+
+    1. Analyzes patterns across multiple examples
+    2. Extracts high-level improvement principles
+    3. Applies learned patterns to new prompts
+
+    Configuration (MetapromptOptimizerConfig):
+
+    - metaprompt: Custom instructions on how to update the prompt
+    - max_reflection_steps: Maximum meta-learning steps (default: 3)
+    - min_reflection_steps: Minimum meta-learning steps (default: 1)
+
+    ### 3. Prompt Memory Optimizer
+    ```mermaid
+    sequenceDiagram
+        participant U as User
+        participant P as PromptMemory
+        participant H as History
+        participant A as Analysis
+        participant M as Memory
+        participant O as Optimizer
+
+        U->>P: New Prompt
+        P->>H: Load History
+        H-->>P: Past Conversations
+        P->>A: Extract Patterns
+        A-->>P: Success Patterns
+        loop For each pattern
+            P->>M: Form Memory
+            M-->>P: Stored Pattern
+        end
+        P->>O: Apply Patterns
+        O-->>U: Improved Prompt
+    ```
+
+    Learns from conversation history:
+    1. Extracts successful patterns from past interactions
+    2. Identifies improvement areas from feedback
+    3. Applies learned patterns to new prompts
+
+    No additional configuration required.
+
     !!! example "Examples"
         Basic prompt optimization:
         ```python
@@ -147,34 +252,42 @@ def create_prompt_optimizer(
         )
         ```
 
-    !!! warning
-        The optimizer may take longer to run with more complex strategies:
-        - gradient: Fastest but may need multiple iterations
-        - prompt_memory: Medium speed, depends on conversation history
-        - metaprompt: Slowest but most thorough optimization
+    !!! warning "Performance Considerations"
 
-    !!! tip
-        For best results:
-        1. Choose the optimization strategy based on your needs:
-           - gradient: Good for iterative improvements
-           - prompt_memory: Best when you have example conversations
-           - metaprompt: Ideal for complex, multi-step tasks
-        2. Provide specific feedback in conversation trajectories
-        3. Use config options to control optimization behavior
-        4. Start with simpler strategies and only use more complex
-           ones if needed
+        Each strategy has different LLM call patterns:
+
+        - prompt_memory: 1 LLM call total
+            - Fastest as it only needs one pass
+        - metaprompt: 1-5 LLM calls (configurable)
+            - Each step is one LLM call
+            - Default range: min 2, max 5 reflection steps
+        - gradient: 2-10 LLM calls (configurable)
+            - Each step requires 2 LLM calls (think + critique)
+            - Default range: min 2, max 5 reflection steps
+
+    !!! tip "Strategy Selection"
+        Choose based on your needs:
+        1. Prompt Memory: Simplest prompting strategy
+            - Limited ability to learn from complicated patterns
+        2. Metaprompt: Balance of speed and improvement
+            - Moderate cost (2-5 LLM calls)
+        3. Gradient: Most thorough but expensive
+            - Highest cost (4-10 LLM calls)
+            - Uses separation of concerns to extract feedback from more conversational context.
 
     Args:
         model (Union[str, BaseChatModel]): The language model to use for optimization.
             Can be a model name string or a BaseChatModel instance.
         kind (Literal["gradient", "prompt_memory", "metaprompt"]): The optimization
             strategy to use. Each strategy offers different benefits:
-            - gradient: Iteratively improves through reflection
-            - prompt_memory: Uses successful past prompts
-            - metaprompt: Learns optimal patterns via meta-learning
-            Defaults to "gradient".
+
+            - gradient: Separates concerns between finding areas for improvement 
+                and recommending updates
+            - prompt_memory: Simple single-shot metaprompt
+            - metaprompt: Supports reflection but each step is a single LLM call.
         config (Optional[OptimizerConfig]): Configuration options for the optimizer.
             The type depends on the chosen strategy:
+            
                 - GradientOptimizerConfig for kind="gradient"
                 - PromptMemoryConfig for kind="prompt_memory"
                 - MetapromptOptimizerConfig for kind="metaprompt"
@@ -403,9 +516,36 @@ def create_multi_prompt_optimizer(
 ) -> Runnable[prompt_types.MultiPromptOptimizerInput, list[Prompt]]:
     """Create a multi-prompt optimizer that improves prompt effectiveness.
 
-    This function creates an optimizer that can analyze and improve prompts for better
-    performance with language models. It supports multiple optimization strategies to
-    iteratively enhance prompt quality and effectiveness.
+    This function creates an optimizer that can analyze and improve multiple prompts
+    simultaneously using the same optimization strategy. Each prompt is optimized using
+    the selected strategy (see `create_prompt_optimizer` for strategy details).
+
+    ```mermaid
+    sequenceDiagram
+        participant U as User
+        participant M as MultiOptimizer
+        participant O as Optimizer
+        participant P as Prompts
+
+        U->>M: Prompts + Feedback
+        activate M
+        Note over M: Initialize optimizer
+        
+        loop For each prompt
+            M->>O: Create optimizer
+            activate O
+            O->>P: Apply strategy
+            Note over O,P: See create_prompt_optimizer<br/>for strategy details
+            P-->>O: Optimized prompt
+            O-->>M: Return result
+            deactivate O
+        end
+        
+        M->>U: Return all optimized prompts
+        deactivate M
+    ```
+
+    The multi-prompt optimizer:
 
     !!! example "Examples"
         Basic prompt optimization:
@@ -472,7 +612,8 @@ def create_multi_prompt_optimizer(
             {"role": "user", "content": "Explain quantum computing"},
             {"role": "assistant", "content": "Quantum computing uses..."},
         ]
-        feedback = "Need better organization and concrete examples"
+        # Explicit feedback is optional
+        feedback = None
 
         # Optimize with meta-learning
         trajectories = [(conversation, feedback)]
@@ -484,22 +625,6 @@ def create_multi_prompt_optimizer(
         improved_prompts = await optimizer(trajectories, prompts)
         ```
 
-    !!! warning
-        The optimizer may take longer to run with more complex strategies:
-        - gradient: Fastest but may need multiple iterations
-        - prompt_memory: Medium speed, depends on conversation history
-        - metaprompt: Slowest but most thorough optimization
-
-    !!! tip
-        For best results:
-        1. Choose the optimization strategy based on your needs:
-           - gradient: Good for iterative improvements
-           - prompt_memory: Best when you have example conversations
-           - metaprompt: Ideal for complex, multi-step tasks
-        2. Provide specific feedback in conversation trajectories
-        3. Use config options to control optimization behavior
-        4. Start with simpler strategies and only use more complex
-           ones if needed
 
     Args:
         model (Union[str, BaseChatModel]): The language model to use for optimization.

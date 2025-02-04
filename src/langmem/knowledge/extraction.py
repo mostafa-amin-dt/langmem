@@ -375,7 +375,7 @@ def create_memory_enricher(
 
     !!! tip
         For better memory organization:
-        
+
         1. Use specific, well-defined Pydantic models for different types of memories
         2. Keep memory content concise and focused
         3. Include relevant context in structured memories
