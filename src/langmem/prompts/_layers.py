@@ -1,23 +1,26 @@
-import re
-from langchain_core.runnables import Runnable
-import typing
-from typing import Optional, Union, Any, Literal
-from langchain_core.messages import AnyMessage
-from langchain_core.runnables import RunnableConfig
-from pydantic import BaseModel
-from langmem.utils import NamespaceTemplate
-from langgraph.store.base import Item, SearchItem
-from langmem import create_manage_memory_tool, create_memory_searcher
-from langgraph.utils.config import get_store
-from langchain_core.tools import BaseTool
+# This is not considered a part of the public API right now and may change at any time.
 import asyncio
 import functools
+import re
+import typing
+from typing import Any, Literal, Optional, Union
+
+from langchain_core.messages import AnyMessage
+from langchain_core.runnables import Runnable, RunnableConfig
+from langchain_core.tools import BaseTool
+from langgraph.store.base import Item, SearchItem
+from langgraph.utils.config import get_store
+from pydantic import BaseModel
+from typing_extensions import TypedDict
+
+from langmem import create_manage_memory_tool, create_memory_searcher
+from langmem.utils import NamespaceTemplate
 
 # Basically a declarative API for memories that could be composed in prompts.
 # Formatting? (here vs. elsewhere)
 
 
-class MessagesState(typing.TypedDict, total=False):
+class MessagesState(TypedDict, total=False):
     messages: list[AnyMessage]
     query: str | list[str]
 
@@ -119,7 +122,7 @@ class MemoryLayer(Runnable):
     def get_manager_tool(self):
         if self._manager_tool is None:
             self._manager_tool = create_manage_memory_tool(
-                namespace_prefix=self.namespace,
+                namespace=self.namespace,
                 instructions=self.update_instructions or "",
             )
         return self._manager_tool
@@ -134,7 +137,7 @@ class MemoryLayer(Runnable):
     ) -> BaseTool:
         if self._search_tool is None:
             self._search_tool = create_memory_searcher(
-                namespace_prefix=self.namespace,
+                namespace=self.namespace,
                 schemas=self.schemas,
             )
         return self._search_tool
@@ -191,8 +194,8 @@ def _search_single(
     _: typing.Sequence[str], /, namespace: NamespaceTemplate, **kwargs: Any
 ) -> list[SearchItem]:
     store = get_store()
-    namespace_prefix = namespace()
-    item = store.get(namespace_prefix, key="memory")
+    namespace = namespace()
+    item = store.get(namespace, key="memory")
     if item:
         return [
             SearchItem(
@@ -211,8 +214,8 @@ async def _asearch_single(
     _: typing.Sequence[str], /, namespace: NamespaceTemplate, **kwargs: Any
 ) -> list[SearchItem]:
     store = get_store()
-    namespace_prefix = namespace()
-    item = await store.aget(namespace_prefix, key="memory")
+    namespace = namespace()
+    item = await store.aget(namespace, key="memory")
     if item:
         return [
             SearchItem(
@@ -239,12 +242,10 @@ def _search_multi(
     all_items = []
     # Note: offset wouldn't really work for multi-query
     # this is also not concurrent. Recommed async
-    namespace_prefix = namespace()
+    namespace = namespace()
     for q in queries:
         all_items.append(
-            store.search(
-                namespace_prefix, query=q, filter=filter, limit=limit, offset=offset
-            )
+            store.search(namespace, query=q, filter=filter, limit=limit, offset=offset)
         )
     return _sort_multiple(all_items, limit)
 
@@ -259,12 +260,10 @@ async def _asearch_multi(
     offset: int = 0,
 ) -> list[SearchItem]:
     store = get_store()
-    namespace_prefix = namespace()
+    namespace = namespace()
     all_items = await asyncio.gather(
         *(
-            store.asearch(
-                namespace_prefix, query=q, filter=filter, limit=limit, offset=offset
-            )
+            store.asearch(namespace, query=q, filter=filter, limit=limit, offset=offset)
             for q in queries
         )
     )

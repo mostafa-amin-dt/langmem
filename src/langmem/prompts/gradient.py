@@ -1,12 +1,14 @@
+from typing import Any, Optional, Union
+
 import langsmith as ls
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, AnyMessage
-from langmem import utils
-from langmem.prompts import types
+from langchain_core.messages import AIMessage
+from langchain_core.runnables import Runnable, RunnableConfig
 from trustcall import create_extractor
 from typing_extensions import TypedDict
-from langchain_core.runnables import Runnable, RunnableConfig
-from typing import Optional, Any, Union
+
+from langmem import utils
+from langmem.prompts import types as prompt_types
 
 DEFAULT_MAX_REFLECTION_STEPS = 5
 DEFAULT_MIN_REFLECTION_STEPS = 1
@@ -29,19 +31,11 @@ The developer provided the following instructions around when and how to update 
 
 ## Session data
 
-Analyze the following sessions (and any associated user feedback) (either conversations with a user or other work that was performed by the assistant):
+Analyze the following trajectories (and any associated user feedback) (either conversations with a user or other work that was performed by the assistant):
 
-<sessions>
-{sessions}
-</sessions>
-
-i## Feedback
-
-The following feedback is provided for this session:
-
-<feedback>
-{feedback}
-</feedback>
+<trajectories>
+{trajectories}
+</trajectories>
 
 ## Task
 
@@ -104,8 +98,8 @@ class GradientOptimizerConfig(TypedDict, total=False):
 class GradientOptimizerInput(TypedDict, total=False):
     """Input to the gradient optimizer."""
 
-    sessions: Union[list[Union[tuple[list[AnyMessage], dict[str, str]], str]], str]
-    prompt: Union[str, types.Prompt]
+    trajectories: prompt_types.OptimizerInput | str
+    prompt: str | prompt_types.Prompt
 
 
 class GradientPromptOptimizer(Runnable[GradientOptimizerInput, str]):
@@ -303,7 +297,7 @@ class GradientPromptOptimizer(Runnable[GradientOptimizerInput, str]):
         Extract prompt_str, sessions_str, feedback, update_instructions from input.
         """
         prompt_data = input["prompt"]
-        sessions_data = input["sessions"]
+        sessions_data = input["trajectories"]
 
         if isinstance(prompt_data, str):
             prompt_str = prompt_data
@@ -321,9 +315,6 @@ class GradientPromptOptimizer(Runnable[GradientOptimizerInput, str]):
 
         return prompt_str, sessions_str, feedback, update_instructions
 
-    #
-    # The public async & sync methods (ainvoke/invoke) + optional __call__
-    #
     async def ainvoke(
         self,
         input: GradientOptimizerInput,
@@ -344,11 +335,11 @@ class GradientPromptOptimizer(Runnable[GradientOptimizerInput, str]):
                 self._process_input(input)
             )
             if not sessions_str:
-                return prompt_str  # no sessions => no change
+                return prompt_str  # no trajectories => no change
 
             # Format the initial question to the reflection chain:
             reflection_input = self._config["gradient_prompt"].format(
-                sessions=sessions_str,
+                trajectories=sessions_str,
                 feedback=feedback,
                 prompt=prompt_str,
                 update_instructions=update_instructions,
@@ -387,7 +378,7 @@ class GradientPromptOptimizer(Runnable[GradientOptimizerInput, str]):
                 return prompt_str
 
             reflection_input = self._config["gradient_prompt"].format(
-                sessions=sessions_str,
+                trajectories=sessions_str,
                 feedback=feedback,
                 prompt=prompt_str,
                 update_instructions=update_instructions,
@@ -409,14 +400,14 @@ class GradientPromptOptimizer(Runnable[GradientOptimizerInput, str]):
 
     async def __call__(
         self,
-        sessions: Union[list[Union[tuple[list[AnyMessage], dict[str, str]], str]], str],
-        prompt: Union[str, types.Prompt],
+        trajectories: prompt_types.OptimizerInput | str,
+        prompt: Union[str, prompt_types.Prompt],
     ) -> str:
         """
-        Allow the object to be called like: await gradient_optimizer(sessions, prompt).
+        Allow the object to be called like: await gradient_optimizer(trajectories, prompt).
         This simply defers to `ainvoke` with the required structure.
         """
-        return await self.ainvoke({"sessions": sessions, "prompt": prompt})
+        return await self.ainvoke({"trajectories": trajectories, "prompt": prompt})
 
 
 def create_gradient_prompt_optimizer(

@@ -1,14 +1,16 @@
+import typing
+from typing import Any, Optional
+
 import langsmith as ls
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, AnyMessage
-from langmem import utils
-
-from langmem.prompts.types import Prompt
-from trustcall import create_extractor
-from typing import Optional, Any
-from typing_extensions import TypedDict
+from langchain_core.messages import AIMessage
 from langchain_core.runnables import Runnable, RunnableConfig
-import typing
+from trustcall import create_extractor
+from typing_extensions import TypedDict
+
+from langmem import utils
+from langmem.prompts import types as prompt_types
+from langmem.prompts.types import Prompt
 
 DEFAULT_MAX_REFLECTION_STEPS = 5
 DEFAULT_MIN_REFLECTION_STEPS = 1
@@ -20,11 +22,6 @@ class MetapromptOptimizerConfig(TypedDict, total=False):
     metaprompt: str
     max_reflection_steps: int
     min_reflection_steps: int
-
-
-class OptimizerInput(TypedDict, total=False):
-    sessions: list[tuple[list[AnyMessage], dict[str, str]] | str] | str
-    prompt: str | Prompt
 
 
 DEFAULT_METAPROMPT = """You are helping an AI assistant learn by optimizing its prompt.
@@ -46,9 +43,9 @@ The developer provided these instructions regarding when/how to update:
 ## Session Data
 Analyze the session(s) (and any user feedback) below:
 
-<sessions>
-{sessions}
-</sessions>
+<trajectories>
+{trajectories}
+</trajectories>
 
 ## Instructions
 
@@ -59,7 +56,7 @@ Analyze the session(s) (and any user feedback) below:
 IFF changes are warranted, focus on actionable edits. Be concrete. Edits should be appropriate for the identified failure modes. For example, consider synthetic few-shot examples for style or clarifying decision boundaries, or adding or modifying explicit instructions for conditionals, rules, or logic fixes; or provide step-by-step reasoning guidelines for multi-step logic problems if the model is failing to reason appropriately."""
 
 
-class MetaPromptOptimizer(Runnable[OptimizerInput, str]):
+class MetaPromptOptimizer(Runnable[prompt_types.OptimizerInput, str]):
     def __init__(
         self,
         model: typing.Union[str, BaseChatModel],
@@ -94,12 +91,14 @@ class MetaPromptOptimizer(Runnable[OptimizerInput, str]):
 
     async def ainvoke(
         self,
-        input: OptimizerInput,
+        input: prompt_types.OptimizerInput,
         config: Optional[RunnableConfig] = None,
         **kwargs: Any,
     ) -> str:
         async with ls.trace(
-            name="optimize_prompt", inputs=input, metadata={"kind": "metaprompt"}
+            name="optimize_prompt",
+            inputs={"input": input} if isinstance(input, str) else input,
+            metadata={"kind": "metaprompt"},
         ) as rt:
             prompt_str, update_instructions, sessions_str = (
                 self._process_sessions_and_prompt(input)
@@ -118,12 +117,14 @@ class MetaPromptOptimizer(Runnable[OptimizerInput, str]):
 
     def invoke(
         self,
-        input: OptimizerInput,
+        input: prompt_types.OptimizerInput,
         config: Optional[RunnableConfig] = None,
         **kwargs: Any,
     ) -> str:
         with ls.trace(
-            name="optimize_prompt", inputs=input, metadata={"kind": "metaprompt"}
+            name="optimize_prompt",
+            inputs={"input": input} if isinstance(input, str) else input,
+            metadata={"kind": "metaprompt"},
         ) as rt:
             prompt_str, update_instructions, sessions_str = (
                 self._process_sessions_and_prompt(input)
@@ -142,25 +143,25 @@ class MetaPromptOptimizer(Runnable[OptimizerInput, str]):
 
     async def __call__(
         self,
-        sessions: typing.Union[
-            list[typing.Union[tuple[list[AnyMessage], dict[str, str]], str]], str
-        ],
+        trajectories: prompt_types.OptimizerInput | str,
         prompt: typing.Union[str, Prompt],
     ) -> str:
-        return await self.ainvoke({"sessions": sessions, "prompt": prompt})
+        return await self.ainvoke({"trajectories": trajectories, "prompt": prompt})
 
     def _process_sessions_and_prompt(
-        self, input: OptimizerInput
+        self, input: prompt_types.OptimizerInput
     ) -> tuple[str, str, str]:
         prompt = input["prompt"]
-        sessions = input["sessions"]
+        trajectories = input["trajectories"]
 
         prompt_str = prompt if isinstance(prompt, str) else prompt.get("prompt", "")
         update_instructions = (
             "" if isinstance(prompt, str) else prompt.get("update_instructions", "")
         )
         sessions_str = (
-            sessions if isinstance(sessions, str) else utils.format_sessions(sessions)
+            trajectories
+            if isinstance(trajectories, str)
+            else utils.format_sessions(trajectories)
         )
         return prompt_str, update_instructions, sessions_str
 
@@ -176,7 +177,7 @@ class MetaPromptOptimizer(Runnable[OptimizerInput, str]):
                 "content": self._final_config["metaprompt"].format(
                     prompt=prompt_str,
                     update_instructions=update_instructions,
-                    sessions=sessions_str,
+                    trajectories=sessions_str,
                 ),
             }
         ]
@@ -215,7 +216,7 @@ class MetaPromptOptimizer(Runnable[OptimizerInput, str]):
                 "content": self._final_config["metaprompt"].format(
                     prompt=prompt_str,
                     update_instructions=update_instructions,
-                    sessions=sessions_str,
+                    trajectories=sessions_str,
                 ),
             }
         ]

@@ -20,7 +20,6 @@ from langchain_core.runnables import Runnable, RunnableConfig
 from typing_extensions import TypedDict
 
 
-# For type clarity, define a typed dict for the input:
 class SingleMemoryInput(TypedDict, total=False):
     """Represents the input to PromptMemory.invoke / PromptMemory.ainvoke."""
 
@@ -136,15 +135,15 @@ class PromptMemory(Runnable[SingleMemoryInput, str]):
 class MultipleMemoryInput(TypedDict, total=False):
     """
     Input to PromptMemoryMultiple.invoke / .ainvoke.
-    `trajectories_with_feedback` can be either:
+    `annotated_trajectories` can be either:
        - A string
        - Or a list of (messages, feedback) pairs
     `prompt` is a dict with "prompt" and "update_instructions" fields
     (mirroring your older usage).
     """
 
-    trajectories_with_feedback: Union[str, List[Tuple[Any, str]]]
-    prompt: dict
+    annotated_trajectories: Union[str, List[Tuple[Any, str]]]
+    prompt: Union[dict, str]
 
 
 class PromptMemoryMultiple(Runnable[MultipleMemoryInput, str]):
@@ -163,18 +162,18 @@ class PromptMemoryMultiple(Runnable[MultipleMemoryInput, str]):
         self.model = model.with_structured_output(GeneralResponse, method="json_schema")
 
     @staticmethod
-    def _get_data(trajectories_with_feedback: Union[str, List[Tuple[Any, str]]]) -> str:
+    def _get_data(annotated_trajectories: Union[str, List[Tuple[Any, str]]]) -> str:
         """
         Re-implements your old code to produce the combined string:
           <trajectory i>...</trajectory i>
           <feedback i>...</feedback i>
         or pass through if it's already a string.
         """
-        if isinstance(trajectories_with_feedback, str):
-            return trajectories_with_feedback
+        if isinstance(annotated_trajectories, str):
+            return annotated_trajectories
 
         data_pieces = []
-        for i, (messages, feedback) in enumerate(trajectories_with_feedback):
+        for i, (messages, feedback) in enumerate(annotated_trajectories):
             trajectory = get_trajectory_clean(messages)
             data_pieces.append(
                 f"<trajectory {i}>\n{trajectory}\n</trajectory {i}>\n"
@@ -192,16 +191,21 @@ class PromptMemoryMultiple(Runnable[MultipleMemoryInput, str]):
         Sync reflection over multiple trajectories.
         """
         with ls.trace(name="prompt_memory_multiple_reflect", inputs=input):
-            trajectories_with_feedback = input["trajectories_with_feedback"]
+            annotated_trajectories = input["annotated_trajectories"]
             prompt_data = input["prompt"]  # same shape as old 'Prompt'
+            prompt_str = (
+                prompt_data["prompt"] if isinstance(prompt_data, dict) else prompt_data
+            )
 
-            data_str = self._get_data(trajectories_with_feedback)
-            healer = get_var_healer(prompt_data["prompt"])
+            data_str = self._get_data(annotated_trajectories)
+            healer = get_var_healer(prompt_str)
 
             prompt_str = INSTRUCTION_REFLECTION_MULTIPLE_PROMPT.format(
-                current_prompt=prompt_data["prompt"],
+                current_prompt=prompt_str,
                 data=data_str,
-                instructions=prompt_data.get("update_instructions", ""),
+                instructions=prompt_data.get("update_instructions", "")
+                if isinstance(prompt_data, dict)
+                else "",
             )
 
             _output = self.model.invoke(prompt_str)
@@ -219,33 +223,37 @@ class PromptMemoryMultiple(Runnable[MultipleMemoryInput, str]):
         Async reflection over multiple trajectories.
         """
         async with ls.trace(name="prompt_memory_multiple_reflect", inputs=input):
-            trajectories_with_feedback = input["trajectories_with_feedback"]
-            prompt_data = input["prompt"]
-
-            data_str = self._get_data(trajectories_with_feedback)
-            healer = get_var_healer(prompt_data["prompt"])
-
-            prompt_str = INSTRUCTION_REFLECTION_MULTIPLE_PROMPT.format(
-                current_prompt=prompt_data["prompt"],
-                data=data_str,
-                instructions=prompt_data.get("update_instructions", ""),
+            annotated_trajectories = input["annotated_trajectories"]
+            prompt_data = input["prompt"]  # same shape as old 'Prompt'
+            prompt_str = (
+                prompt_data["prompt"] if isinstance(prompt_data, dict) else prompt_data
             )
 
+            data_str = self._get_data(annotated_trajectories)
+            healer = get_var_healer(prompt_str)
+
+            prompt_str = INSTRUCTION_REFLECTION_MULTIPLE_PROMPT.format(
+                current_prompt=prompt_str,
+                data=data_str,
+                instructions=prompt_data.get("update_instructions", "")
+                if isinstance(prompt_data, dict)
+                else "",
+            )
             _output = await self.model.ainvoke(prompt_str)
             return healer(_output["new_prompt"])
 
     async def __call__(
         self,
-        trajectories_with_feedback: Union[str, List[Tuple[Any, str]]],
+        annotated_trajectories: Union[str, List[Tuple[Any, str]]],
         prompt: dict,
     ) -> str:
         """
-        Convenience: `await pmem_multi(trajectories_with_feedback, prompt)`.
+        Convenience: `await pmem_multi(annotated_trajectories, prompt)`.
         Defers to `ainvoke`.
         """
         return await self.ainvoke(
             {
-                "trajectories_with_feedback": trajectories_with_feedback,
+                "annotated_trajectories": annotated_trajectories,
                 "prompt": prompt,
             }
         )

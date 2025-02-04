@@ -1,8 +1,9 @@
-from langmem import create_multi_prompt_optimizer, create_prompt_optimizer, Prompt
+from langchain_core.messages import AnyMessage
+from langchain_core.runnables import RunnableConfig
 from langgraph.graph.state import StateGraph
 from typing_extensions import TypedDict
-from langchain_core.runnables import RunnableConfig
-from langchain_core.messages import AnyMessage
+
+from langmem import Prompt, create_multi_prompt_optimizer, create_prompt_optimizer
 
 
 class InputState(TypedDict):
@@ -52,7 +53,7 @@ async def optimize(state: InputState, config: RunnableConfig):
         result = await optimizer(threads, prompts[0], configurable)
         return {"updated_prompts": [result]}
     else:
-        optimizer = create_multi_prompt_optimizer(model, kind)
+        optimizer = create_multi_prompt_optimizer(model, kind=kind)
         result = await optimizer(threads, prompts)
         return {"updated_prompts": result}
 
