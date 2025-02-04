@@ -59,16 +59,51 @@ from langgraph.store.memory import InMemoryStore
 from langmem import create_memory_store_enricher
 
 # Set up store and models
-store = InMemoryStore()
-enricher = create_memory_store_enricher(
-    "anthropic:claude-3-5-sonnet-latest",
-    namespace=("users", "{user_id}", "profile"),
-    schemas=[UserProfile],
-    enable_inserts=False
-)
-my_llm = init_chat_model("anthropic:claude-3-5-sonnet-latest")
+store = InMemoryStore() # (1)
+```
 
+1. For production deployments, use a persistent store like [`AsyncPostgresStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.AsyncPostgresStore). `InMemoryStore` works fine for development but doesn't persist data between restarts.
 
+        ```python
+        enricher = create_memory_store_enricher(
+            "anthropic:claude-3-5-sonnet-latest",
+            namespace=("users", "{user_id}", "profile"),
+            schemas=[UserProfile],
+            enable_inserts=False
+        )
+        my_llm = init_chat_model("anthropic:claude-3-5-sonnet-latest")
+        ```
+        
+        Note too that in this example, the `{user_id}` placeholder lets you manage user profiles in LangGraph's BaseStore namespace, creating isolated storage for each user's information.
+
+        ```python
+        # Example 1: Update User A's profile
+        enricher.enrich(
+            messages=[{"role": "user", "content": "I'm John, an engineer at Acme"}],
+            config={"configurable": {"user_id": "user-a"}}
+        )  # Uses namespace ("users", "user-a", "profile")
+        
+        # Example 2: Update User B's profile
+        enricher.enrich(
+            messages=[{"role": "user", "content": "I'm Sarah from marketing"}],
+            config={"configurable": {"user_id": "user-b"}}
+        )  # Uses namespace ("users", "user-b", "profile")
+        ```
+        
+        The namespace structure `("users", "{user_id}", "profile")` supports different profile management patterns:
+        
+        ```python
+        # Individual user profiles
+        namespace=("users", "user-123", "profile")
+        
+        # Team/department profiles
+        namespace=("users", "team-sales", "profile")
+        
+        # Role-based profiles
+        namespace=("users", "admin-1", "profile")
+        ```
+
+```python
 # Define app with store context
 @entrypoint(store=store)
 def app(messages: list):

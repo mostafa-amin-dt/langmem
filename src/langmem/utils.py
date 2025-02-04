@@ -10,15 +10,53 @@ from pydantic import BaseModel, Field, model_validator
 
 
 class NamespaceTemplate:
-    """Utility for templating namespace strings from configuration."""
+    """Utility for templating namespace strings from configuration.
+
+    Takes a namespace template with optional variables in curly braces and
+    substitutes values from the RunnableConfig's 'configurable' field.
+
+    !!! example "Examples"
+        Basic fixed namespace.
+        ```python
+        ns = NamespaceTemplate("user_123")
+        ns()  # Returns: ('user_123',)
+        ```
+
+        Variable namespaceing. This will substitute values from the 'configurable' field
+        in the RunnableConfig.
+
+        ```python
+        ns = NamespaceTemplate(("org", "{user_id}"))
+        ns({"configurable": {"user_id": "alice"}})
+        # Returns: ('org', 'alice')
+        ```
+
+        If called within a "Runnable" context (e.g., in a langgraph instance),
+        the 'configurable' field will be automatically retrieved from the context.
+
+        ```python
+        from langgraph.func import entrypoint
+
+        ns = NamespaceTemplate(("org", "{user_id}"))
+
+
+        @entrypoint()
+        def my_agent(messages):
+            print(ns({"configurable": {"user_id": "alice"}}))
+
+
+        my_agent.invoke([])
+        # Returns: ('org', 'alice')
+        ```
+    """
 
     __slots__ = ("template", "vars")
 
-    def __init__(self, template: tuple[str, ...]):
-        self.template = template
+    def __init__(self, template: tuple[str, ...] | str):
+        self.template = template if isinstance(template, tuple) else (template,)
         self.vars = {
             ix: _get_key(ns)
-            for ix, ns in enumerate(template)
+            for ix, ns in enumerate(self.template)
             if _get_key(ns) is not None
         }
 

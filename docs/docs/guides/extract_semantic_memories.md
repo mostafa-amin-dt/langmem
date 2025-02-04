@@ -11,27 +11,58 @@ Need to extract multiple related facts from conversations? Here's how to use Lan
 Extract semantic memories:
 
 ```python
-from langmem import create_memory_enricher
+from langmem import create_memory_enricher # (2)
 from pydantic import BaseModel
 
-# Define what to extract
-class Triple(BaseModel):
-    """Store all new facts, preferences, and relationships as riples."""
+class Triple(BaseModel): # (1)
+    """Store all new facts, preferences, and relationships as triples."""
     subject: str
     predicate: str
     object: str
     context: str | None = None
 
 # Configure extraction
-enricher = create_memory_enricher(
+enricher = create_memory_enricher(  
     "anthropic:claude-3-5-sonnet-latest",
-    schemas=[Triple],
-    instructions="Extract user preferences",
+    schemas=[Triple], 
+    instructions="Extract user preferences and any other useful information",
     enable_inserts=True,
     enable_deletes=True,
 )
 ```
-After the first short ineraction, the system has extravted some semantic triples:
+
+1. Here our custom "`Triple`" memory schema shapes memory extraction. Without context, memories can be ambiguous when retrieved later:
+    ```python
+    Memory(content="User said yes")  # No context; unhelpful
+    ```
+    Adding context helps the LLM apply memories correctly:
+    ```python
+    Triple(
+        subject="user",
+        predicate="response",
+        object="yes",
+        context="When asked about attending team meeting"
+    )
+    Triple(
+        subject="user",
+        predicate="response",
+        object="no",
+        context="When asked if they were batman."
+    )
+    ```
+    It's often a good idea to either schematize memories to encourage certain fields to be stored consistently, or at least to include instructions so the LLM
+    saves memories that are sufficiently informative in isolation.
+
+2. LangMem has two similar objects for extracting and enriching memory collections:
+   - `create_memory_enricher`: (this examples) You control storage and updates
+   - `create_memory_store_enricher`: Handles the memory search, upserts, and deletes directly in whichever BaseStore is configured
+   for the graph context
+
+   The latter uses the former. Both of these work by prompting an LLM to use parallel tool calling to extract new memories, update old ones, and (if configured) delete old ones.
+    ```
+
+After the first short interaction, the system has extracted some semantic triples:
+
 ```python
 # First conversation - extract triples
 conversation1 = [
@@ -46,7 +77,7 @@ for m in memories:
 # ExtractedMemory(id='258dbf2d-e4ac-47ac-8ffe-35c70a3fe7fc', content=Triple(subject='Bob', predicate='is_member_of', object='ML_team', context=None))
 ```
 
-The second conversation updates some existing memories. Since we have enabled "deletes", the enricher will return `RemoveDoc` objects to indicate that the memory should be removed, and a new memory will be created in its place. Since this is the funcitonal API, you can control what "removal" means, be that a soft or hard delete, or simply a down-weighting of the memory.
+The second conversation updates some existing memories. Since we have enabled "deletes", the enricher will return `RemoveDoc` objects to indicate that the memory should be removed, and a new memory will be created in its place. Since this is the functional API, you can control what "removal" means, be that a soft or hard delete, or simply a down-weighting of the memory.
 
 ```python
 # Second conversation - update and add triples
@@ -99,7 +130,7 @@ from langgraph.store.memory import InMemoryStore
 from langmem import create_memory_store_enricher
 
 # Set up store and models
-store = InMemoryStore()
+store = InMemoryStore() # (1)
 enricher = create_memory_store_enricher(
     "anthropic:claude-3-5-sonnet-latest",
     namespace=("chat", "{user_id}", "triples"),
@@ -109,28 +140,89 @@ enricher = create_memory_store_enricher(
     enable_deletes=True,
 )
 my_llm = init_chat_model("anthropic:claude-3-5-sonnet-latest")
+```
+
+1. For production deployments, use a persistent store like [`AsyncPostgresStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.AsyncPostgresStore). `InMemoryStore` works fine for development but doesn't persist data between restarts.
+
+2. Namespace patterns control memory isolation:
+   ```python
+   # User-specific memories
+   ("chat", "user_123", "triples")
+   
+   # Team-shared knowledge
+   ("chat", "team_x", "triples")
+   
+   # Global memories
+   ("chat", "global", "triples")
+   ```
+   See [Storage System](../concepts/conceptual_guide.md#storage-system) for namespace design patterns
+
+2. Extract multiple memory types at once:
+    ```python
+    schemas=[Triple, Preference, Relationship]
+    ```
+    Each type can have its own extraction rules and storage patterns
+    ```
+
+    Namespaces let you organize memories by user, team, or domain:
+
+    ```python
+    # User-specific memories
+    ("chat", "user_123", "triples")
+
+    # Team-shared knowledge
+    ("chat", "team_x", "triples")
+
+    # Domain-specific extraction
+    ("chat", "user_123", "preferences")
+    ```
+
+    The `{user_id}` placeholder is replaced at runtime:
+    ```python
+    # Extract memories for User A
+    enricher.invoke(
+        messages=[{"role": "user", "content": "I prefer dark mode"}],
+        config={"configurable": {"user_id": "user-a"}}
+    )  # Uses ("chat", "user-a", "triples")
+    ```
 
 
+```python
 # Define app with store context
-@entrypoint(store=store)
+@entrypoint(store=store) # (1)
 def app(messages: list):
     response = my_llm.invoke(
         [
             {
                 "role": "system",
                 "content": "You are a helpful assistant.",
-            }
+            },
+            *messages
         ]
-        + messages
     )
 
     # Extract and store triples (Uses store from @entrypoint context)
-    # Note: in prod, you would do this asynchronously in the background
-    enricher.invoke({"messages": messages})
-
+    enricher.invoke({"messages": messages}) # (2)
     return response
+```
 
+1. `@entrypoint` provides the BaseStore context:
 
+    - Handles cross-thread coordination
+    - Manages connection pooling
+    See [BaseStore guide](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.base.BaseStore) for production setup
+
+2. Production patterns:
+
+    ```python
+    # Async extraction to avoid blocking
+    async def app(messages):
+        response = await my_llm.ainvoke(messages)
+        asyncio.create_task(enricher.ainvoke({"messages": messages}))
+        return response
+    ```
+Then running the app:
+```python
 # First conversation
 app.invoke(
     [

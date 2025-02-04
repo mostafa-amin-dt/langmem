@@ -27,9 +27,11 @@ Semantic memory stores the essential facts and other information that ground an 
       ```python
       from langmem import create_memory_enricher
       
+      # highlight-next-line
       enricher = create_memory_enricher(
          "anthropic:claude-3-5-sonnet-latest",
          instructions="Extract all noteworthy facts, events, and relationships. Indicate their importance.",
+         # highlight-next-line
          enable_inserts=True,
       )
 
@@ -63,6 +65,7 @@ Semantic memory stores the essential facts and other information that ground an 
       
       enricher = create_memory_enricher(
          "anthropic:claude-3-5-sonnet-latest",
+         # highlight-next-line
          schemas=[UserProfile],
          instructions="Extract user preferences and settings",
          # highlight-next-line
@@ -121,6 +124,7 @@ Episodic memory preserves successful interactions as learning examples that guid
             description="What happened and why it worked"
         )
 
+    # highlight-next-line
     enricher = create_memory_enricher(
         "anthropic:claude-3-5-sonnet-latest",
         schemas=[Episode],
@@ -156,6 +160,7 @@ Procedural memory encodes how an agent should behave and respond. It starts with
       ```python
       from langmem import create_prompt_optimizer
 
+      # highlight-next-line
       optimizer = create_prompt_optimizer(
          "anthropic:claude-3-5-sonnet-latest",
          kind="metaprompt",
@@ -194,6 +199,7 @@ In active formation, the agent makes real-time decisions about what to remember 
     from langgraph.prebuilt import create_react_agent
     from langmem import create_manage_memory_tool
 
+    # highlight-next-line
     agent = create_react_agent(
         "anthropic:claude-3-5-sonnet-latest",
         tools=[create_manage_memory_tool(namespace=("memories",))],
@@ -215,6 +221,7 @@ In active formation, the agent makes real-time decisions about what to remember 
     ```python
     from langmem import create_memory_store_enricher
 
+    # highlight-next-line
     enricher = create_memory_store_enricher(
         "anthropic:claude-3-5-sonnet-latest",
         namespace=("memories",),
@@ -230,7 +237,7 @@ LangMem's memory utilities are organized in three layers of increasing abstracti
 
 ### 1. Functional Core {#functional-core}
 
-At its heart, LangMem provides pure functions that transform memory state without side effects. These primitives are the building blocks for memory operations:
+At its heart, LangMem provides functions that transform memory state without side effects. These primitives are the building blocks for memory operations:
 
 - [**Memory Enrichers**](../reference/memory.md#langmem.create_memory_enricher): Extract and structure information from conversations
 - [**Prompt Optimizers**](../reference/prompt_optimization.md#langmem.create_prompt_optimizer): Learn and improve system behavior from feedback
@@ -243,12 +250,12 @@ These core functions are right for you if you need maximum control and want to i
     ```python
     from langmem import create_memory_enricher
 
+    # highlight-next-line
     enricher = create_memory_enricher(
         "anthropic:claude-3-5-sonnet-latest",
         schemas=[UserProfile],  # Optional: structure your memories
         enable_inserts=True     # Allow creating new memories
     )
-    # Pure function: conversation in, memories out
     memories = enricher.invoke(messages)
     ```
 
@@ -266,6 +273,7 @@ Use these when you need persistent memory without managing storage yourself.
     ```python
     from langmem import create_memory_store_enricher
 
+    # highlight-next-line
     store_enricher = create_memory_store_enricher(
         "anthropic:claude-3-5-sonnet-latest",
         namespace=("memories",)  # Organize memories hierarchically
@@ -288,6 +296,7 @@ Ideal if you want to set up memory management as a service.
     ```python
     from langgraph.prebuilt import create_react_agent
 
+    # highlight-next-line
     agent = create_react_agent(
         "anthropic:claude-3-5-sonnet-latest",
         tools=[
@@ -304,14 +313,14 @@ Choose the integration level that matches your needs: use functional primitives 
 
 ??? note "Storage is optional"
     
-    Remember that LangMem's core functionality is built around pure functions that don't require any specific storage layer. The storage features described here are part of LangMem's higher-level integration with LangGraph, useful when you want built-in persistence.
+    Remember that LangMem's core functionality is built around that don't require any specific storage layer. The storage features described here are part of LangMem's higher-level integration with LangGraph, useful when you want built-in persistence.
 
 
 When using LangMem's stateful operators or platform services, the storage system is built on LangGraph's storage primitives, providing a flexible and powerful way to organize and access memories. The storage system is designed around three key concepts:
 
-### Hierarchical Organization
+### Memory Namespaces {#memory-namespaces}
 
-Memories are organized in a hierarchical namespace structure that allows for natural segmentation of data:
+Memories are organized into namespaces that allows for natural segmentation of data:
 
 - **Multi-Level Namespaces**: Group memories by organization, user, application, or any other hierarchical structure
 - **Contextual Keys**: Identify memories uniquely within their namespace
@@ -322,10 +331,14 @@ Memories are organized in a hierarchical namespace structure that allows for nat
     ```python
     from langgraph.store.memory import InMemoryStore
 
-    store = InMemoryStore()
+    store = InMemoryStore() # (1)
     # Organize memories by organization -> user -> context
     namespace = ("acme_corp", "user_123", "code_assistant")
+    ```
+
+    1. For production use cases, use a persistent store like [`AsyncPostgresStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.AsyncPostgresStore). `InMemoryStore` is great for testing and development but loses data on restart.
     
+    # highlight-next-line
     # Store structured memory with metadata
     memory = {
         "content": "User prefers dark mode",
@@ -335,6 +348,24 @@ Memories are organized in a hierarchical namespace structure that allows for nat
     }
     store.put(namespace, "ui_preferences", memory)
     ```
+
+Namespaces can include template variables (such as `"{user_id}"`) to be populated at runtime from `configurable` fields in the `RunnableConfig`.
+
+```python
+    from langmem import create_manage_memory_tool
+    from langgraph.prebuilt import create_react_agent
+
+    # highlight-next-line
+    tool =create_manage_memory_tool(namespace=("memories", "{user_id}"))
+    agent = create_react_agent("anthropic:claude-3-5-sonnet-latest", tools=[tool])
+    agent.invoke({
+        "messages": [{"role": "user", "content": "I work at Acme Corp in the ML team"}],
+        # Any memories for this run will be stored under ("memories", "user_123")
+        "configurable": {"user_id": "user_123"}
+    })
+```
+
+See the [NamespaceTemplate](../reference/utils.md#langmem.utils.NamespaceTemplate) class reference docs for more details.
 
 ### Flexible Retrieval
 

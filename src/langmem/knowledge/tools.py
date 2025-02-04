@@ -10,16 +10,15 @@ from langmem import utils
 
 
 def create_manage_memory_tool(
-    instructions: str = """Proactively call this tool when you:
-1. Identify a new USER preference.
-2. Receive an explicit USER request to remember something or otherwise alter your behavior.
-3. Are working and want to record important context.
-4. Identify that an existing MEMORY is incorrect or outdated.""",
-    namespace: tuple[str, ...] = (
+    instructions: str = "Proactively call this tool when you:\n\n"
+    "1. Identify a new USER preference.\n"
+    "2. Receive an explicit USER request to remember something or otherwise alter your behavior.\n"
+    "3. Are working and want to record important context.\n"
+    "4. Identify that an existing MEMORY is incorrect or outdated.\n",
+    namespace: tuple[str, ...] | str = (
         "memories",
         "{langgraph_user_id}",
     ),
-    kind: typing.Literal["single", "multi"] = "multi",
 ):
     """Create a tool for managing persistent memories in conversations.
 
@@ -27,13 +26,33 @@ def create_manage_memory_tool(
     persistent memories that carry over between conversations. The tool helps maintain
     context and user preferences across sessions.
 
+    The resulting tool has a signature that looks like the following:
+        ```python
+        def manage_memory(
+            content: str | None = None,  # Content for new/updated memory
+            id: str | None = None,       # ID of existing memory to update/delete
+            action: Literal["create", "update", "delete"] = "create",
+        ) -> str:
+        ```
+        _Note: the tool supports both sync and async usage._
+
     Args:
         instructions: Custom instructions for when to use the memory tool.
             Defaults to a predefined set of guidelines for proactive memory management.
-        namespace: Storage namespace
-            structure for organizing memories.
-        kind: Whether to support single or multiple
-            memories per conversation.
+        namespace: The namespace structure for organizing memories in LangGraph's BaseStore.
+            Uses runtime configuration with placeholders like `{langgraph_user_id}`.
+
+    !!! note "Namespace Configuration"
+        The namespace is configured at runtime through the `config` parameter:
+        ```python
+        # Example: Per-user memory storage
+        config = {"configurable": {"langgraph_user_id": "user-123"}}
+        # Results in namespace: ("memories", "user-123")
+
+        # Example: Team-wide memory storage
+        config = {"configurable": {"langgraph_user_id": "team-x"}}
+        # Results in namespace: ("memories", "team-x")
+        ```
 
     Tip:
         This tool connects with the LangGraph [BaseStore](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.base.BaseStore) configured in your graph or entrypoint.
@@ -63,6 +82,7 @@ def create_manage_memory_tool(
 
         config = {
             "configurable": {
+                # This value will be formatted into the namespace you configured above ("project_memories", "{langgraph_user_id}")
                 "langgraph_user_id": "123e4567-e89b-12d3-a456-426614174000"
             }
         }
@@ -169,9 +189,61 @@ _MEMORY_SEARCH_INSTRUCTIONS = ""
 
 def create_search_memory_tool(
     instructions: str = _MEMORY_SEARCH_INSTRUCTIONS,
-    namespace: tuple[str, ...] = ("memories", "{langgraph_user_id}"),
+    namespace: tuple[str, ...] | str = ("memories", "{langgraph_user_id}"),
 ):
-    """Searches for memories based on a query and returns them."""
+    """Create a tool for searching memories stored in a LangGraph BaseStore.
+
+    This function creates a tool that allows AI assistants to search through previously stored
+    memories using semantic or exact matching. The tool returns both the memory contents and
+    the raw memory objects for advanced usage.
+
+    The resulting tool has a signature that looks like the following:
+        ```python
+        def search_memory(
+            query: str,                      # Search query to match against memories
+            limit: int = 10,                 # Maximum number of results to return
+            offset: int = 0,                 # Number of results to skip
+            filter: dict | None = None,      # Additional filter criteria
+        ) -> tuple[list[dict], list]:        # Returns (serialized memories, raw memories)
+        ```
+    _Note: the tool supports both sync and async usage._
+
+    Args:
+        instructions: Custom instructions for when to use the search tool.
+            Defaults to a predefined set of guidelines.
+        namespace: The namespace structure for organizing memories in LangGraph's BaseStore.
+            Uses runtime configuration with placeholders like `{langgraph_user_id}`.
+            See [Memory Namespaces](../concepts/conceptual_guide.md#memory-namespaces).
+
+    Tip:
+        This tool connects with the LangGraph [BaseStore](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.base.BaseStore) configured in your graph or entrypoint.
+        It will not work if you do not provide a store.
+
+    !!! example "Examples"
+        ```python
+        from langgraph.func import entrypoint
+        from langgraph.store.memory import InMemoryStore
+
+        search_tool = create_search_memory_tool(
+            namespace=("project_memories", "{langgraph_user_id}"),
+        )
+
+        store = InMemoryStore()
+
+
+        @entrypoint(store=store)
+        async def workflow(state: dict, *, previous=None):
+            # Search for memories about Python
+            memories, _ = await search_tool.ainvoke(
+                {"query": "Python preferences", "limit": 5}
+            )
+            print(memories)
+            return entrypoint.final(value=memories, save={})
+        ```
+
+    Returns:
+        search_tool (Tool): A decorated function that can be used as a tool for memory search.
+            The tool returns both serialized memories and raw memory objects."""
     namespacer = utils.NamespaceTemplate(namespace)
 
     async def asearch_memory(

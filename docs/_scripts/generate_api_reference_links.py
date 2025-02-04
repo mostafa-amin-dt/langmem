@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 # Base URL for all class documentation
 _LANGCHAIN_API_REFERENCE = "https://python.langchain.com/api_reference/"
 _LANGGRAPH_API_REFERENCE = "https://langchain-ai.github.io/langgraph/reference/"
+_LANGMEM_API_REFERENCE = "https://langchain-ai.github.io/langmem/reference/"
 
 
 # (alias/re-exported modules, source module, class, docs namespace)
@@ -67,6 +68,22 @@ WELL_KNOWN_LANGGRAPH_OBJECTS = {
     for module_ in modules + [source_module]
 }
 
+# (module path, class name, docs namespace)
+MANUAL_API_REFERENCES_LANGMEM = [
+    ("langmem", "create_manage_memory_tool", "tools"),
+    ("langmem", "create_search_memory_tool", "tools"),
+    ("langmem", "create_prompt_optimizer", "prompt_optimization"),
+    ("langmem", "create_multi_prompt_optimizer", "prompt_optimization"),
+    ("langmem", "create_memory_enricher", "memory"),
+    ("langmem", "create_memory_store_enricher", "memory"),
+    ("langmem.utils", "NamespaceTemplate", "utils"),
+]
+
+WELL_KNOWN_LANGMEM_OBJECTS = {
+    (module_path, class_name): namespace
+    for (module_path, class_name, namespace) in MANUAL_API_REFERENCES_LANGMEM
+}
+
 
 def _make_regular_expression(pkg_prefix: str) -> re.Pattern:
     if not pkg_prefix.isidentifier():
@@ -82,6 +99,7 @@ def _make_regular_expression(pkg_prefix: str) -> re.Pattern:
 # Regular expression to match langchain import lines
 _IMPORT_LANGCHAIN_RE = _make_regular_expression("langchain")
 _IMPORT_LANGGRAPH_RE = _make_regular_expression("langgraph")
+_IMPORT_LANGMEM_RE = _make_regular_expression("langmem")
 
 
 @lru_cache(maxsize=10_000)
@@ -124,7 +142,7 @@ class ImportInformation(TypedDict):
 
 
 def _get_imports(
-    code: str, doc_title: str, package_ecosystem: Literal["langchain", "langgraph"]
+    code: str, doc_title: str, package_ecosystem: Literal["langchain", "langgraph", "langmem"]
 ) -> List[ImportInformation]:
     """Get imports from the given code block.
 
@@ -143,6 +161,8 @@ def _get_imports(
         pattern = _IMPORT_LANGCHAIN_RE
     elif package_ecosystem == "langgraph":
         pattern = _IMPORT_LANGGRAPH_RE
+    elif package_ecosystem == "langmem":
+        pattern = _IMPORT_LANGMEM_RE
     else:
         raise ValueError(f"Invalid package ecosystem: {package_ecosystem}")
 
@@ -197,6 +217,20 @@ def _get_imports(
                     + "."
                     + class_name
                 )
+            elif package_ecosystem == "langmem":
+                if (module, class_name) not in WELL_KNOWN_LANGMEM_OBJECTS:
+                    # Not in our well-known objects list
+                    continue
+                
+                namespace = WELL_KNOWN_LANGMEM_OBJECTS[(module, class_name)]
+                url = (
+                    _LANGMEM_API_REFERENCE
+                    + namespace
+                    + "/#"
+                    + module
+                    + "."
+                    + class_name
+                )
             else:
                 raise ValueError(f"Invalid package ecosystem: {package_ecosystem}")
 
@@ -223,7 +257,7 @@ def get_imports(code: str, doc_title: str) -> List[ImportInformation]:
     Returns:
         A list of import information for each import found.
     """
-    ecosystems = ["langchain", "langgraph"]
+    ecosystems = ["langchain", "langgraph", "langmem"]
     all_imports = []
     for package_ecosystem in ecosystems:
         all_imports.extend(_get_imports(code, doc_title, package_ecosystem))
@@ -279,7 +313,7 @@ def update_markdown_with_imports(markdown: str) -> str:
             f'<a href="{imp["docs"]}">{imp["imported"]}</a>' for imp in imports
         )
         # Return the code block with appended API reference links
-        return f"{original_code_block}\n\n{indent}API Reference: {api_links}"
+        return f"{indent}<sup><i>API: {api_links}</i></sup>\n\n{original_code_block}"
 
     # Apply the replace_code_block function to all matches in the markdown
     updated_markdown = code_block_pattern.sub(replace_code_block, markdown)

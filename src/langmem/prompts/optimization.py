@@ -85,36 +85,29 @@ def create_prompt_optimizer(
     sequenceDiagram
         participant U as User
         participant O as Optimizer
-        participant T as Think
-        participant C as Critique
-        participant R as Reflect
-        participant F as Final
+        participant R as Reflection
+        participant U2 as Update
 
-        U->>O: Initial Prompt + Feedback
+        U->>O: Prompt + Feedback
         loop For min_steps to max_steps
-            O->>T: Analyze Current State
-            T-->>O: Improvement Ideas
-            O->>C: Evaluate Ideas
-            C-->>O: Critiques
-            O->>R: Synthesize Feedback
-            R-->>O: Refinements
-            alt Sufficient Quality
-                O->>F: Generate Final
-                F-->>U: Optimized Prompt
-            end
+            O->>R: Think/Critique Current State
+            R-->>O: Proposed Improvements
+            O->>U2: Apply Update
+            U2-->>O: Updated Prompt
         end
+        O->>U: Final Optimized Prompt
     ```
 
-    The gradient optimizer uses an iterative reflection process:
+    The gradient optimizer uses reflection to propose improvements:
 
-    1. Analyzes current prompt and feedback
-    2. Generates improvements through think/critique cycles
-    3. Applies incremental refinements
+    1. Analyzes prompt and feedback through reflection cycles
+    2. Proposes specific improvements
+    3. Applies single-step updates
 
     Configuration (GradientOptimizerConfig):
 
     - gradient_prompt: Custom prompt for predicting "what to improve"
-    - metaprompt: Custom prompt for applying the improvements to the existing prompt
+    - metaprompt: Custom prompt for applying the improvements
     - max_reflection_steps: Maximum reflection iterations (default: 3)
     - min_reflection_steps: Minimum reflection iterations (default: 1)
 
@@ -124,28 +117,20 @@ def create_prompt_optimizer(
         participant U as User
         participant M as MetaOptimizer
         participant A as Analysis
-        participant R as Rules
-        participant E as Extractor
-        participant F as Final
+        participant U2 as Update
 
         U->>M: Prompt + Examples
-        M->>A: Meta Analysis
-        A-->>M: Patterns
-        loop For each pattern
-            M->>R: Generate Rules
-            R-->>M: Improvement Rules
-        end
-        M->>E: Extract Principles
-        E-->>M: Optimization Rules
-        M->>F: Apply Rules
-        F-->>U: Enhanced Prompt
+        M->>A: Analyze Examples
+        A-->>M: Proposed Update
+        M->>U2: Apply Update
+        U2-->>U: Enhanced Prompt
     ```
 
-    Uses meta-learning to understand and improve prompts:
+    Uses meta-learning to directly propose updates:
 
-    1. Analyzes patterns across multiple examples
-    2. Extracts high-level improvement principles
-    3. Applies learned patterns to new prompts
+    1. Analyzes examples to understand patterns
+    2. Proposes direct prompt updates
+    3. Applies updates in a single step
 
     Configuration (MetapromptOptimizerConfig):
 
@@ -158,22 +143,12 @@ def create_prompt_optimizer(
     sequenceDiagram
         participant U as User
         participant P as PromptMemory
-        participant H as History
-        participant A as Analysis
         participant M as Memory
-        participant O as Optimizer
 
-        U->>P: New Prompt
-        P->>H: Load History
-        H-->>P: Past Conversations
-        P->>A: Extract Patterns
-        A-->>P: Success Patterns
-        loop For each pattern
-            P->>M: Form Memory
-            M-->>P: Stored Pattern
-        end
-        P->>O: Apply Patterns
-        O-->>U: Improved Prompt
+        U->>P: Prompt + History
+        P->>M: Extract Patterns
+        M-->>P: Success Patterns
+        P->>U: Updated Prompt
     ```
 
     Learns from conversation history:
@@ -281,13 +256,13 @@ def create_prompt_optimizer(
         kind (Literal["gradient", "prompt_memory", "metaprompt"]): The optimization
             strategy to use. Each strategy offers different benefits:
 
-            - gradient: Separates concerns between finding areas for improvement 
+            - gradient: Separates concerns between finding areas for improvement
                 and recommending updates
             - prompt_memory: Simple single-shot metaprompt
             - metaprompt: Supports reflection but each step is a single LLM call.
         config (Optional[OptimizerConfig]): Configuration options for the optimizer.
             The type depends on the chosen strategy:
-            
+
                 - GradientOptimizerConfig for kind="gradient"
                 - PromptMemoryConfig for kind="prompt_memory"
                 - MetapromptOptimizerConfig for kind="metaprompt"
@@ -523,29 +498,36 @@ def create_multi_prompt_optimizer(
     ```mermaid
     sequenceDiagram
         participant U as User
-        participant M as MultiOptimizer
-        participant O as Optimizer
+        participant M as Multi-prompt Optimizer
+        participant C as Credit Assigner
+        participant O as Single-prompt Optimizer
         participant P as Prompts
 
-        U->>M: Prompts + Feedback
+        U->>M: Annotated Trajectories + Prompts
         activate M
-        Note over M: Initialize optimizer
-        
-        loop For each prompt
-            M->>O: Create optimizer
+        Note over M: Using pre-initialized<br/>single-prompt optimizer
+
+        M->>C: Analyze trajectories
+        activate C
+        Note over C: Determine which prompts<br/>need improvement
+        C-->>M: Credit assignment results
+        deactivate C
+
+        loop For each prompt needing update
+            M->>O: Optimize prompt
             activate O
-            O->>P: Apply strategy
-            Note over O,P: See create_prompt_optimizer<br/>for strategy details
+            O->>P: Apply optimization strategy
+            Note over O,P: Gradient/Memory/Meta<br/>optimization
             P-->>O: Optimized prompt
             O-->>M: Return result
             deactivate O
         end
-        
-        M->>U: Return all optimized prompts
+
+        M->>U: Return optimized prompts
         deactivate M
     ```
 
-    The multi-prompt optimizer:
+    The system optimizer:
 
     !!! example "Examples"
         Basic prompt optimization:
@@ -597,7 +579,7 @@ def create_multi_prompt_optimizer(
         better_prompts = await optimizer(trajectories, prompts)
         ```
 
-        Meta-prompt optimization for complex tasks:
+        Controlling the max number of reflection steps:
         ```python
         from langmem import create_multi_prompt_optimizer
 

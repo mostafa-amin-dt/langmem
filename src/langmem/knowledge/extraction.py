@@ -425,8 +425,23 @@ def create_memory_searcher(
             Can be a model name string or a BaseChatModel instance.
         prompt (str, optional): System prompt template for search assistant.
             Defaults to a basic search prompt.
-        namespace (tuple[str, ...], optional): Storage namespace structure for organizing memories.
+        namespace: The namespace structure for organizing memories in LangGraph's BaseStore.
+            Uses runtime configuration with placeholders like `{langgraph_user_id}`.
+            See [Memory Namespaces](../concepts/conceptual_guide.md#memory-namespaces).
             Defaults to ("memories", "{langgraph_user_id}").
+
+    !!! note "Namespace Configuration"
+        If the namespae has template variables "{variable_name}", they will be configured at
+        runtime through the `config` parameter:
+        ```python
+        # Example: Search user's memories
+        config = {"configurable": {"langgraph_user_id": "user-123"}}
+        # Searches in namespace: ("memories", "user-123")
+
+        # Example: Search team knowledge
+        config = {"configurable": {"langgraph_user_id": "team-x"}}
+        # Searches in namespace: ("memories", "team-x")
+        ```
 
     Returns:
         searcher (Callable[[list], typing.Awaitable[typing.Any]]): A pipeline that takes conversation messages and returns sorted memory artifacts,
@@ -847,7 +862,7 @@ def create_memory_store_enricher(
     updates existing memories, and maintains a versioned history of all changes.
 
     !!! example "Examples"
-        Basic memory storage and retrieval:
+        Basic memory storage and retrieval with namespace configuration:
         ```python
         from langmem import create_memory_store_enricher
         from langgraph.store.memory import InMemoryStore
@@ -859,8 +874,13 @@ def create_memory_store_enricher(
 
         @entrypoint(store=store)
         async def manage_preferences(messages: list):
-            # First conversation - storing a preference
-            await enricher({"messages": messages})
+            # First conversation - storing a preference in user's namespace
+            await enricher(
+                {"messages": messages},
+                config={
+                    "configurable": {"langgraph_user_id": "user-123"}
+                },  # Creates namespace ("memories", "user-123")
+            )
 
 
         # Store a new preference

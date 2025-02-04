@@ -108,6 +108,7 @@ nav:
       - Extractive Memory: reference/memory.md
       - Tools: reference/tools.md
       - Prompt Optimization: reference/prompt_optimization.md
+      - Utils: reference/utils.md
 
 markdown_extensions:
   - abbr
