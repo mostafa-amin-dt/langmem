@@ -64,10 +64,16 @@ class NamespaceTemplate:
         config = config or get_config()
         if self.vars:
             configurable = config["configurable"] if "configurable" in config else {}
-            return tuple(
-                configurable.get(self.vars[ix], ns) if ix in self.vars else ns
-                for ix, ns in enumerate(self.template)
-            )
+            try:
+                return tuple(
+                    configurable[self.vars[ix]] if ix in self.vars else ns
+                    for ix, ns in enumerate(self.template)
+                )
+            except KeyError as e:
+                raise KeyError(
+                    f"Missing key in 'configurable' field: {e.args[0]}."
+                    f" Available keys: {list(configurable.keys())}"
+                )
         else:
             return self.template
 
@@ -76,9 +82,28 @@ def _get_key(ns: str):
     return ns.strip(r"{}") if isinstance(ns, str) and ns.startswith("{") else None
 
 
-def get_conversation(messages: list):
+def get_conversation(messages: list, delimiter="\n\n"):
     merged = merge_message_runs(messages)
-    return "\n\n".join(m.pretty_repr() for m in merged)
+    return delimiter.join(m.pretty_repr() for m in merged)
+
+
+def get_dialated_windows(messages: list, N: int = 5, delimiter="\n\n"):
+    if not messages:
+        return []
+    M = len(messages)
+    seen = set()
+    result = []
+    for i in range(N):
+        size = min(M, 1 << i)
+        if size > M:
+            break
+        query = get_conversation(messages[M - size :], delimiter=delimiter)
+        if size not in seen:
+            seen.add(size)
+            result.append(query)
+        else:
+            break
+    return result
 
 
 # List[Tuple[List[AnyMessage], Dict[str, Any]]]

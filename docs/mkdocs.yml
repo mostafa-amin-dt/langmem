@@ -94,7 +94,8 @@ plugins:
 nav:
   - Introduction: index.md
   - Quickstart:
-    - 🚀 Agent Quickstart: quickstart.md
+    - 🚀 Hot Path Quickstart: hot_path_quickstart.md
+    - 🧠 Background Quickstart: background_quickstart.md
   - Concepts:
     - Core Concepts: concepts/conceptual_guide.md
   - How-to Guides:
@@ -103,6 +104,7 @@ nav:
       - Use Memory Tools: guides/memory_tools.md
       - Optimize Single Prompts: guides/optimize_memory_prompt.md
       - Optimize Multiple Prompts: guides/optimize_compound_system.md
+      - Configure Dynamic Namespaces: guides/dynamically_configure_namespaces.md
   - API Reference:
       - Overview: reference/index.md
       - Extractive Memory: reference/memory.md

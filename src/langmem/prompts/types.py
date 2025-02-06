@@ -1,6 +1,8 @@
 import typing
 
 from langchain_core.messages import AnyMessage
+from langchain_core.runnables import Runnable
+from langgraph.store.base import BaseStore
 from typing_extensions import Required, TypedDict
 
 
@@ -43,3 +45,7 @@ class MultiPromptOptimizerInput(TypedDict):
 
     trajectories: typing.Sequence[AnnotatedTrajectory] | str
     prompts: list[Prompt]
+
+
+class ReflectionRunnable(Runnable):
+    store: BaseStore | None

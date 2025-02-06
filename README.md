@@ -1,12 +1,19 @@
 # LangMem
 
-LangMem exports utilities for extracting, updating, generalizing, storing, and retrieving information from interactions in LLM applications. It offers:
+LangMem helps agents learn and adapt from their interactions over time.
 
-1. Functions to extract and enrich memories from trajectories & interactions
-1. Configurable memory managers and agent tools that integrate with LangGraph's storage layer
-1. Deployable entrypoints that let you build and deploy memory systems in LangGraph Platform
+It provides tools to extract important information from conversations, optimize agent behavior through prompt refinement, and maintain long-term memory.
 
-This lets you build your own memory layer faster, using the level of abstraction and durability that suits your needs. Compared to raw LLM extraction, LangMem handles memory management configuration, letting you define how to form new memories and evolve or prune old ones through validated types. Compared to high-level frameworks, it exposes the lower-level primitives used to build exactly the memory system you want without being forced into adopting a specific database or storage layer.
+It offers both functional primitives you can use with any storage system and native integration with LangGraph's storage layer.
+
+This means your agents can evolve their responses based on feedback, remember user preferences, and maintain consistent behavior across sessions.
+
+## Key features
+
+- 🧩 **Core memory API** that works with any storage system
+- 🧠 **Stateful tools** that agents can use to record and search information during active conversations "in the hot path"
+- ⚙️ **Background processor** that automatically extracts, consolidates, and updates agent knowledge and behavior rules
+- ⚡ **Native integration with LangGraph's BaseStore**, available by default in all LangGraph Platform deployments
 
 ## Installation
 
@@ -67,21 +74,16 @@ print(response["messages"][-1].content)
 
 1. The agent gets to decide what and when to store the memory. No special commands needed—just chat normally and the agent uses [`create_manage_memory_tool`](reference/tools.md#langmem.create_manage_memory_tool) to store relevant details.
 
-2. The agent maintains context between chats. When you ask about previous interactions, the LLM can invoke [`create_search_memory_tool`](reference/tools.md#langmem.create_search_memory_tool) to search for memories with similar content. See [Memory Tools](guides/memory_tools.md) to customize memory storage and retrieval, and see the [agent quickstart](quickstart.md) for a more complete example on how to include memories without the agent having to expliictly search.
+2. The agent maintains context between chats. When you ask about previous interactions, the LLM can invoke [`create_search_memory_tool`](reference/tools.md#langmem.create_search_memory_tool) to search for memories with similar content. See [Memory Tools](guides/memory_tools.md) to customize memory storage and retrieval, and see the [hot path quickstart](hot_path_quickstart.md) for a more complete example on how to include memories without the agent having to expliictly search.
 
 The agent can now store important information from conversations, search its memory when relevant, and persist knowledge across conversations.
-
-For more control over memory management, check out:
-
-- [Memory Tools](guides/memory_tools.md) - Configure how memories are handled
-- [Functional Primitives](concepts/conceptual_guide.md#functional-core) - Build custom memory systems
-- [Storage Options](guides/memory_tools.md#storage) - Add persistent storage
 
 ## Next Steps
 
 For more examples and detailed documentation:
 
-- [Quickstart Guide](quickstart.md) - Get up and running
+- [Hot Path Quickstart](hot_path_quickstart.md) - Learn how to let your LangGraph agent manage its own memory "in the hot path"
+- [Background Quickstart](background_quickstart.md) - Learn how to let your LangGraph agent manage its own memory "in the background"
 - [Core Concepts](concepts/conceptual_guide.md#memory-in-llm-applications) - Learn key ideas
 - [API Reference](reference/index.md) - Full function documentation
 - [Integration Guides](guides/memory_tools.md) - Common patterns and best practices

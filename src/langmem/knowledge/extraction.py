@@ -91,7 +91,7 @@ def create_thread_extractor(
     Returns:
         extractor (Callable[[list], typing.Awaitable[typing.Any]]): Async callable that takes a list of messages and returns a structured summary
 
-    !!! example "Examples"
+    ???+ example "Examples"
         ```python
         from langmem import create_thread_extractor
 
@@ -305,7 +305,21 @@ def create_memory_enricher(
     The enricher supports both unstructured string-based memories and structured memories
     defined by Pydantic models, all automatically persisted to the configured storage.
 
-    !!! example "Examples"
+    Args:
+        model (Union[str, BaseChatModel]): The language model to use for memory enrichment.
+            Can be a model name string or a BaseChatModel instance.
+        schemas (Optional[list]): List of Pydantic models defining the structure of memory
+            entries. Each model should define the fields and validation rules for a type
+            of memory. If None, uses unstructured string-based memories. Defaults to None.
+        instructions (str, optional): Custom instructions for memory generation and
+            organization. These guide how the model extracts and structures information
+            from conversations. Defaults to predefined memory instructions.
+        enable_inserts (bool, optional): Whether to allow creating new memory entries.
+            When False, the enricher will only update existing memories. Defaults to True.
+        enable_deletes (bool, optional): Whether to allow deleting existing memories
+            that are outdated or contradicted by new information. Defaults to False.
+
+    ???+ example "Examples"
         Basic unstructured memory enrichment:
         ```python
         from langmem import create_memory_enricher
@@ -368,33 +382,6 @@ def create_memory_enricher(
         updated_memories = await enricher(conversation, memories)
         ```
 
-    !!! warning
-        When using structured memories with Pydantic models, ensure all models are properly
-        defined before creating the enricher. Models cannot be modified after the enricher
-        is created.
-
-    !!! tip
-        For better memory organization:
-
-        1. Use specific, well-defined Pydantic models for different types of memories
-        2. Keep memory content concise and focused
-        3. Include relevant context in structured memories
-        4. Use enable_deletes=True if you want to automatically remove outdated memories
-
-    Args:
-        model (Union[str, BaseChatModel]): The language model to use for memory enrichment.
-            Can be a model name string or a BaseChatModel instance.
-        schemas (Optional[list]): List of Pydantic models defining the structure of memory
-            entries. Each model should define the fields and validation rules for a type
-            of memory. If None, uses unstructured string-based memories. Defaults to None.
-        instructions (str, optional): Custom instructions for memory generation and
-            organization. These guide how the model extracts and structures information
-            from conversations. Defaults to predefined memory instructions.
-        enable_inserts (bool, optional): Whether to allow creating new memory entries.
-            When False, the enricher will only update existing memories. Defaults to True.
-        enable_deletes (bool, optional): Whether to allow deleting existing memories
-            that are outdated or contradicted by new information. Defaults to False.
-
     Returns:
         enricher: An runnable that processes conversations and returns `ExtractedMemory`'s. The function signature depends on whether schemas are provided
     """
@@ -430,7 +417,7 @@ def create_memory_searcher(
             See [Memory Namespaces](../concepts/conceptual_guide.md#memory-namespaces).
             Defaults to ("memories", "{langgraph_user_id}").
 
-    !!! note "Namespace Configuration"
+    ???+ note "Namespace Configuration"
         If the namespae has template variables "{variable_name}", they will be configured at
         runtime through the `config` parameter:
         ```python
@@ -447,7 +434,7 @@ def create_memory_searcher(
         searcher (Callable[[list], typing.Awaitable[typing.Any]]): A pipeline that takes conversation messages and returns sorted memory artifacts,
             ranked by relevance score.
 
-    !!! example "Examples"
+    ???+ example "Examples"
         ```python
         from langmem import create_memory_searcher
         from langgraph.store.memory import InMemoryStore
@@ -524,7 +511,7 @@ class MemoryPhase(TypedDict, total=False):
     enable_deletes: bool
 
 
-class MemoryStoreEnricherInput(BaseModel):
+class MemoryStoreEnricherInput(TypedDict):
     """Input schema for MemoryStoreEnricher."""
 
     messages: list[AnyMessage]
@@ -544,7 +531,7 @@ class MemoryStoreEnricher(Runnable[MemoryStoreEnricherInput, list[dict]]):
         enable_inserts: bool = True,
         enable_deletes: bool = True,
         query_model: str | BaseChatModel | None = None,
-        query_limit: int = 5,
+        query_limit: int = 20,
         namespace: tuple[str, ...] = ("memories", "{langgraph_user_id}"),
         phases: list[MemoryPhase] | None = None,
     ):
@@ -552,7 +539,7 @@ class MemoryStoreEnricher(Runnable[MemoryStoreEnricherInput, list[dict]]):
             model if isinstance(model, BaseChatModel) else init_chat_model(model)
         )
         self.query_model = (
-            self.model
+            None
             if query_model is None
             else (
                 query_model
@@ -566,7 +553,7 @@ class MemoryStoreEnricher(Runnable[MemoryStoreEnricherInput, list[dict]]):
         self.enable_deletes = enable_deletes
         self.query_limit = query_limit
         self.phases = phases or []
-        self.namespacer = utils.NamespaceTemplate(namespace)
+        self.namespace = utils.NamespaceTemplate(namespace)
 
         self.memory_enricher = create_memory_enricher(
             self.model,
@@ -575,10 +562,15 @@ class MemoryStoreEnricher(Runnable[MemoryStoreEnricherInput, list[dict]]):
             enable_inserts=enable_inserts,
             enable_deletes=enable_deletes,
         )
-        self.search_tool = create_search_memory_tool(namespace=namespace)
-        self.query_gen = self.query_model.bind_tools(
-            [self.search_tool], tool_choice="any"
+        self.search_tool = create_search_memory_tool(
+            namespace=namespace,
+            instructions="Queries should be formatted as hypothetical memories that would be relevant to the current conversation.",
         )
+        self.query_gen = None
+        if self.query_model is not None:
+            self.query_gen = self.query_model.bind_tools(
+                [self.search_tool], tool_choice="any"
+            )
 
     @staticmethod
     def _stable_id(item: SearchItem) -> str:
@@ -657,20 +649,32 @@ class MemoryStoreEnricher(Runnable[MemoryStoreEnricherInput, list[dict]]):
         **kwargs: typing.Any,
     ) -> list[dict]:
         store = get_store()
-        namespace = self.namespacer(config)
-        convo = utils.get_conversation(input["messages"])
+        namespace = self.namespace(config)
 
-        query_text = (
-            f"Use parallel tool calling to search for distinct memories relevant to this conversation:\n\n"
-            f"<convo>\n{convo}\n</convo>."
-        )
-        query_req = await self.query_gen.ainvoke(query_text)
-        search_results_lists = await asyncio.gather(
-            *[
-                store.asearch(namespace, **({**tc["args"], "limit": self.query_limit}))
-                for tc in query_req.tool_calls
-            ]
-        )
+        if self.query_gen:
+            convo = utils.get_conversation(input["messages"])
+            query_text = (
+                f"Use parallel tool calling to search for distinct memories relevant to this conversation.:\n\n"
+                f"<convo>\n{convo}\n</convo>."
+            )
+            query_req = await self.query_gen.ainvoke(query_text)
+            search_results_lists = await asyncio.gather(
+                *[
+                    store.asearch(
+                        namespace, **({**tc["args"], "limit": self.query_limit})
+                    )
+                    for tc in query_req.tool_calls
+                ]
+            )
+        else:
+            # Search over "query_limit" timespans starting from the most recent
+            queries = utils.get_dialated_windows(
+                input["messages"], self.query_limit // 4
+            )
+            search_results_lists = await asyncio.gather(
+                *[store.asearch(namespace, query=query) for query in queries]
+            )
+
         store_map = self._sort_results(search_results_lists, self.query_limit)
 
         store_based = [
@@ -749,23 +753,43 @@ class MemoryStoreEnricher(Runnable[MemoryStoreEnricherInput, list[dict]]):
         **kwargs: typing.Any,
     ) -> list[dict]:
         store = get_store()
-        namespace = self.namespacer(config)
+        namespace = self.namespace(config)
         convo = utils.get_conversation(input["messages"])
 
-        query_text = (
-            f"Use parallel tool calling to search for distinct memories relevant to this conversation:\n\n"
-            f"<convo>\n{convo}\n</convo>."
-        )
-        query_req = self.query_gen.invoke(query_text)
         with get_executor_for_config(config) as executor:
-            search_results_futs = [
-                executor.submit(
-                    store.search,
-                    namespace,
-                    **({**tc["args"], "limit": self.query_limit}),
+            if self.query_gen:
+                convo = utils.get_conversation(input["messages"])
+                query_text = (
+                    f"Use parallel tool calling to search for distinct memories relevant to this conversation.:\n\n"
+                    f"<convo>\n{convo}\n</convo>."
                 )
-                for tc in query_req.tool_calls
-            ]
+                query_req = self.query_gen.invoke(query_text)
+                search_results_futs = [
+                    executor.submit(
+                        store.search,
+                        namespace,
+                        **({**tc["args"], "limit": self.query_limit}),
+                    )
+                    for tc in query_req.tool_calls
+                ]
+            else:
+                # Search over "query_limit" timespans starting from the most recent
+                queries = utils.get_dialated_windows(
+                    input["messages"], self.query_limit // 4
+                )
+                search_results_lists = [
+                    store.search(namespace, query=query) for query in queries
+                ]
+                search_results_futs = [
+                    executor.submit(
+                        store.search,
+                        namespace,
+                        query=query,
+                        limit=self.query_limit,
+                    )
+                    for query in queries
+                ]
+
         search_results_lists = [fut.result() for fut in search_results_futs]
         store_map = self._sort_results(search_results_lists, self.query_limit)
         store_based = [
@@ -858,139 +882,6 @@ def create_memory_store_enricher(
 ) -> MemoryStoreEnricher:
     """Enriches memories stored in the configured BaseStore.
 
-    The system automatically searches for relevant memories, extracts new information,
-    updates existing memories, and maintains a versioned history of all changes.
-
-    !!! example "Examples"
-        Basic memory storage and retrieval with namespace configuration:
-        ```python
-        from langmem import create_memory_store_enricher
-        from langgraph.store.memory import InMemoryStore
-        from langgraph.func import entrypoint
-
-        store = InMemoryStore()
-        enricher = create_memory_store_enricher("anthropic:claude-3-5-sonnet-latest")
-
-
-        @entrypoint(store=store)
-        async def manage_preferences(messages: list):
-            # First conversation - storing a preference in user's namespace
-            await enricher(
-                {"messages": messages},
-                config={
-                    "configurable": {"langgraph_user_id": "user-123"}
-                },  # Creates namespace ("memories", "user-123")
-            )
-
-
-        # Store a new preference
-        await manage_preferences.ainvoke(
-            [
-                {"role": "user", "content": "I prefer dark mode in all my apps"},
-                {"role": "assistant", "content": "I'll remember that preference"},
-            ],
-            config={"configurable": {"langgraph_user_id": "user123"}},
-        )
-
-        # Later conversation - automatically retrieves and uses the stored preference
-        await manage_preferences.ainvoke(
-            [
-                {"role": "user", "content": "What theme do I prefer?"},
-                {
-                    "role": "assistant",
-                    "content": "You prefer dark mode for all applications",
-                },
-            ],
-            config={"configurable": {"langgraph_user_id": "user123"}},
-        )
-        ```
-
-        Structured memory management with custom schemas:
-        ```python
-        from pydantic import BaseModel
-        from langmem import create_memory_store_enricher
-        from langgraph.store.memory import InMemoryStore
-        from langgraph.func import entrypoint
-
-
-        class PreferenceMemory(BaseModel):
-            \"\"\"Store user preferences.\"\"\"
-            category: str
-            preference: str
-            context: str
-
-
-        store = InMemoryStore()
-        enricher = create_memory_store_enricher(
-            "anthropic:claude-3-5-sonnet-latest",
-            schemas=[PreferenceMemory],
-            namespace=("project", "team_1", "{langgraph_user_id}"),
-        )
-
-        @entrypoint(store=store)
-        async def manage_preferences(messages: list):
-            await enricher({"messages": messages})
-
-        # Store structured memory
-        await manage_preferences.ainvoke(
-            [
-                {"role": "user", "content": "I prefer dark mode in all my apps"},
-                {"role": "assistant", "content": "I'll remember that preference"},
-            ],
-            config={"configurable": {"langgraph_user_id": "user123"}},
-        )
-
-        # Memory is automatically stored and can be retrieved in future conversations
-        # The system will also automatically update it if preferences change
-        ```
-
-        Using a separate model for search queries:
-        ```python
-        from langmem import create_memory_store_enricher
-        from langgraph.store.memory import InMemoryStore
-        from langgraph.func import entrypoint
-
-        store = InMemoryStore()
-        enricher = create_memory_store_enricher(
-            "anthropic:claude-3-5-sonnet-latest",  # Main model for memory processing
-            query_model="anthropic:claude-3-5-haiku-latest",  # Faster model for search
-            query_limit=10,  # Retrieve more relevant memories
-        )
-
-
-        @entrypoint(store=store)
-        async def manage_memories(messages: list):
-            # The system will use the faster model to search for relevant memories
-            # and the more capable model to process and update them
-            await enricher({"messages": messages})
-
-
-        await manage_memories.ainvoke(
-            [
-                {"role": "user", "content": "What are my preferences?"},
-                {
-                    "role": "assistant",
-                    "content": "Let me check your stored preferences...",
-                },
-            ],
-            config={"configurable": {"langgraph_user_id": "user123"}},
-        )
-        ```
-    !!! warning
-        Memory operations are performed automatically and may modify existing memories.
-        If you need to prevent automatic updates, set enable_inserts=False and
-        enable_deletes=False.
-
-    !!! tip
-        For optimal performance:
-        1. Use a smaller, faster model for query_model to improve search speed
-        2. Adjust query_limit based on your needs - higher values provide more
-           context but may slow down processing
-        3. Structure your namespace to organize memories logically,
-           e.g., ("project", "team", "{langgraph_user_id}")
-        4. Consider using enable_deletes=False if you want to maintain
-           a history of all memory changes
-
     Args:
         model (Union[str, BaseChatModel]): The primary language model to use for memory
             enrichment. Can be a model name string or a BaseChatModel instance.
@@ -1016,6 +907,246 @@ def create_memory_store_enricher(
 
     Returns:
         enricher: An runnable that processes conversations and automatically manages memories in the LangGraph BaseStore.
+
+    The system automatically searches for relevant memories, extracts new information,
+    updates existing memories, and maintains a versioned history of all changes.
+
+    The basic data flow works as follows:
+
+    ```mermaid
+    sequenceDiagram
+    participant Client
+    participant Enricher
+    participant Store
+    participant LLM
+
+    Client->>Enricher: messages
+    Enricher->>Store: find similar memories
+    Store-->>Enricher: memories
+    Enricher->>LLM: analyze & extract
+    LLM-->>Enricher: memory updates
+    Enricher->>Store: apply changes
+    Enricher-->>Client: result
+    ```
+
+    ???+ example "Examples"
+        Run memory extraction "inline" within your LangGraph app.
+        By default, each "memory" is a simple string:
+        ```python
+        import os
+
+        from anthropic import AsyncAnthropic
+        from langchain_core.runnables import RunnableConfig
+        from langgraph.func import entrypoint
+        from langgraph.store.memory import InMemoryStore
+
+        from langmem import create_memory_store_enricher
+
+        store = InMemoryStore()
+        enricher = create_memory_store_enricher("anthropic:claude-3-5-sonnet-latest")
+        client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+
+        @entrypoint(store=store)
+        async def my_agent(message: str, config: RunnableConfig):
+            memories = await store.asearch(
+                ("memories", config["configurable"]["langgraph_user_id"]),
+                query=message,
+            )
+            llm_response = await client.messages.create(
+                model="claude-3-5-sonnet-latest",
+                system="You are a helpful assistant.\\n\\n## Memories from the user:"
+                f"\\n<memories>\\n{memories}\\n</memories>",
+                max_tokens=2048,
+                messages=[{"role": "user", "content": message}],
+            )
+            response = {"role": "assistant", "content": llm_response.content[0].text}
+
+            await enricher.ainvoke(
+                {"messages": [{"role": "user", "content": message}, response]},
+            )
+            return response["content"]
+
+
+        response_1 = await my_agent.ainvoke(
+            "I prefer dark mode in all my apps",
+            config={"configurable": {"langgraph_user_id": "user123"}},
+        )
+        print("response_1:", response_1)
+        # Later conversation - automatically retrieves and uses the stored preference
+        response_2 = await my_agent.ainvoke(
+            "What theme do I prefer?",
+            config={"configurable": {"langgraph_user_id": "user123"}},
+        )
+        print("response_2:", response_2)
+        # You can list over memories in the user's namespace manually:
+        print(store.search(("memories", "user123")))
+        ```
+
+        You can customize what each memory can look like by defining **schemas**:
+        ```python
+        from langgraph.func import entrypoint
+        from langgraph.store.memory import InMemoryStore
+        from pydantic import BaseModel
+
+        from langmem import create_memory_store_enricher
+
+        store = InMemoryStore()
+        enricher = create_memory_store_enricher("anthropic:claude-3-5-sonnet-latest")
+
+
+        class PreferenceMemory(BaseModel):
+            \"\"\"Store preferences about the user.\"\"\"
+            category: str
+            preference: str
+            context: str
+
+
+        store = InMemoryStore()
+        enricher = create_memory_store_enricher(
+            "anthropic:claude-3-5-sonnet-latest",
+            schemas=[PreferenceMemory],
+            namespace=("project", "team_1", "{langgraph_user_id}"),
+        )
+
+
+        @entrypoint(store=store)
+        async def my_agent(message: str):
+            # Hard code the response :)
+            response = {"role": "assistant", "content": "I'll remember that preference"}
+            await enricher.ainvoke(
+                {"messages": [{"role": "user", "content": message}, response]}
+            )
+            return response
+
+
+        # Store structured memory
+        await my_agent.ainvoke(
+            "I prefer dark mode in all my apps",
+            config={"configurable": {"langgraph_user_id": "user123"}},
+        )
+
+        # See the extracted memories yourself
+        print(store.search(("memories", "user123")))
+
+        # Memory is automatically stored and can be retrieved in future conversations
+        # The system will also automatically update it if preferences change
+        ```
+
+    By default, relevant memories are recalled by directly embedding the new messages. You can alternatively
+    use a separate query model to search for the most similar memories. Here's how it works:
+
+    ```mermaid
+        sequenceDiagram
+            participant Client
+            participant Enricher
+            participant QueryLLM
+            participant Store
+            participant MainLLM
+
+            Client->>Enricher: messages
+            Enricher->>QueryLLM: generate search query
+            QueryLLM-->>Enricher: optimized query
+            Enricher->>Store: find memories
+            Store-->>Enricher: memories
+            Enricher->>MainLLM: analyze & extract
+            MainLLM-->>Enricher: memory updates
+            Enricher->>Store: apply changes
+            Enricher-->>Client: result
+    ```
+
+    ???+ example "Using an LLM to search for memories"
+        ```python
+        from langmem import create_memory_store_enricher
+        from langgraph.store.memory import InMemoryStore
+        from langgraph.func import entrypoint
+
+        store = InMemoryStore()
+        enricher = create_memory_store_enricher(
+            "anthropic:claude-3-5-sonnet-latest",  # Main model for memory processing
+            query_model="anthropic:claude-3-5-haiku-latest",  # Faster model for search
+            query_limit=10,  # Retrieve more relevant memories
+        )
+
+
+        @entrypoint(store=store)
+        async def my_agent(message: str):
+            # Hard code the response :)
+            response = {"role": "assistant", "content": "I'll remember that preference"}
+            await enricher.ainvoke(
+                {"messages": [{"role": "user", "content": message}, response]}
+            )
+            return response
+
+
+        await my_agent.ainvoke(
+            "I prefer dark mode in all my apps",
+            config={"configurable": {"langgraph_user_id": "user123"}},
+        )
+
+        # See the extracted memories yourself
+        print(store.search(("memories", "user123")))
+        ```
+
+    In the examples above, we were calling the enricher in the main thread. In a real application, you'll
+    likely want to background the execution of the enricher, either by executing it in a background thread or on a separate server.
+    To do so, you can use the `ReflectionExecutor` class:
+
+    ```mermaid
+    sequenceDiagram
+        participant Agent
+        participant Background
+        participant Store
+
+        Agent->>Agent: process message
+        Agent-->>User: response
+        Agent->>Background: schedule enrichment<br/>(after_seconds=0)
+        Note over Background,Store: Memory processing happens<br/>in background thread
+    ```
+
+    ???+ example "Running reflections in the background"
+        Background enrichment using @entrypoint:
+        ```python
+        from langmem import create_memory_store_enricher, ReflectionExecutor
+        from langgraph.prebuilt import create_react_agent
+        from langgraph.store.memory import InMemoryStore
+        from langgraph.func import entrypoint
+
+        store = InMemoryStore()
+        enricher = create_memory_store_enricher(
+            "anthropic:claude-3-5-sonnet-latest", namespace=("memories", "{user_id}")
+        )
+        reflection = ReflectionExecutor(enricher, store=store)
+        agent = create_react_agent(
+            "anthropic:claude-3-5-sonnet-latest", tools=[], store=store
+        )
+
+
+        @entrypoint(store=store)
+        async def chat(messages: list):
+            response = await agent.ainvoke({"messages": messages})
+
+            fut = reflection.submit(
+                {
+                    "messages": response["messages"],
+                },
+                # We'll schedule this immediately.
+                # Adding a delay lets you **debounce** and deduplicate reflection work
+                # whenever the user is actively engaging with the agent.
+                after_seconds=0,
+            )
+
+            return fut
+
+
+        fut = await chat.ainvoke(
+            [{"role": "user", "content": "I prefer dark mode in my apps"}],
+            config={"configurable": {"user_id": "user-123"}},
+        )
+        # Inspect the result
+        fut.result()  # Wait for the reflection to complete; This is only for demoing the search inline
+        print(store.search(("memories", "user-123")))
+        ```
     """
     return MemoryStoreEnricher(
         model,

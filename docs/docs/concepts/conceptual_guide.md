@@ -282,33 +282,6 @@ Use these when you need persistent memory without managing storage yourself.
     store_enricher.invoke({"messages": messages})
     ```
 
-### 3. Platform Services
-
-At the highest level, LangMem provides ready-to-deploy LangGraph services for memory management:
-
-- **Memory Extraction Service**: Continuously enrich and store memories
-- **Prompt Optimization Service**: Automatically improve system behavior
-
-Ideal if you want to set up memory management as a service.
-
-??? example "Using platform services"
-
-    ```python
-    from langgraph.prebuilt import create_react_agent
-
-    # highlight-next-line
-    agent = create_react_agent(
-        "anthropic:claude-3-5-sonnet-latest",
-        tools=[
-            create_manage_memory_tool(namespace=("memories",)),
-            create_search_memory_tool(namespace=("memories",))
-        ],
-        store=store
-    )
-    ```
-
-Choose the integration level that matches your needs: use functional primitives for maximum control, stateful operators for easy persistence, or platform services for production deployment.
-
 ## Storage System {#storage-system}
 
 ??? note "Storage is optional"

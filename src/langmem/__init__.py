@@ -11,6 +11,7 @@ from langmem.prompts.optimization import (
     create_multi_prompt_optimizer,
     create_prompt_optimizer,
 )
+from langmem.reflection import ReflectionExecutor
 
 __all__ = [
     "create_memory_enricher",
@@ -21,5 +22,6 @@ __all__ = [
     "create_multi_prompt_optimizer",
     "create_prompt_optimizer",
     "create_memory_searcher",
+    "ReflectionExecutor",
     "Prompt",
 ]

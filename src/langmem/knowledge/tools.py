@@ -28,11 +28,14 @@ def create_manage_memory_tool(
 
     The resulting tool has a signature that looks like the following:
         ```python
+        from typing import Literal
+
+
         def manage_memory(
             content: str | None = None,  # Content for new/updated memory
-            id: str | None = None,       # ID of existing memory to update/delete
+            id: str | None = None,  # ID of existing memory to update/delete
             action: Literal["create", "update", "delete"] = "create",
-        ) -> str:
+        ) -> str: ...
         ```
         _Note: the tool supports both sync and async usage._
 
@@ -200,11 +203,11 @@ def create_search_memory_tool(
     The resulting tool has a signature that looks like the following:
         ```python
         def search_memory(
-            query: str,                      # Search query to match against memories
-            limit: int = 10,                 # Maximum number of results to return
-            offset: int = 0,                 # Number of results to skip
-            filter: dict | None = None,      # Additional filter criteria
-        ) -> tuple[list[dict], list]:        # Returns (serialized memories, raw memories)
+            query: str,  # Search query to match against memories
+            limit: int = 10,  # Maximum number of results to return
+            offset: int = 0,  # Number of results to skip
+            filter: dict | None = None,  # Additional filter criteria
+        ) -> tuple[list[dict], list]: ...  # Returns (serialized memories, raw memories)
         ```
     _Note: the tool supports both sync and async usage._
 

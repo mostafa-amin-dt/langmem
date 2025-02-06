@@ -77,6 +77,7 @@ MANUAL_API_REFERENCES_LANGMEM = [
     ("langmem", "create_memory_enricher", "memory"),
     ("langmem", "create_memory_store_enricher", "memory"),
     ("langmem.utils", "NamespaceTemplate", "utils"),
+    ("langmem", "ReflectionExecutor", "utils"),
 ]
 
 WELL_KNOWN_LANGMEM_OBJECTS = {
@@ -219,6 +220,7 @@ def _get_imports(
                 )
             elif package_ecosystem == "langmem":
                 if (module, class_name) not in WELL_KNOWN_LANGMEM_OBJECTS:
+                    print(f"Skipping {module}.{class_name}")
                     # Not in our well-known objects list
                     continue
                 
