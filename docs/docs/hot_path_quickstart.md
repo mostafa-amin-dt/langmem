@@ -32,7 +32,7 @@ export ANTHROPIC_API_KEY="sk-..."  # Or another supported LLM provider
 
 Here's a complete example showing how to create an agent with memory that persists across conversations:
 
-``` python hl_lines="16-21 40-44"
+```python hl_lines="16-20 42-46"
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 from langgraph.store.memory import InMemoryStore
@@ -47,11 +47,12 @@ from langmem import (
 
 def prompt(state):
     """Prepare the messages for the LLM."""
-    store = get_store()  # Get store from configured contextvar (5)
+    # Get store from configured contextvar; (5)
+    store = get_store() # Same as that provided to `create_react_agent`
     memories = store.search(
         # Search within the same namespace as the one
         # we've configured for the agent
-        namespace=("memories",),
+        ("memories",),
         query=state["messages"][-1].content,
     )
     system_msg = """You are a helpful assistant.
@@ -69,7 +70,7 @@ checkpointer = MemorySaver() # Checkpoint graph state (2)
 
 agent = create_react_agent( 
     "anthropic:claude-3-5-sonnet-latest",
-    # highlight-next-line
+    prompt=prompt,
     tools=[ # Add memory tools (3)
         # The agent can call "manage_memory" to
         # create, update, and delete memories by ID
@@ -129,7 +130,7 @@ config = {"configurable": {"thread_id": "thread-a"}}
 
 # Use the agent. The agent hasn't saved any memories,
 # so it doesn't know about us
-agent.invoke(
+response = agent.invoke(
     {
         "messages": [
             {"role": "user", "content": "Know which display mode I prefer?"}
@@ -138,7 +139,7 @@ agent.invoke(
     config=config,
 )
 print(response["messages"][-1].content)
-# Output: "No preference specified."
+# Output: "I don't seem to have any stored memories about your display mode preferences..."
 
 agent.invoke(
     {
@@ -162,7 +163,7 @@ response = agent.invoke(
     config=new_config,
 )
 print(response["messages"][-1].content)
-# Output: "You've told me that you prefer dark mode."
+# Output: "Based on my memory search, I can see that you've previously indicated a preference for dark display mode..."
 ```
 
 This example demonstrates memory persistence across conversations and thread isolation between users. The agent stores the user's dark mode preference in one thread but cannot access it from another thread.
@@ -173,5 +174,3 @@ This example demonstrates memory persistence across conversations and thread iso
 In this quick start, you configured an agent to manage its memory "in the hot path" using tools. Check out the following guides for other features:
 
 - [Reflection Quickstart](background_quickstart.md) – Learn how to manage memories "in the background" using `create_memory_store_enricher`.
-<!-- - [Persistent Storage](guides/memory_tools.md#storage) – Learn more about the durable storage options.
-- [Memory Tools](guides/memory_tools.md) – Learn more about the memory tools used in this quickstart. -->

@@ -2,165 +2,248 @@
 title: Core Concepts
 ---
 
-# Memory in LLM Applications
+# Long-term Memory in LLM Applications
 
-Memory allows agents to remember important information across conversations. LangMem provides ways to extract meaningful details from chats, store them, and use them to improve future interactions. At its core, each memory operation in LangMem follows the same pattern:
+Long-term memory allows agents to remember important information across conversations. LangMem provides ways to extract meaningful details from chats, store them, and use them to improve future interactions. At its core, each memory operation in LangMem follows the same pattern:
 
 1. Accept conversation(s) and current memory state
 2. Prompt an LLM to determine how to expand or consolidate the memory state
 3. Respond with the updated memory state
 
-How you represent and manage memories depends on what your agent needs to learn. Read on to learn about the different types of memory and why they are useful.
+The best memory systems are often application-specific. In designing yours, the following questions can serve as a useful guide:
 
-## Types of Memory
+1. **What** [type of content](#memory-types) should your agent learn: facts/knowledge? summary of past events? Rules and style?
+2. **When** should the [memories be formed](#writing-memories) (and **who** should form the memories)
+3. **Where** should memories [be stored](#storage-system)? (in the prompt? Semantic store?). This largely determines how they will be recalled.
+
+## Types of Memory {#memory-types}
 
 Memory in LLM applications can reflect some of the structure of human memory, with each type serving a distinct purpose in building adaptive, context-aware systems:
 
 
-| Memory Type | Purpose | Storage Pattern | When to Use |
-|-------------|---------|-----------------|-------------|
-| Semantic | Facts & Knowledge | Profile or Collection | For storing facts, relationships, and evolving context |
-| Episodic | Past Experiences | Collection | For learning from successful examples and adapting responses |
-| Procedural | System Behavior | Prompts or Collection | For defining and evolving agent personality and capabilities |
+| Memory Type | Purpose | Typical Storage Pattern | Human Example | Agent Example |
+|-------------|---------|-----------------|---------------|---------------|
+| Semantic | Facts & Knowledge | Profile or Collection | Knowing Python is a programming language | User preferences; knowledge triplets |
+| Episodic | Past Experiences | Collection | Remembering your first day at work | Few-shot examples; Summaries of past conversations |
+| Procedural | System Behavior | Prompt rules or Collection | Knowing how to ride a bicycle | Core personality and response patterns |
 
 ### Semantic Memory: Facts and Knowledge
 
-Semantic memory stores the essential facts and other information that ground an agent's responses. Two common representations of semantic memory are:
+[Semantic memory](https://en.wikipedia.org/wiki/Semantic_memory) stores the essential facts and other information that ground an agent's responses. Two common representations of semantic memory are collections (to record an unbounded amount of knowledge to be searched at runtime) and profiles (to record task-specific information that follows a strict schema that is easily looked up by user or agent). 
 
-#### Profile
+#### Collection
 
-Semantic memories can be managed in different ways. For example, memories can be a single, continuously updated "profile" of well-scoped and specific information about a user, organization, or other entity (including the agent itself).
+Collections are what most people think of when they imagine agent long-term memory. In this type, memories are stored as individual documents or records. For each new conversation, the memory system can decide to insert new memories to the store. 
+
+Using a collection-type memory adds some complexity to the process of updating your memory state. The system must reconcile new information with previous beliefes, either  _deleting_/_invalidating_ or _updating_/_consolidating_ existing memories. If the system over-extracts, this could lead to reduced precision of memories when your agent needs to search the store. If it under-extracts, this could lead to low recall. LangMem uses a memory enrichment process that strives to balance memory creation and consolidation, while letting you, the developer, customize the instructions to further shift the strength of each.
+
+Finally, memory relevance is more than just semantic similarity. Recall should combine similarity with "importance" of the memory, as well as the memory's "strength", which is a function of how recently/frequently it was used.
 
 ![Collection update process](img/update-list.png)
 
 ??? example "Extracting semantic memories as collections"
 
-      ```python
-      from langmem import create_memory_enricher
-      
-      # highlight-next-line
-      enricher = create_memory_enricher(
-         "anthropic:claude-3-5-sonnet-latest",
-         instructions="Extract all noteworthy facts, events, and relationships. Indicate their importance.",
-         # highlight-next-line
-         enable_inserts=True,
-      )
+    ??? note "Setup"
 
-      # Process a conversation to extract semantic memories
-      conversation = [
-         {"role": "user", "content": "I work at Acme Corp in the ML team"},
-         {"role": "assistant", "content": "I'll remember that. What kind of ML work do you do?"},
-         {"role": "user", "content": "Mostly NLP and large language models"}
-      ]
+        ```python
+        from langmem import create_memory_enricher
+        
+        # highlight-next-line
+        enricher = create_memory_enricher(
+            "anthropic:claude-3-5-sonnet-latest",
+            instructions="Extract all noteworthy facts, events, and relationships. Indicate their importance.",
+            # highlight-next-line
+            enable_inserts=True,
+        )
 
-      memories = enricher.invoke({"messages": conversation})
-      # Example memories:
-      # [
-      #     {"fact": "User works at Acme Corp", "type": "employment", "importance": "high"},
-      #     {"fact": "User is in the ML team", "type": "role", "importance": "high"},
-      #     {"fact": "User works on NLP and LLMs", "type": "expertise", "importance": "high"}
-      # ]
-      ```
+        # Process a conversation to extract semantic memories
+        conversation = [
+            {"role": "user", "content": "I work at Acme Corp in the ML team"},
+            {"role": "assistant", "content": "I'll remember that. What kind of ML work do you do?"},
+            {"role": "user", "content": "Mostly NLP and large language models"}
+        ]
+        ```
 
-2. **Profiles** maintain a single document that represents the current state, like a user's active preferences or system settings. When new information arrives, it updates the existing document rather than creating a new one. This approach is ideal when you only care about the latest state, such as a user's current theme preference or language setting.
+    ```python
+    memories = enricher.invoke({"messages": conversation})
+    # Example memories:
+    # [
+    #     ExtractedMemory(
+    #         id="27e96a9d-8e53-4031-865e-5ec50c1f7ad5",
+    #         content=Memory(
+    #             content="[IMPORTANT] User prefers to be called Lex (short for Alex) and appreciates"
+    #             " casual, witty communication style with relevant emojis."
+    #         ),
+    #     ),
+    #     ExtractedMemory(
+    #         id="e2f6b646-cdf1-4be1-bb40-0fd91d25d00f",
+    #         content=Memory(
+    #             content="[BACKGROUND] Lex is proficient in Python programming and specializes in developing"
+    #             " AI systems with a focus on making them sound more natural and less corporate."
+    #         ),
+    #     ),
+    #     ExtractedMemory(
+    #         id="c1e03ebb-a393-4e8d-8eb7-b928d8bed510",
+    #         content=Memory(
+    #             content="[HOBBY] Lex is a competitive speedcuber (someone who solves Rubik's cubes competitively),"
+    #             " showing an interest in both technical and recreational puzzle-solving."
+    #         ),
+    #     ),
+    #     ExtractedMemory(
+    #         id="ee7fc6e4-0118-425f-8704-6b3145881ff7",
+    #         content=Memory(
+    #             content="[PERSONALITY] Based on communication style and interests, Lex appears to value authenticity,"
+    #             " creativity, and technical excellence while maintaining a fun, approachable demeanor."
+    #         ),
+    #     ),
+    # ]
+
+    ```
+
+#### Profiles
+
+**Profiles** on the other hand are well-scoped for a particular task. Profiles are a single document that represents the current state, like a user's main goals with using an app, their preferred name and response stele, etc. When new information arrives, it updates the existing document rather than creating a new one. This approach is ideal when you only care about the latest state and want to avoid remembering extraneous information.
 
 ![Profile update process](img/update-profile.png)
 
 ??? example "Managing user preferences with profiles"
 
-      ```python
-      from langmem import create_memory_enricher
-      from pydantic import BaseModel
-      
-      class UserProfile(BaseModel):
-         preferences: dict[str, str]
-         settings: dict[str, str]
-      
-      enricher = create_memory_enricher(
-         "anthropic:claude-3-5-sonnet-latest",
-         # highlight-next-line
-         schemas=[UserProfile],
-         instructions="Extract user preferences and settings",
-         # highlight-next-line
-         enable_inserts=False,
-      )
+    ??? note "Setup"
 
-      # Extract user preferences from a conversation
-      conversation = [
-         {"role": "user", "content": "I prefer dark mode and using vim keybindings"},
-         {"role": "assistant", "content": "I'll set those preferences for you"},
-         {"role": "user", "content": "Also set the language to Python"}
-      ]
+        ```python
+        from langmem import create_memory_enricher
+        from pydantic import BaseModel
 
-      profile = enricher.invoke({"messages": conversation})
-      # Example profile:
-      # UserProfile(
-      #     preferences={
-      #         "theme": "dark",
-      #         "editor": "vim",
-      #         "language": "python"
-      #     },
-      #     settings={}
-      # )
-      ```
 
-Choose between profiles and collections based on how you'll use the data: profiles excel when you need quick access to current state and when you have data requirements about what type of information you can store. They are also easy to present to a user for manual ediing. Collections shine when you want to track knowledge across many interactions without loss of information, and it exceeds when you want to recall certain information contextually rather than every time..
+        class UserProfile(BaseModel):
+            """Save the user's preferences."""
+            name: str
+            preferred_name: str
+            response_style_preference: str
+            special_skills: list[str]
+            other_preferences: list[str]
+
+
+        enricher = create_memory_enricher(
+            "anthropic:claude-3-5-sonnet-latest",
+            schemas=[UserProfile],
+            instructions="Extract user preferences and settings",
+            enable_inserts=False,
+        )
+
+        # Extract user preferences from a conversation
+        conversation = [
+            {"role": "user", "content": "Hi! I'm Alex but please call me Lex. I'm a wizard at Python and love making AI systems that don't sound like boring corporate robots 🤖"},
+            {"role": "assistant", "content": "Nice to meet you, Lex! Love the anti-corporate-robot stance. How would you like me to communicate with you?"},
+            {"role": "user", "content": "Keep it casual and witty - and maybe throw in some relevant emojis when it feels right ✨ Also, besides AI, I do competitive speedcubing!"},
+        ]
+        ```
+
+    ```python
+    profile = enricher.invoke({"messages": conversation})[0]
+    print(profile)
+    # Example profile:
+    # ExtractedMemory(
+    #     id="6f555d97-387e-4af6-a23f-a66b4e809b0e",
+    #     content=UserProfile(
+    #         name="Alex",
+    #         preferred_name="Lex",
+    #         response_style_preference="casual and witty with appropriate emojis",
+    #         special_skills=[
+    #             "Python programming",
+    #             "AI development",
+    #             "competitive speedcubing",
+    #         ],
+    #         other_preferences=[
+    #             "prefers informal communication",
+    #             "dislikes corporate-style interactions",
+    #         ],
+    #     ),
+    # )
+    ```
+
+Choose between profiles and collections based on how you'll use the data: profiles excel when you need quick access to current state and when you have data requirements about what type of information you can store. They are also easy to present to a user for manual ediing. Collections are useful when you want to track knowledge across many interactions without loss of information, and when you want to recall certain information contextually rather than every time.
 
 ### Episodic Memory: Past Experiences
 
 Episodic memory preserves successful interactions as learning examples that guide future behavior. Unlike semantic memory which stores facts, episodic memory captures the full context of an interaction—the situation, the thought process that led to success, and why that approach worked. These memories help the agent learn from experience, adapting its responses based on what has worked before.
 
 ??? example "Defining and extracting episodes"
+    
+    ??? note "Setup"
+
+        ```python
+        from pydantic import BaseModel, Field
+        from langmem import create_memory_enricher
+
+        class Episode(BaseModel):
+            """An episode captures how to handle a specific situation, including the reasoning process
+            and what made it successful."""
+            
+            observation: str = Field(
+                ..., 
+                description="The situation and relevant context"
+            )
+            thoughts: str = Field(
+                ...,
+                description="Key considerations and reasoning process"
+            )
+            action: str = Field(
+                ...,
+                description="What was done in response"
+            )
+            result: str = Field(
+                ...,
+                description="What happened and why it worked"
+            )
+
+        # highlight-next-line
+        enricher = create_memory_enricher(
+            "anthropic:claude-3-5-sonnet-latest",
+            schemas=[Episode],
+            instructions="Extract examples of successful interactions. Include the context, thought process, and why the approach worked.",
+            enable_inserts=True,
+        )
+
+        # Example conversation
+        conversation = [
+            {"role": "user", "content": "What's a binary tree? I work with family trees if that helps"},
+            {"role": "assistant", "content": "A binary tree is like a family tree, but each parent has at most 2 children. Here's a simple example:\n   Bob\n  /  \\\nAmy  Carl\n\nJust like in family trees, we call Bob the 'parent' and Amy and Carl the 'children'."},
+            {"role": "user", "content": "Oh that makes sense! So in a binary search tree, would it be like organizing a family by age?"},
+        ]
+        ```
 
     ```python
-    from pydantic import BaseModel, Field
-    from langmem import create_memory_enricher
-
-    class Episode(BaseModel):
-        """An episode captures how to handle a specific situation, including the reasoning process
-        and what made it successful."""
-        
-        observation: str = Field(
-            ..., 
-            description="The situation and relevant context"
-        )
-        thoughts: str = Field(
-            ...,
-            description="Key considerations and reasoning process"
-        )
-        action: str = Field(
-            ...,
-            description="What was done in response"
-        )
-        result: str = Field(
-            ...,
-            description="What happened and why it worked"
-        )
-
-    # highlight-next-line
-    enricher = create_memory_enricher(
-        "anthropic:claude-3-5-sonnet-latest",
-        schemas=[Episode],
-        instructions="Extract examples of successful interactions. Include the context, thought process, and why the approach worked.",
-        enable_inserts=True,
-    )
-
-    # Example conversation
-    conversation = [
-        {"role": "user", "content": "What's a binary tree? I work with family trees if that helps"},
-        {"role": "assistant", "content": "A binary tree is like a family tree, but each parent has at most 2 children. Here's a simple example:\n   Bob\n  /  \\\nAmy  Carl\n\nJust like in family trees, we call Bob the 'parent' and Amy and Carl the 'children'."},
-        {"role": "user", "content": "Oh that makes sense! So in a binary search tree, would it be like organizing a family by age?"},
-    ]
-
-    # Extract episode
+    # Extract episode(s)
     episodes = enricher.invoke({"messages": conversation})
     # Example episode:
-    # {
-    #     "observation": "User asks about binary trees, mentions familiarity with family trees",
-    #     "thoughts": "Can use family tree analogy since user has that background",
-    #     "action": "Explained binary trees using family tree analogy with a visual example",
-    #     "result": "User understood and extended analogy to binary search trees"
-    # }
+    # [
+    #     ExtractedMemory(
+    #         id="f9194af3-a63f-4d8a-98e9-16c66e649844",
+    #         content=Episode(
+    #             observation="User struggled debugging a recursive "
+    #                         "function for longest path in binary "
+    #                         "tree, unclear on logic.",
+    #             thoughts="Used explorer in treehouse village "
+    #                      "metaphor to explain recursion:\n"
+    #                      "- Houses = Nodes\n"
+    #                      "- Bridges = Edges\n"
+    #                      "- Explorer's path = Traversal",
+    #             action="Reframed problem using metaphor, "
+    #                    "outlined steps:\n"
+    #                    "1. Check left path\n"
+    #                    "2. Check right path\n"
+    #                    "3. Add 1 for current position\n"
+    #                    "Highlighted common bugs",
+    #             result="Metaphor helped user understand logic. "
+    #                    "Worked because it:\n"
+    #                    "1. Made concepts tangible\n"
+    #                    "2. Created mental model\n"
+    #                    "3. Showed key steps\n"
+    #                    "4. Pointed to likely bugs",
+    #         ),
+    #     )
+    # ]
     ```
 
 
@@ -172,30 +255,44 @@ Procedural memory encodes how an agent should behave and respond. It starts with
 
 ??? example "Optimizing prompts based on feedback"
 
-      ```python
-      from langmem import create_prompt_optimizer
+    ??? note "Setup"
 
-      # highlight-next-line
-      optimizer = create_prompt_optimizer(
-         "anthropic:claude-3-5-sonnet-latest",
-         kind="metaprompt",
-         config={"max_reflection_steps": 3}
-      )
+        ```python
+        from langmem import create_prompt_optimizer
 
-      # Optimize prompt based on user feedback
-      prompt = "You are a helpful assistant."
-      trajectory = [
-         {"role": "user", "content": "Explain inheritance in Python"},
-         {"role": "assistant", "content": "Here's a detailed theoretical explanation..."},
-         {"role": "user", "content": "Show me a practical example instead"},
-      ]
-      optimized = optimizer.invoke({
-         "trajectories": [(trajectory, {"user_score": 0})], 
-         "prompt": prompt
-      })
-      ```
+        # highlight-next-line
+        optimizer = create_prompt_optimizer(
+            "anthropic:claude-3-5-sonnet-latest",
+            kind="metaprompt",
+            config={"max_reflection_steps": 3}
+        )
+        ```
+    ```python
+    prompt = "You are a helpful assistant."
+    trajectory = [
+        {"role": "user", "content": "Explain inheritance in Python"},
+        {"role": "assistant", "content": "Here's a detailed theoretical explanation..."},
+        {"role": "user", "content": "Show me a practical example instead"},
+    ]
+    optimized = optimizer.invoke({
+        "trajectories": [(trajectory, {"user_score": 0})], 
+        "prompt": prompt
+    })
+    print(optimized)
+    # You are a helpful assistant with expertise in explaining technical concepts clearly and practically. When explaining programming concepts:
 
-## Memory Formation
+    # 1. Start with a brief, practical explanation supported by a concrete code example
+    # 2. If the user requests more theoretical details, provide them after the practical example
+    # 3. Always include working code examples for programming-related questions
+    # 4. Pay close attention to user preferences - if they ask for a specific approach (like practical examples or theory), adapt your response accordingly
+    # 5. Use simple, clear language and break down complex concepts into digestible parts
+
+    # When users ask follow-up questions or request a different approach, immediately adjust your explanation style to match their preferences. If they ask for practical examples, provide them. If they ask for theory, explain the concepts in depth.
+    ```
+
+
+
+## Writing memories {#writing-memories}
 
 Memories can form in two ways, each suited for different needs. Active formation happens during conversations, enabling immediate updates when critical context emerges. Background formation occurs between interactions, allowing deeper pattern analysis without impacting response time. This dual approach lets you balance responsiveness with thorough learning.
 
@@ -208,98 +305,38 @@ Memories can form in two ways, each suited for different needs. Active formation
 
 ### Conscious Formation
 
-In active formation, the agent makes real-time decisions about what to remember during a conversation. This approach excels when immediate context is crucial, like capturing user preferences or important details that affect the current interaction.
+You may want your agent to save memories "in the hot path." This active memory formation happens during the conversation, enabling immediate updates when critical context emerges. This approach is easy to implement and lets the agent itself choose how to store and update its memory. However, it adds perceptible latency to user interactions, and it adds one more obstacle to the agent's ability to satisfy the user's needs.
 
-
-??? example "Active memory formation"
-
-    ```python
-    from langgraph.prebuilt import create_react_agent
-    from langmem import create_manage_memory_tool
-
-    # highlight-next-line
-    agent = create_react_agent(
-        "anthropic:claude-3-5-sonnet-latest",
-        tools=[create_manage_memory_tool(namespace=("memories",))],
-        store=store
-    )
-
-    # Agent processes and stores memory during the conversation
-    response = agent.invoke({
-        "messages": [{"role": "user", "content": "Remember I prefer dark mode"}]
-    })
-    ```
+Check out the ["hot path" quickstart](../hot_path_quickstart.md) for an example of how to use this technique.
 
 ### Subconcious Formation
 
 "Subconcious" memory formation refers to the technique of prompting an LLM to reflect on a conversation after it occurs (or after it has been inactive for some period), finding patterns and extracting insights without slowing down the immediate interaction or adding complexity to the agent's tool choice decisions. This approach is perfect for ensuring higher recall of exracted information.
 
-
-??? example "Background pattern extraction"
-
-    ```python
-    from langmem import create_memory_store_enricher
-
-    # highlight-next-line
-    enricher = create_memory_store_enricher(
-        "anthropic:claude-3-5-sonnet-latest",
-        namespace=("memories",),
-        instructions="Extract key preferences and facts from conversations"
-    )
-
-    enricher.invoke({"messages": conversation_history})
-    ```
+Check out the ["background" quickstart](../background_quickstart.md) for an example of how to use this technique.
 
 ## Integration Patterns
 
 LangMem's memory utilities are organized in three layers of increasing abstraction, each serving different integration needs:
 
-### 1. Functional Core {#functional-core}
+### 1. Core API {#functional-core}
 
 At its heart, LangMem provides functions that transform memory state without side effects. These primitives are the building blocks for memory operations:
 
-- [**Memory Enrichers**](../reference/memory.md#langmem.create_memory_enricher): Extract and structure information from conversations
-- [**Prompt Optimizers**](../reference/prompt_optimization.md#langmem.create_prompt_optimizer): Learn and improve system behavior from feedback
-- [**Multi-Prompt Optimizers**](../reference/prompt_optimization.md#langmem.create_multi_prompt_optimizer): Coordinate learning across a system composed of multiple LLM steps or agents
+- [**Memory Enrichers**](../reference/memory.md#langmem.create_memory_enricher): Extract new memories, update or remove outdated memories, and consolidate and generalize from existing memories based on new conversation information
+- [**Prompt Optimizers**](../reference/prompt_optimization.md#langmem.create_prompt_optimizer): Update prompt rules and core behavior based on conversation information (with optional feedback)
 
-These core functions are right for you if you need maximum control and want to integrate memory management into your own persistence layer.
-
-??? example "Without storage"
-
-    ```python
-    from langmem import create_memory_enricher
-
-    # highlight-next-line
-    enricher = create_memory_enricher(
-        "anthropic:claude-3-5-sonnet-latest",
-        schemas=[UserProfile],  # Optional: structure your memories
-        enable_inserts=True     # Allow creating new memories
-    )
-    memories = enricher.invoke(messages)
-    ```
+These core functions do not depend on any particular database or storage system. You can use them in any application.
 
 ### 2. Stateful Integration
 
-The next layer adds persistence through LangGraph's storage primitives. These operators automatically handle saving and retrieving memories:
+The next layer up depends on LangGraph's long-term memory store. These components use the core API above to transform memories that existin in the store and upsert/delete them as needed when new conversation information comesin:
 
 - [**Store Enrichers**](../reference/memory.md#langmem.create_memory_store_enricher): Automatically persist extracted memories
 - [**Memory Management Tools**](../reference/tools.md#langmem.create_manage_memory_tool): Give agents direct access to memory operations
 
-Use these when you need persistent memory without managing storage yourself.
+Use these if you're using LangGraph Platform or LangGraph OSS, since it's an easy way to add memory capabilities to your agents.
 
-??? example "Using stateful operators"
-
-    ```python
-    from langmem import create_memory_store_enricher
-
-    # highlight-next-line
-    store_enricher = create_memory_store_enricher(
-        "anthropic:claude-3-5-sonnet-latest",
-        namespace=("memories",)  # Organize memories hierarchically
-    )
-    # Automatically persists memories to store
-    store_enricher.invoke({"messages": messages})
-    ```
 
 ## Storage System {#storage-system}
 
@@ -321,43 +358,12 @@ Memories are organized into namespaces that allows for natural segmentation of d
 ??? example "Organizing memories hierarchically"
 
     ```python
-    from langgraph.store.memory import InMemoryStore
-
-    store = InMemoryStore() # (1)
-    # Organize memories by organization -> user -> context
-    namespace = ("acme_corp", "user_123", "code_assistant")
-    ```
-
-    1. For production use cases, use a persistent store like [`AsyncPostgresStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.AsyncPostgresStore). `InMemoryStore` is great for testing and development but loses data on restart.
-    
-    # highlight-next-line
-    # Store structured memory with metadata
-    memory = {
-        "content": "User prefers dark mode",
-        "type": "preference",
-        "confidence": 0.95,
-        "updated_at": "2025-02-04T04:29:22-08:00"
-    }
-    store.put(namespace, "ui_preferences", memory)
+    # Organize memories by organization -> configurable user -> context
+    namespace = ("acme_corp", "{user_id}", "code_assistant")
     ```
 
 Namespaces can include template variables (such as `"{user_id}"`) to be populated at runtime from `configurable` fields in the `RunnableConfig`.
-
-```python
-    from langmem import create_manage_memory_tool
-    from langgraph.prebuilt import create_react_agent
-
-    # highlight-next-line
-    tool =create_manage_memory_tool(namespace=("memories", "{user_id}"))
-    agent = create_react_agent("anthropic:claude-3-5-sonnet-latest", tools=[tool])
-    agent.invoke({
-        "messages": [{"role": "user", "content": "I work at Acme Corp in the ML team"}],
-        # Any memories for this run will be stored under ("memories", "user_123")
-        "configurable": {"user_id": "user_123"}
-    })
-```
-
-See the [NamespaceTemplate](../reference/utils.md#langmem.utils.NamespaceTemplate) class reference docs for more details.
+See [how to dynamically configure namespaces](../guides/dynamically_configure_namespaces.md) for an example, or the [NamespaceTemplate](../reference/utils.md#langmem.utils.NamespaceTemplate) reference docs for more details.
 
 ### Flexible Retrieval
 

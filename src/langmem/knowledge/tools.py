@@ -10,15 +10,17 @@ from langmem import utils
 
 
 def create_manage_memory_tool(
+    namespace: tuple[str, ...] | str,
+    *,
     instructions: str = "Proactively call this tool when you:\n\n"
     "1. Identify a new USER preference.\n"
     "2. Receive an explicit USER request to remember something or otherwise alter your behavior.\n"
     "3. Are working and want to record important context.\n"
     "4. Identify that an existing MEMORY is incorrect or outdated.\n",
-    namespace: tuple[str, ...] | str = (
-        "memories",
-        "{langgraph_user_id}",
-    ),
+    schema: typing.Type = str,
+    actions_permitted: typing.Optional[
+        tuple[typing.Literal["create", "update", "delete"], ...]
+    ] = ("create", "update", "delete"),
 ):
     """Create a tool for managing persistent memories in conversations.
 
@@ -109,23 +111,141 @@ def create_manage_memory_tool(
         # Output: 'updated memory 123e4567-e89b-12d3-a456-426614174000'
         ```
 
+        You can use in LangGraph's prebuilt `create_react_agent`:
+
+        ```python
+        from langgraph.prebuilt import create_react_agent
+        from langgraph.config import get_config, get_store
+
+        def prompt(state):
+            config = get_config()
+            memories = get_store().search(
+                # Search within the same namespace as the one
+                # we've configured for the agent
+                ("memories", config["configurable"]["langgraph_user_id"]),
+            )
+            system_prompt = f"\"\"You are a helpful assistant.
+        <memories>
+        {memories}
+        </memories>
+        \"\"\"
+            system_message = {"role": "system", "content": system_prompt}
+            return [system_message, *state["messages"]]
+
+        agent = create_react_agent(
+            "anthropic:claude-3-5-sonnet-latest",
+            tools=[
+                create_manage_memory_tool(namespace=("memories", "{langgraph_user_id}")),
+            ],
+            store=store,
+        )
+
+        agent.invoke(
+            {"messages": [{"role": "user", "content": "We've decided we like golang more than python for backend work"}]},
+            config=config,
+        )
+        ```
+
+
+        If you want to customize the expected schema for memories, you can do so by providing a `schema` argument.
+        ```python
+        from pydantic import BaseModel
+
+
+        class UserProfile(BaseModel):
+            name: str
+            age: int | None = None
+            recent_memories: list[str] = []
+            preferences: dict | None = None
+
+
+        memory_tool = create_manage_memory_tool(
+            # All memories saved to this tool will live within this namespace
+            # The brackets will be populated at runtime by the configurable values
+            namespace=("memories", "{langgraph_user_id}", "user_profile"),
+            schema=UserProfile,
+            actions_permitted=["create", "update"],
+            instructions="Update the existing user profile (or create a new one if it doesn't exist) based on the shared information.",
+        )
+        store = InMemoryStore()
+        agent = create_react_agent(
+            "anthropic:claude-3-5-sonnet-latest",
+            prompt=prompt,
+            tools=[
+                memory_tool,
+            ],
+            store=store,
+        )
+
+        result = agent.invoke(
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I'm 60 years old and have been programming for 5 days.",
+                    }
+                ]
+            },
+            config=config,
+        )
+        result["messages"][-1].pretty_print()
+        # I've created a memory with your age of 60 and noted that you started programming 5 days ago...
+
+        result = agent.invoke(
+            {
+                "messages": [
+                    {"role": "user", "content": "Just had by 61'st birthday today!!"}
+                ]
+            },
+            config=config,
+        )
+        result["messages"][-1].pretty_print()
+        # Happy 61st birthday! 🎂 I've updated your profile to reflect your new age. Is there anything else I can help you with?
+        print(
+            store.search(
+                ("memories", "123e4567-e89b-12d3-a456-426614174000", "user_profile")
+            )
+        )
+        # [Item(
+        #     namespace=['memories', '123e4567-e89b-12d3-a456-426614174000', 'user_profile'],
+        #     key='1528553b-0900-4363-8dc2-c6b72844096e',
+        #     value={
+        # highlight-next-line
+        #         'content': UserProfile(
+        #             name='User',
+        #             age=61,
+        #             recent_memories=['Started programming 5 days ago'],
+        #             preferences={'programming_experience': '5 days'}
+        #         )
+        #     },
+        #     created_at='2025-02-07T01:12:14.383762+00:00',
+        #     updated_at='2025-02-07T01:12:14.383763+00:00',
+        #     score=None
+        # )]
+        ```
+
+        If you want to limit the actions that can be taken by the tool, you can do so by providing a `actions_permitted` argument.
+
     Returns:
         memory_tool (Tool): A decorated async function that can be used as a tool for memory management.
             The tool supports creating, updating, and deleting memories with proper validation.
     """
-    namespacer = (
-        utils.NamespaceTemplate(namespace)
-        if isinstance(namespace, tuple)
-        else namespace
-    )
+    namespacer = utils.NamespaceTemplate(namespace)
+    action_type = typing.Literal[*actions_permitted]
+    assert actions_permitted, "actions_permitted cannot be empty"
+    default_action = "create" if "create" in actions_permitted else actions_permitted[0]
 
     async def amanage_memory(
-        content: typing.Optional[str] = None,
-        action: typing.Literal["create", "update", "delete"] = "create",
+        content: typing.Optional[schema] = None,  # type: ignore
+        action: action_type = default_action,  # type: ignore
         *,
         id: typing.Optional[uuid.UUID] = None,
     ):
         store = get_store()
+        if action not in actions_permitted:
+            raise ValueError(
+                f"Invalid action {action}. Must be one of {actions_permitted}."
+            )
 
         if action == "create" and id is not None:
             raise ValueError(
@@ -150,8 +270,8 @@ def create_manage_memory_tool(
         return f"{action}d memory {id}"
 
     def manage_memory(
-        content: typing.Optional[str] = None,
-        action: typing.Literal["create", "update", "delete"] = "create",
+        content: typing.Optional[schema] = None,  # type: ignore
+        action: action_type = "create",  # type: ignore
         *,
         id: typing.Optional[uuid.UUID] = None,
     ):
@@ -179,8 +299,9 @@ def create_manage_memory_tool(
         )
         return f"{action}d memory {id}"
 
-    description = """Create, update, or delete persistent MEMORIES that will be carried over to future conversations.
-        {instructions}""".format(instructions=instructions)
+    description = """Create, update, or delete persistent MEMORIES to persist across conversations.
+Include the MEMORY ID when updating or deleting a MEMORY. Omit when creating a new MEMORY - it will be created for you.
+{instructions}""".format(instructions=instructions)
 
     return StructuredTool.from_function(
         manage_memory, amanage_memory, name="manage_memory", description=description
@@ -191,8 +312,9 @@ _MEMORY_SEARCH_INSTRUCTIONS = ""
 
 
 def create_search_memory_tool(
+    namespace: tuple[str, ...] | str,
+    *,
     instructions: str = _MEMORY_SEARCH_INSTRUCTIONS,
-    namespace: tuple[str, ...] | str = ("memories", "{langgraph_user_id}"),
 ):
     """Create a tool for searching memories stored in a LangGraph BaseStore.
 

@@ -59,7 +59,6 @@ enricher = create_memory_enricher(
    for the graph context
 
    The latter uses the former. Both of these work by prompting an LLM to use parallel tool calling to extract new memories, update old ones, and (if configured) delete old ones.
-    ```
 
 After the first short interaction, the system has extracted some semantic triples:
 
@@ -77,7 +76,7 @@ for m in memories:
 # ExtractedMemory(id='258dbf2d-e4ac-47ac-8ffe-35c70a3fe7fc', content=Triple(subject='Bob', predicate='is_member_of', object='ML_team', context=None))
 ```
 
-The second conversation updates some existing memories. Since we have enabled "deletes", the enricher will return `RemoveDoc` objects to indicate that the memory should be removed, and a new memory will be created in its place. Since this is the functional API, you can control what "removal" means, be that a soft or hard delete, or simply a down-weighting of the memory.
+The second conversation updates some existing memories. Since we have enabled "deletes", the enricher will return `RemoveDoc` objects to indicate that the memory should be removed, and a new memory will be created in its place. Since this uses the core "functional" API (aka, it doesn't read or write to a database), you can control what "removal" means, be that a soft or hard delete, or simply a down-weighting of the memory.
 
 ```python
 # Second conversation - update and add triples
@@ -117,7 +116,7 @@ for m in final:
 # ExtractedMemory(id='258dbf2d-e4ac-47ac-8ffe-35c70a3fe7fc', content=Triple(subject='Bob', predicate='is_member_of', object='ML_team', context=None))
 ```
 
-For more about semantic memories, see [Memory Types](../concepts/conceptual_guide.md#types-of-memory).
+For more about semantic memories, see [Memory Types](../concepts/conceptual_guide.md#memory-types).
 
 ## With storage
 
@@ -158,15 +157,13 @@ my_llm = init_chat_model("anthropic:claude-3-5-sonnet-latest")
    See [Storage System](../concepts/conceptual_guide.md#storage-system) for namespace design patterns
 
 2. Extract multiple memory types at once:
-    ```python
+    ```text
     schemas=[Triple, Preference, Relationship]
     ```
     Each type can have its own extraction rules and storage patterns
-    ```
-
     Namespaces let you organize memories by user, team, or domain:
 
-    ```python
+    ```text
     # User-specific memories
     ("chat", "user_123", "triples")
 
@@ -178,7 +175,7 @@ my_llm = init_chat_model("anthropic:claude-3-5-sonnet-latest")
     ```
 
     The `{user_id}` placeholder is replaced at runtime:
-    ```python
+    ```text
     # Extract memories for User A
     enricher.invoke(
         messages=[{"role": "user", "content": "I prefer dark mode"}],
@@ -202,7 +199,7 @@ def app(messages: list):
     )
 
     # Extract and store triples (Uses store from @entrypoint context)
-    enricher.invoke({"messages": messages}) # (2)
+    enricher.invoke({"messages": messages}) 
     return response
 ```
 
@@ -212,15 +209,6 @@ def app(messages: list):
     - Manages connection pooling
     See [BaseStore guide](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.base.BaseStore) for production setup
 
-2. Production patterns:
-
-    ```python
-    # Async extraction to avoid blocking
-    async def app(messages):
-        response = await my_llm.ainvoke(messages)
-        asyncio.create_task(enricher.ainvoke({"messages": messages}))
-        return response
-    ```
 Then running the app:
 ```python
 # First conversation

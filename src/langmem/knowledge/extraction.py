@@ -943,7 +943,7 @@ def create_memory_store_enricher(
         from langmem import create_memory_store_enricher
 
         store = InMemoryStore()
-        enricher = create_memory_store_enricher("anthropic:claude-3-5-sonnet-latest")
+        enricher = create_memory_store_enricher("anthropic:claude-3-5-sonnet-latest", namespace=("memories", "{langgraph_user_id}"))
         client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 
@@ -992,8 +992,10 @@ def create_memory_store_enricher(
         from langmem import create_memory_store_enricher
 
         store = InMemoryStore()
-        enricher = create_memory_store_enricher("anthropic:claude-3-5-sonnet-latest")
-
+        enricher = create_memory_store_enricher(
+            "anthropic:claude-3-5-sonnet-latest",
+            namespace=("memories", "{langgraph_user_id}"),
+        )
 
         class PreferenceMemory(BaseModel):
             \"\"\"Store preferences about the user.\"\"\"
@@ -1066,6 +1068,7 @@ def create_memory_store_enricher(
             "anthropic:claude-3-5-sonnet-latest",  # Main model for memory processing
             query_model="anthropic:claude-3-5-haiku-latest",  # Faster model for search
             query_limit=10,  # Retrieve more relevant memories
+            namespace=("memories", "{langgraph_user_id}"),
         )
 
 

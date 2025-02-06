@@ -15,7 +15,6 @@ from langmem import create_multi_prompt_optimizer
 
 # Example team: researcher finds information, writer creates reports
 conversations = [
-    # Feedback on specific agents
     (
         [
             {"role": "user", "content": "Research quantum computing advances"},
@@ -29,9 +28,9 @@ conversations = [
             },
             {"role": "user", "content": "The report is missing implementation details"},
         ],
+        # No explicit feedback provided but the optimizer can infer from the conversation
         None,
     ),
-    # Numeric score for the team as a whole; we won't always get attributed feedback
     (
         [
             {"role": "user", "content": "Analyze new ML models"},
@@ -39,6 +38,7 @@ conversations = [
             {"role": "assistant", "content": "Based on the research, these models..."},
             {"role": "user", "content": "Great report, very thorough"},
         ],
+        # Numeric score for the team as a whole
         {"score": 0.95},
     ),
 ]

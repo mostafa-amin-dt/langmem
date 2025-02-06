@@ -27,6 +27,8 @@ Configure your environment with an API key for your favorite LLM provider:
 export ANTHROPIC_API_KEY="sk-..."  # Or another supported LLM provider
 ```
 
+## Creating an Agent
+
 Here's how to create an agent that actively manages its own long-term memory in just a few lines:
 
 ```python
@@ -83,13 +85,6 @@ The agent can now store important information from conversations, search its mem
 For more examples and detailed documentation:
 
 - [Hot Path Quickstart](hot_path_quickstart.md) - Learn how to let your LangGraph agent manage its own memory "in the hot path"
-- [Background Quickstart](background_quickstart.md) - Learn how to let your LangGraph agent manage its own memory "in the background"
-- [Core Concepts](concepts/conceptual_guide.md#memory-in-llm-applications) - Learn key ideas
+- [Background Quickstart](background_quickstart.md) - Learn how to use a memory manager "in the background"
+- [Core Concepts](concepts/conceptual_guide.md) - Learn key ideas
 - [API Reference](reference/index.md) - Full function documentation
-- [Integration Guides](guides/memory_tools.md) - Common patterns and best practices
-
-## Requirements
-
-- Python 3.11+
-- Access to a supported LLM provider (Anthropic, OpenAI, etc.)
-- Optional: a [LangGraph BaseStore](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.base.BaseStore) implementation for persistent storage (for the stateful primitives); if you're deploying on LangGraph Platform, this is included without any additional configuration.

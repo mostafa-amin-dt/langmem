@@ -52,7 +52,14 @@ class NamespaceTemplate:
 
     __slots__ = ("template", "vars")
 
-    def __init__(self, template: tuple[str, ...] | str):
+    def __init__(
+        self, template: typing.Union[tuple[str, ...], str, "NamespaceTemplate"]
+    ):
+        if isinstance(template, NamespaceTemplate):
+            self.template = template.template
+            self.vars = template.vars
+            return
+
         self.template = template if isinstance(template, tuple) else (template,)
         self.vars = {
             ix: _get_key(ns)
@@ -66,7 +73,7 @@ class NamespaceTemplate:
             configurable = config["configurable"] if "configurable" in config else {}
             try:
                 return tuple(
-                    configurable[self.vars[ix]] if ix in self.vars else ns
+                    configurable[self.vars[ix]] if ix in self.vars else ns  # type: ignore
                     for ix, ns in enumerate(self.template)
                 )
             except KeyError as e:

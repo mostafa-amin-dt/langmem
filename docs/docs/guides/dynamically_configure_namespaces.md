@@ -4,12 +4,12 @@ title: How to configure dynamic namespaces
 
 # How to configure dynamic namespaces
 
-Langmem's stateful components store memories within "namespaces" so you can isolate data by user, agent, or other values. These namespaces can contain template variables to be populated from configurable values at runtime. Below is a quick example:
+Langmem's has some utilities that manage memories in LangGraph's long-term memory store. These stateful components organize memories within "namespaces" so you can isolate data by user, agent, or other values. Namespaces can contain **template variables** to be populated from **configurable values** at runtime. Below is a quick example:
 
 ```python
 from langgraph.store.memory import InMemoryStore
 from langgraph.prebuilt import create_react_agent
-from langmem import create_manage_memory_tool
+from langmem import create_manage_memory_tool, create_search_memory_tool
 
 # Create tool with {user_id} template
 tool = create_manage_memory_tool(namespace=("memories", "{user_id}"))
@@ -17,7 +17,7 @@ tool = create_manage_memory_tool(namespace=("memories", "{user_id}"))
 app = create_react_agent("anthropic:claude-3-5-sonnet-latest", tools=[tool])
 # Use with different users
 app.invoke(
-    {"messages": [{"role": "user", "content": "I like dark mode"}]},
+    {"messages": [{"role": "user", "content": "I like dolphins"}]},
     # highlight-next-line
     config={"configurable": {"user_id": "user-123"}}
 )  # Stores in ("memories", "user-123")
@@ -37,7 +37,7 @@ tool = create_manage_memory_tool(
 )
 # ... re-create app, then:
 app.invoke(
-    "Set company policy",
+    {"messages": [{"role": "user", "content": "I'm questioning the new company health plan.."}]},
     config={"configurable": {"org_id": "acme"}}
 )
 
@@ -52,11 +52,8 @@ tool = create_search_memory_tool(
 )
 # ... re-create app, then:
 app.invoke(
-    "Remember user settings",
-    config={"configurable": {
-        "org_id": "acme",
-        "user_id": "alice"
-    }}
+    {"messages": [{"role": "user", "content": "What's our policy on dogs at work?"}]},
+    config={"configurable": {"org_id": "acme", "user_id": "alice"}}
 )
 
 # You could also organize memories by type or category if you prefer 
@@ -65,7 +62,7 @@ tool = create_manage_memory_tool(
 )
 # ... re-create app, then:
 app.invoke(
-    "Save theme preference",
+    {"messages": [{"role": "user", "content": "I like dolphins"}]},
     config={"configurable": {"user_id": "alice"}}
 )
 ```

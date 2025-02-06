@@ -78,16 +78,10 @@ store = InMemoryStore() # (1)
 
         ```python
         # Example 1: Update User A's profile
-        enricher.invoke(
-            {"messages": [{"role": "user", "content": "I'm John, an engineer at Acme"}]},
-            config={"configurable": {"user_id": "user-a"}}
-        )  # Uses namespace ("users", "user-a", "profile")
-        
-        # Example 2: Update User B's profile
-        enricher.invoke(
-            {"messages": [{"role": "user", "content": "I'm Sarah from marketing"}]},
-            config={"configurable": {"user_id": "user-b"}}
-        )  # Uses namespace ("users", "user-b", "profile")
+        # enricher.invoke(
+        #     {"messages": [{"role": "user", "content": "I'm John, an engineer at Acme"}]},
+        #     config={"configurable": {"user_id": "user-a"}}
+        # )  
         ```
         
         The namespace structure `("users", "{user_id}", "profile")` supports different profile management patterns:

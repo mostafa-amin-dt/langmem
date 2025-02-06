@@ -9,6 +9,7 @@ from typing import Any, Dict, List
 
 import langsmith as ls
 import pytest
+import vcr
 
 pytestmark = pytest.mark.anyio
 
@@ -16,6 +17,12 @@ logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
+vcr_instance = vcr.VCR(
+    cassette_library_dir="tests/vcr_cassettes",
+    record_mode=vcr.record_mode.RecordMode.NEW_EPISODES,
+    match_on=["uri", "method", "body"],
+)
 
 
 def extract_code_blocks(docstring: str) -> List[str]:
@@ -37,7 +44,9 @@ def extract_code_blocks(docstring: str) -> List[str]:
             if not in_code_block:
                 # Start of a code block
                 lang = stripped[3:].strip()
-                if lang in ("python", "", "py"):
+                if lang.endswith("skip"):
+                    in_code_block = "other"
+                elif lang.startswith(("python", "py")) or lang == "":
                     in_code_block = True
                     current_block = []
                 else:
@@ -115,7 +124,6 @@ def get_module_functions(module_path: str) -> Dict[str, Any]:
         return {}
 
 
-
 def extract_markdown_examples(file_path: Path) -> List[pytest.param]:
     """Extract Python code blocks from a markdown file."""
     if not file_path.exists():
@@ -166,7 +174,6 @@ def collect_docstring_tests():
         logger.info(f"Found {len(md_files)} markdown files")
         for md_file in md_files:
             test_cases.extend(extract_markdown_examples(md_file))
-
     for py_file in py_files:
         logger.debug(f"Processing file: {py_file}")
         funcs = get_module_functions(str(py_file))
