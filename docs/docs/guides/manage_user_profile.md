@@ -6,7 +6,7 @@ title: How to Manage User Profiles
 
 Need to maintain consistent user data across conversations? Here's how to manage profile information without data loss.
 
-## Using Functional Primitives
+## Without storage
 
 Extract profile data:
 
@@ -48,7 +48,7 @@ print(update[0])
 
 For more about profiles, see [Semantic Memory](../concepts/conceptual_guide.md#semantic-memory-facts-and-knowledge).
 
-## Managed in LangGraph's BaseStore
+## With storage
 
 To persist profiles across conversations, use `create_memory_store_enricher` with LangGraph's store system:
 
@@ -78,14 +78,14 @@ store = InMemoryStore() # (1)
 
         ```python
         # Example 1: Update User A's profile
-        enricher.enrich(
-            messages=[{"role": "user", "content": "I'm John, an engineer at Acme"}],
+        enricher.invoke(
+            {"messages": [{"role": "user", "content": "I'm John, an engineer at Acme"}]},
             config={"configurable": {"user_id": "user-a"}}
         )  # Uses namespace ("users", "user-a", "profile")
         
         # Example 2: Update User B's profile
-        enricher.enrich(
-            messages=[{"role": "user", "content": "I'm Sarah from marketing"}],
+        enricher.invoke(
+            {"messages": [{"role": "user", "content": "I'm Sarah from marketing"}]},
             config={"configurable": {"user_id": "user-b"}}
         )  # Uses namespace ("users", "user-b", "profile")
         ```

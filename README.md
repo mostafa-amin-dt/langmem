@@ -2,18 +2,18 @@
 
 LangMem helps agents learn and adapt from their interactions over time.
 
-It provides tools to extract important information from conversations, optimize agent behavior through prompt refinement, and maintain long-term memory.
+It provides tooling to extract important information from conversations, optimize agent behavior through prompt refinement, and maintain long-term memory.
 
 It offers both functional primitives you can use with any storage system and native integration with LangGraph's storage layer.
 
-This means your agents can evolve their responses based on feedback, remember user preferences, and maintain consistent behavior across sessions.
+This lets your agents continuously improve, personalize their responses, and maintain consistent behavior across sessions.
 
 ## Key features
 
 - 🧩 **Core memory API** that works with any storage system
-- 🧠 **Stateful tools** that agents can use to record and search information during active conversations "in the hot path"
-- ⚙️ **Background processor** that automatically extracts, consolidates, and updates agent knowledge and behavior rules
-- ⚡ **Native integration with LangGraph's BaseStore**, available by default in all LangGraph Platform deployments
+- 🧠 **Memory management tools** that agents can use to record and search information during active conversations "in the hot path"
+- ⚙️ **Background memory manager** that automatically extracts, consolidates, and updates agent knowledge
+- ⚡ **Native integration with LangGraph's Long-term Memory Store**, available by default in all LangGraph Platform deployments
 
 ## Installation
 

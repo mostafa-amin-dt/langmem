@@ -6,7 +6,7 @@ title: How to Extract Semantic Memories
 
 Need to extract multiple related facts from conversations? Here's how to use LangMem's collection pattern for semantic memories. For single-document patterns like user profiles, see [Manage User Profile](./manage_user_profile.md).
 
-## Using Functional Primitives
+## Without storage
 
 Extract semantic memories:
 
@@ -33,22 +33,22 @@ enricher = create_memory_enricher(
 
 1. Here our custom "`Triple`" memory schema shapes memory extraction. Without context, memories can be ambiguous when retrieved later:
     ```python
-    Memory(content="User said yes")  # No context; unhelpful
+    {"content": "User said yes"}  # No context; unhelpful
     ```
     Adding context helps the LLM apply memories correctly:
     ```python
-    Triple(
-        subject="user",
-        predicate="response",
-        object="yes",
-        context="When asked about attending team meeting"
-    )
-    Triple(
-        subject="user",
-        predicate="response",
-        object="no",
-        context="When asked if they were batman."
-    )
+    {
+        "subject": "user",
+        "predicate": "response",
+        "object": "yes",
+        "context": "When asked about attending team meeting"
+    }
+    {
+        "subject": "user",
+        "predicate": "response",
+        "object": "no",
+        "context": "When asked if they were batman"
+    }
     ```
     It's often a good idea to either schematize memories to encourage certain fields to be stored consistently, or at least to include instructions so the LLM
     saves memories that are sufficiently informative in isolation.
@@ -119,7 +119,7 @@ for m in final:
 
 For more about semantic memories, see [Memory Types](../concepts/conceptual_guide.md#types-of-memory).
 
-## Managed in LangGraph's BaseStore
+## With storage
 
 The same extraction can be managed automatically by LangGraph's BaseStore:
 

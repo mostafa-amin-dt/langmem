@@ -17,7 +17,7 @@ tool = create_manage_memory_tool(namespace=("memories", "{user_id}"))
 app = create_react_agent("anthropic:claude-3-5-sonnet-latest", tools=[tool])
 # Use with different users
 app.invoke(
-    "Remember I like dark mode",
+    {"messages": [{"role": "user", "content": "I like dark mode"}]},
     # highlight-next-line
     config={"configurable": {"user_id": "user-123"}}
 )  # Stores in ("memories", "user-123")

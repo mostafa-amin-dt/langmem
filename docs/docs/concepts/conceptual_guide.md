@@ -4,11 +4,18 @@ title: Core Concepts
 
 # Memory in LLM Applications
 
-Memory enables an agent to learn from interactions and adapt over time to user preferences. LangMem equips you with a toolkit to store, retrieve, and evolve memories across conversations. Oversimplified, all of these utilities define ways to extract and manage information from trajectories by prompting LLMs to generate structured information based on context and an (optional) existing memory state.
+Memory allows agents to remember important information across conversations. LangMem provides ways to extract meaningful details from chats, store them, and use them to improve future interactions. At its core, each memory operation in LangMem follows the same pattern:
+
+1. Accept conversation(s) and current memory state
+2. Prompt an LLM to determine how to expand or consolidate the memory state
+3. Respond with the updated memory state
+
+How you represent and manage memories depends on what your agent needs to learn. Read on to learn about the different types of memory and why they are useful.
 
 ## Types of Memory
 
 Memory in LLM applications can reflect some of the structure of human memory, with each type serving a distinct purpose in building adaptive, context-aware systems:
+
 
 | Memory Type | Purpose | Storage Pattern | When to Use |
 |-------------|---------|-----------------|-------------|
@@ -20,7 +27,11 @@ Memory in LLM applications can reflect some of the structure of human memory, wi
 
 Semantic memory stores the essential facts and other information that ground an agent's responses. Two common representations of semantic memory are:
 
-1. **Collections** store information as a growing set of memory documents, each capturing a distinct piece of knowledge. Rather than updating existing documents, new information creates new entries—preserving the history of how knowledge evolves. This pattern works well when you need to track how understanding develops over time, like learning a user's preferences through multiple conversations.
+#### Profile
+
+Semantic memories can be managed in different ways. For example, memories can be a single, continuously updated "profile" of well-scoped and specific information about a user, organization, or other entity (including the agent itself).
+
+![Collection update process](img/update-list.png)
 
 ??? example "Extracting semantic memories as collections"
 
@@ -42,7 +53,7 @@ Semantic memory stores the essential facts and other information that ground an 
          {"role": "user", "content": "Mostly NLP and large language models"}
       ]
 
-      memories = enricher.invoke(conversation)
+      memories = enricher.invoke({"messages": conversation})
       # Example memories:
       # [
       #     {"fact": "User works at Acme Corp", "type": "employment", "importance": "high"},
@@ -52,6 +63,8 @@ Semantic memory stores the essential facts and other information that ground an 
       ```
 
 2. **Profiles** maintain a single document that represents the current state, like a user's active preferences or system settings. When new information arrives, it updates the existing document rather than creating a new one. This approach is ideal when you only care about the latest state, such as a user's current theme preference or language setting.
+
+![Profile update process](img/update-profile.png)
 
 ??? example "Managing user preferences with profiles"
 
@@ -79,7 +92,7 @@ Semantic memory stores the essential facts and other information that ground an 
          {"role": "user", "content": "Also set the language to Python"}
       ]
 
-      profile = enricher.invoke(conversation)
+      profile = enricher.invoke({"messages": conversation})
       # Example profile:
       # UserProfile(
       #     preferences={
@@ -140,7 +153,7 @@ Episodic memory preserves successful interactions as learning examples that guid
     ]
 
     # Extract episode
-    episodes = enricher.invoke(conversation)
+    episodes = enricher.invoke({"messages": conversation})
     # Example episode:
     # {
     #     "observation": "User asks about binary trees, mentions familiarity with family trees",
@@ -154,6 +167,8 @@ Episodic memory preserves successful interactions as learning examples that guid
 ### Procedural Memory: System Instructions
 
 Procedural memory encodes how an agent should behave and respond. It starts with system prompts that define core behavior, then evolves through feedback and experience. As the agent interacts with users, it refines these instructions, learning which approaches work best for different situations.
+
+![Instructions update process](img/update-instructions.png)
 
 ??? example "Optimizing prompts based on feedback"
 
@@ -189,9 +204,12 @@ Memories can form in two ways, each suited for different needs. Active formation
 | Active | Higher | Immediate | During Response | Critical Context Updates |
 | Background | None | Delayed | Between/After Calls | Pattern Analysis, Summaries |
 
+![Hot path vs background memory processing](img/hot_path_vs_background.png)
+
 ### Conscious Formation
 
 In active formation, the agent makes real-time decisions about what to remember during a conversation. This approach excels when immediate context is crucial, like capturing user preferences or important details that affect the current interaction.
+
 
 ??? example "Active memory formation"
 
@@ -215,6 +233,7 @@ In active formation, the agent makes real-time decisions about what to remember 
 ### Subconcious Formation
 
 "Subconcious" memory formation refers to the technique of prompting an LLM to reflect on a conversation after it occurs (or after it has been inactive for some period), finding patterns and extracting insights without slowing down the immediate interaction or adding complexity to the agent's tool choice decisions. This approach is perfect for ensuring higher recall of exracted information.
+
 
 ??? example "Background pattern extraction"
 
@@ -245,7 +264,7 @@ At its heart, LangMem provides functions that transform memory state without sid
 
 These core functions are right for you if you need maximum control and want to integrate memory management into your own persistence layer.
 
-??? example "Using functional primitives"
+??? example "Without storage"
 
     ```python
     from langmem import create_memory_enricher
@@ -342,36 +361,10 @@ See the [NamespaceTemplate](../reference/utils.md#langmem.utils.NamespaceTemplat
 
 ### Flexible Retrieval
 
-LangMem uses LangGraph's [BaseStore](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.base.BaseStore) interface for memory storage and retrieval. The storage system supports multiple ways to retrieve memories:
+If you use one of the managed APIs, LangMem will integrate directly with LangGraph's [BaseStore](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.base.BaseStore) interface for memory storage and retrieval. The storage system supports multiple ways to retrieve memories:
 
 - [**Direct Access**](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.base.BaseStore.get): Get a specific memory by key
 - [**Semantic Search**](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.base.BaseStore.search): Find memories by semantic similarity
 - [**Metadata Filtering**](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.base.BaseStore.search): Filter memories by their attributes
-
-??? example "Using LangGraph's storage features"
-
-    ```python
-    # Get exact memory by key
-    preferences = store.get(namespace, "ui_preferences")
-
-    # Search by semantic meaning
-    similar = store.search(
-        namespace,
-        query="What does the user like in terms of UI?"
-    )
-
-    # Filter using metadata
-    high_confidence = store.search(
-        namespace,
-        filter={"confidence": {"$gt": 0.9}}
-    )
-
-    # Sort by recency
-    recent = store.search(
-        namespace,
-        sort={"updated_at": "desc"},
-        limit=5
-    )
-    ```
 
 For more details on storage capabilities, see the [LangGraph Storage documentation](https://langchain-ai.github.io/langgraph/reference/store/).
