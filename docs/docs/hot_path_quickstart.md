@@ -7,8 +7,10 @@ description: Get started with LangMem
 
 Memories can be created in two ways:
 
-1. In the hot path: the agent consciously saves notes using tools.
+1. 👉 **In the hot path (this guide):** the agent consciously saves notes using tools.
 2. In the background: memories are "subconsciously" extracted automatically from conversations (see [Background Quickstart](background_quickstart.md)).
+
+![Hot Path Quickstart Diagram](concepts/img/hot_path_vs_background.png)
 
 In this guide, we will create a LangGraph agent that actively manages its own long-term memory through LangMem's `manage_memory` tool.
 

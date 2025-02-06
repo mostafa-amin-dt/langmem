@@ -1,14 +1,16 @@
 ---
-title: Reflection Quickstart Guide
+title: Background Quickstart Guide
 description: Get started processing memories "in the background".
 ---
 
-# Reflection Quickstart Guide
+# Background Quickstart Guide
 
 Memories can be created in two ways:
 
 1. In the hot path: the agent consciously saves notes using tools (see [Hot path quickstart](hot_path_quickstart.md)).
-2. In the background: memories are "subconsciously" extracted automatically from conversations.
+2. 👉**In the background (this guide)**: memories are "subconsciously" extracted automatically from conversations.
+
+![Hot Path Quickstart Diagram](concepts/img/hot_path_vs_background.png)
 
 This guide shows you how to extract and consolidate memories in the background using [`create_memory_store_enricher`](). The agent will continue as normal while memories are processed in the background.
 
