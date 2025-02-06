@@ -9,3 +9,9 @@ title: Utilities API Reference
     options:
       members:
         - NamespaceTemplate
+
+::: langmem.reflection
+    handler: python
+    options:
+      members:
+        - ReflectionExecutor

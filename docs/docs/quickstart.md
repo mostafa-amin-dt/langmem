@@ -5,7 +5,7 @@ description: Get started with LangMem
 
 # Quickstart Guide
 
-This guide will help you get started with LangMem, showing you how to create an agent with long-term memory.
+In this guide, we will create a LangGraph agent that actively manages its own long-term memory through LangMem's `manage_memory` tool.
 
 ## Installation & Setup
 
@@ -21,26 +21,28 @@ Configure your environment with an API key for your favorite LLM provider:
 export ANTHROPIC_API_KEY="sk-..."  # Or another supported LLM provider
 ```
 
-## Basic Example
+## Agent setup
 
 Here's a complete example showing how to create an agent with memory that persists across conversations:
 
-``` python hl_lines="14-19 35-38"
-from langgraph.checkpoint.memory import MemorySaver
-from langgraph.prebuilt import create_react_agent
-from langgraph.store.memory import InMemoryStore
-from langgraph.utils.config import get_store
+``` python hl_lines="20-25 40-43"
+# Adds durable execution & checkpointing
+from langgraph.checkpoint.memory import MemorySaver # (3)
+# Opinionated tool-calling agent class
+from langgraph.prebuilt import create_react_agent # (4)
+# Ephemeral in-memory store
+from langgraph.store.memory import InMemoryStore # (5)
+# Lets us access the configured store "in-context"
+from langgraph.utils.config import get_store # (6)
 
-from langmem import create_manage_memory_tool, create_search_memory_tool
+from langmem import (
+    create_manage_memory_tool, # Lets agent create, update, and delete memories
+    create_search_memory_tool, # Lets the agent search its memory
+)
 
-# Create a store and memory saver
-store = InMemoryStore() # (1)
+store = InMemoryStore()
 memory = MemorySaver()
-```
 
-1. For production deployments, use a persistent store like [`AsyncPostgresStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.AsyncPostgresStore). `InMemoryStore` works fine for development but doesn't persist data between restarts.
-
-```python
 def prompt(state):
     store = get_store()
     memories = store.search(
@@ -106,6 +108,22 @@ agent = create_react_agent(
 
 2.  We're searching within all items in namespace `("memories", configurable["user_id"])` here, which is the one we configured for our [memory tools](guides/memory_tools.md).
 
+3. The [`MemorySaver`](https://langchain-ai.github.io/langgraph/reference/checkpoints/) checkpointer maintains conversation history within each "thread". 
+
+    You can think of threads like conversations, akin to an email thread. This "short-term" memory tracks the state of the agent/graph , ensuring that conversations remain independent. For production deployments, use a persistent store like [`AsyncPostgresStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.AsyncPostgresStore). `InMemoryStore` works fine for development but doesn't persist data between restarts.
+
+4. These tools (and any of the other stateful components) will also work in any node in `StateGraph`, `@entrypoint`, and any other `langgraph` graph. We're using `create_react_agent` here because it's easy to use and concise to write. Check out the [api ref](https://langchain-ai.github.io/langgraph/reference/prebuilt/?h=create+react#langgraph.prebuilt.chat_agent_executor.create_react_agent) for more information on what the agent is.
+
+5. The [`InMemoryStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.PostgresStore.asearch) provides ephemeral storage suitable for development. In production, replace this with a DB-backed [`BaseStore`](https://langchain-ai.github.io/langgraph/reference/stores/#basestore) implementation for persistence. When deploying on the LangGraph platform, a postgres-backed store is automatically provided. This store enables saving and retrieving information from any namespace, letting you scope memories by user, agent, organization, or other arbitrary categories.
+
+    Note that the `Store` is different from the checkpointer / "MemorySaver". The store lets you store any information according to preferred hierarchy. The checkpointer tracks state (including the conversation history) within each "thread" for durable execution.
+
+    They can address overlapping concerns, but the store is more flexible and well-suited for long-term, cross-thread memory.
+
+6. You could also pass the store through each function explicitly, but it can be convenient to fetch the store or other configured infromation from the context. This makes it easier for you to do things like define tools the agent can call without having to do tricky things with the tool function signatures.
+
+## Using the agent
+
 This agent can now be used to interact with different users. For example:
 
 ```python
@@ -160,11 +178,6 @@ print(response["messages"][-1].content)
 
 This example demonstrates memory persistence across conversations and thread isolation between users. The agent stores the user's dark mode preference in one thread but cannot access it from another thread.
 
-## Storage and Memory
-
-The [`InMemoryStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.PostgresStore.asearch) provides ephemeral storage suitable for development. In production, replace this with a DB-backed [`BaseStore`](https://langchain-ai.github.io/langgraph/reference/stores/#basestore) implementation for persistence. When deploying on the LangGraph platform, a postgres-backed store is automatically provided. This store enables saving and retrieving information from any namespace, letting you scope memories by user, agent, organization, or other arbitrary categories.
-
-The [`MemorySaver`](https://langchain-ai.github.io/langgraph/reference/checkpoints/) checkpointer maintains conversation history within each thread. This "short-term" memory is isolated by `thread_id`, ensuring that conversations remain independent.
 
 ## Memory Tools
 

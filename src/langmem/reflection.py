@@ -1,14 +1,15 @@
+import functools
+import logging
 import queue
 import threading
 import time
 import typing
 import uuid
 from concurrent.futures import Future
-from contextvars import Context, copy_context
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Protocol
 
-from langchain_core.runnables import Runnable
+from langchain_core.runnables import Runnable, RunnableConfig
 from langchain_core.runnables.config import var_child_runnable_config
 from langgraph.config import get_config
 from langgraph.constants import CONF, CONFIG_KEY_STORE
@@ -17,8 +18,11 @@ from langgraph_sdk import get_client, get_sync_client
 from langsmith.utils import ContextThreadPoolExecutor
 from typing_extensions import TypedDict
 
+from langmem import utils
+
 if TYPE_CHECKING:
     from langgraph_sdk.client import LangGraphClient, SyncLangGraphClient
+logger = logging.getLogger(__name__)
 SENTINEL = object()
 
 
@@ -49,6 +53,8 @@ class Executor(Protocol):
         self,
         payload: dict[str, Any],
         /,
+        config: RunnableConfig | None = None,
+        *,
         after_seconds: int = 0,
         thread_id: Optional[typing.Union[str, uuid.UUID]] = None,
     ) -> Future: ...
@@ -56,17 +62,21 @@ class Executor(Protocol):
     def search(
         self,
         query: Optional[str] = None,
+        *,
         filter: dict[str, Any] | None = None,
         limit: int = 10,
         offset: int = 0,
+        namespace: str | tuple[str, ...] | None = None,
     ) -> list[MemoryItem]: ...
 
     async def asearch(
         self,
         query: Optional[str] = None,
+        *,
         filter: dict[str, Any] | None = None,
         limit: int = 10,
         offset: int = 0,
+        namespace: str | tuple[str, ...] | None = None,
     ) -> list[MemoryItem]: ...
 
     def __enter__(self) -> "Executor": ...
@@ -76,8 +86,8 @@ class Executor(Protocol):
 
 @typing.overload
 def ReflectionExecutor(
-    namespace: str | tuple[str, ...],
     reflector: str,
+    namespace: str | tuple[str, ...],
     /,
     *,
     url: Optional[str] = None,
@@ -88,7 +98,6 @@ def ReflectionExecutor(
 
 @typing.overload
 def ReflectionExecutor(
-    namespace: str | tuple[str, ...],
     reflector: Runnable,
     /,
     *,
@@ -97,8 +106,8 @@ def ReflectionExecutor(
 
 
 def ReflectionExecutor(
-    namespace: str | tuple[str, ...],
     reflector: Runnable | str,
+    namespace: str | tuple[str, ...] | None = None,
     /,
     *,
     url: Optional[str] = None,
@@ -120,13 +129,15 @@ def ReflectionExecutor(
         Either a LocalReflectionExecutor or RemoteReflectionExecutor based on the reflector type.
     """
     if isinstance(reflector, str):
+        if namespace is None:
+            raise ValueError("namespace is required for remote reflection")
         return RemoteReflectionExecutor(
             namespace, reflector, url=url, client=client, sync_client=sync_client
         )
     else:
         if store is None:
             raise ValueError("store is required for local reflection")
-        return LocalReflectionExecutor(namespace, reflector, store)
+        return LocalReflectionExecutor(reflector, store)
 
 
 class RemoteReflectionExecutor:
@@ -151,10 +162,12 @@ class RemoteReflectionExecutor:
         self,
         payload: dict[str, Any],
         /,
+        config: RunnableConfig | None = None,
+        *,
         after_seconds: int = 0,
         thread_id: Optional[typing.Union[str, uuid.UUID]] = SENTINEL,  # type: ignore[arg-type]
     ) -> Future:
-        config = get_config()
+        config = config or get_config()
         if thread_id is SENTINEL and CONF in config and "thread_id" in config[CONF]:
             thread_id = config["configurable"]["thread_id"]
 
@@ -187,12 +200,19 @@ class RemoteReflectionExecutor:
     def search(
         self,
         query: Optional[str] = None,
+        *,
         filter: dict[str, Any] | None = None,
         limit: int = 10,
         offset: int = 0,
+        namespace: str | tuple[str, ...] | None = None,
     ) -> list[MemoryItem]:
+        ns = (
+            self.namespace
+            if namespace is None
+            else (namespace if isinstance(namespace, tuple) else (namespace,))
+        )
         results = self._client.store.search_items(
-            self.namespace, query=query, filter=filter, limit=limit, offset=offset
+            ns, query=query, filter=filter, limit=limit, offset=offset
         )
         items = typing.cast(list[MemoryItem], results["items"])
         for it in items:
@@ -205,9 +225,15 @@ class RemoteReflectionExecutor:
         filter: dict[str, Any] | None = None,
         limit: int = 10,
         offset: int = 0,
+        namespace: str | tuple[str, ...] | None = None,
     ) -> list[MemoryItem]:
+        ns = (
+            self.namespace
+            if namespace is None
+            else (namespace if isinstance(namespace, tuple) else (namespace,))
+        )
         results = await self._aclient.store.search_items(
-            self.namespace, query=query, filter=filter, limit=limit, offset=offset
+            ns, query=query, filter=filter, limit=limit, offset=offset
         )
         items = typing.cast(list[MemoryItem], results["items"])
         for it in items:
@@ -228,32 +254,36 @@ class RemoteReflectionExecutor:
 class LocalReflectionExecutor:
     """Handles local reflection tasks with queuing and cancellation support."""
 
-    def __init__(
-        self, namespace: str | tuple[str, ...], reflector: Runnable, store: BaseStore
-    ):
-        self.namespace = namespace if isinstance(namespace, tuple) else (namespace,)
+    def __init__(self, reflector: Runnable, store: BaseStore):
+        namespace = getattr(reflector, "namespace", None)
+        if namespace is None:
+            raise ValueError("reflector must have a namespace attribute")
+        self._namespace: utils.NamespaceTemplate = namespace
         self._reflector = reflector
         self._store = store
         self._task_queue = queue.PriorityQueue()
         self._pending_tasks: dict[str, PendingTask] = {}
-        self._worker_running = True
-        self._worker = threading.Thread(target=_process_queue(self), daemon=True)
+        self._worker = threading.Thread(
+            target=functools.partial(_process_queue, self), daemon=True
+        )
         self._worker.start()
 
     def submit(
         self,
         payload: dict[str, Any],
+        /,
+        config: RunnableConfig | None = None,
+        *,
         after_seconds: int = 0,
         thread_id: Optional[typing.Union[str, uuid.UUID]] = SENTINEL,  # type: ignore[arg-type]
     ) -> Future:
-        config = get_config()
+        config = config or get_config()
         if thread_id is SENTINEL:
             if CONF in config and "thread_id" in config[CONF]:
                 thread_id = config["configurable"]["thread_id"]
         elif thread_id:
             thread_id = str(thread_id)
         thread_id = typing.cast(typing.Optional[str], thread_id)
-        # Cancel any existing task with the same thread_id
         if thread_id in self._pending_tasks:
             existing = self._pending_tasks.get(thread_id)
             if existing:
@@ -262,6 +292,7 @@ class LocalReflectionExecutor:
 
         future = Future()
         cancel_event = threading.Event()
+
         task = PendingTask(
             thread_id=thread_id,
             payload=payload,
@@ -269,7 +300,7 @@ class LocalReflectionExecutor:
             submit_time=time.time(),
             future=future,
             cancel_event=cancel_event,
-            context=copy_context(),
+            config=config,
         )
         if thread_id:
             self._pending_tasks[thread_id] = task
@@ -279,24 +310,38 @@ class LocalReflectionExecutor:
     def search(
         self,
         query: Optional[str] = None,
+        *,
         filter: dict[str, Any] | None = None,
         limit: int = 10,
         offset: int = 0,
+        namespace: str | tuple[str, ...] | None = None,
     ) -> list[MemoryItem]:
+        ns = (
+            self._namespace()
+            if namespace is None
+            else (namespace if isinstance(namespace, tuple) else (namespace,))
+        )
         results = self._store.search(
-            self.namespace, query=query, filter=filter, limit=limit, offset=offset
+            ns, query=query, filter=filter, limit=limit, offset=offset
         )
         return typing.cast(list[MemoryItem], [it.dict() for it in results])
 
     async def asearch(
         self,
         query: Optional[str] = None,
+        *,
         filter: dict[str, Any] | None = None,
         limit: int = 10,
         offset: int = 0,
+        namespace: str | tuple[str, ...] | None = None,
     ) -> list[MemoryItem]:
+        ns = (
+            self._namespace()
+            if namespace is None
+            else (namespace if isinstance(namespace, tuple) else (namespace,))
+        )
         results = await self._store.asearch(
-            self.namespace, query=query, filter=filter, limit=limit, offset=offset
+            ns, query=query, filter=filter, limit=limit, offset=offset
         )
         return typing.cast(list[MemoryItem], [it.dict() for it in results])
 
@@ -326,11 +371,11 @@ class PendingTask(NamedTuple):
     submit_time: float
     future: Future
     cancel_event: threading.Event
-    context: Context
+    config: RunnableConfig | None
 
 
-def _process_queue(self):
-    while self._worker_running:
+def _process_queue(self: "LocalReflectionExecutor"):
+    while self._worker.is_alive():
         try:
             execute_at, task = self._task_queue.get(timeout=1)
 
@@ -347,11 +392,12 @@ def _process_queue(self):
                 continue
 
             try:
-                config = get_config()
+                config = task.config or {}
                 configurable = config.setdefault(CONF, {})
                 configurable[CONFIG_KEY_STORE] = self._store
-                var_child_runnable_config.set(config)
+                original = var_child_runnable_config.set(config)
                 result = self._reflector.invoke(task.payload)
+                var_child_runnable_config.set(original.old_value)
                 task.future.set_result(result)
             except Exception as e:
                 task.future.set_exception(e)
@@ -361,7 +407,7 @@ def _process_queue(self):
         except queue.Empty:
             continue
         except Exception as e:
-            print(f"Worker error: {e}")
+            logger.error(f"Error in local reflection worker: {e}")
 
 
 __all__ = ["LocalReflectionExecutor", "RemoteReflectionExecutor", "ReflectionExecutor"]
