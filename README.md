@@ -1,12 +1,12 @@
 # LangMem
 
-LangMem exports utilities for extracting, updating, generalizing, storing, and retrieving information from interactions in LLM applications. It offers:
+Build memory systems for your agents with full control over memory extraction, maintenance, and persistence. LangMem provides:
 
-1. Functions to extract and enrich memories from trajectories & interactions
-1. Configurable memory managers and agent tools that integrate with LangGraph's storage layer
-1. Deployable entrypoints that let you build and deploy memory systems in LangGraph Platform
+1. Memory extraction from LLM interactions
+2. Storage-agnostic memory management
+3. Ready-to-deploy LangGraph integration
 
-This lets you build your own memory layer faster, using the level of abstraction and durability that suits your needs. Compared to raw LLM extraction, LangMem handles memory management configuration, letting you define how to form new memories and evolve or prune old ones through validated types. Compared to high-level frameworks, it exposes the lower-level primitives used to build exactly the memory system you want without being forced into adopting a specific database or storage layer.
+LangMem sits between raw LLM calls and high-level frameworks. You get type-safe memory management primitives you can customize and use in any application. If you _are_ using LangGraph platform, LangMem can integrate directly with your app's storage layer for less hassle.
 
 ## Installation
 
@@ -70,12 +70,6 @@ print(response["messages"][-1].content)
 2. The agent maintains context between chats. When you ask about previous interactions, the LLM can invoke [`create_search_memory_tool`](reference/tools.md#langmem.create_search_memory_tool) to search for memories with similar content. See [Memory Tools](guides/memory_tools.md) to customize memory storage and retrieval, and see the [agent quickstart](quickstart.md) for a more complete example on how to include memories without the agent having to expliictly search.
 
 The agent can now store important information from conversations, search its memory when relevant, and persist knowledge across conversations.
-
-For more control over memory management, check out:
-
-- [Memory Tools](guides/memory_tools.md) - Configure how memories are handled
-- [Functional Primitives](concepts/conceptual_guide.md#functional-core) - Build custom memory systems
-- [Storage Options](guides/memory_tools.md#storage) - Add persistent storage
 
 ## Next Steps
 
