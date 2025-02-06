@@ -5,6 +5,11 @@ description: Get started with LangMem
 
 # Hot Path Quickstart Guide
 
+Memories can be created in two ways:
+
+1. In the hot path: the agent consciously saves notes using tools.
+2. In the background: memories are "subconsciously" extracted automatically from conversations (see [Background Quickstart](background_quickstart.md)).
+
 In this guide, we will create a LangGraph agent that actively manages its own long-term memory through LangMem's `manage_memory` tool.
 
 ## Prerequisites
@@ -43,7 +48,7 @@ def prompt(state):
     store = get_store()  # Get store from configured contextvar (5)
     memories = store.search(
         # Search within the same namespace as the one
-        # we've configured for the agent (2)
+        # we've configured for the agent
         namespace=("memories",),
         query=state["messages"][-1].content,
     )
@@ -60,12 +65,14 @@ def prompt(state):
 store = InMemoryStore() # Store extracted memories (4)
 checkpointer = MemorySaver() # Checkpoint graph state (2)
 
-agent = create_react_agent( # (3)
+agent = create_react_agent( 
     "anthropic:claude-3-5-sonnet-latest",
     # highlight-next-line
     tools=[ # Add memory tools (3)
         # The agent can call "manage_memory" to
         # create, update, and delete memories by ID
+        # Namespaces add scope to memories. To
+        # scope memories per-user, do ("memories", "{user_id}"): (6)
         create_manage_memory_tool(namespace=("memories",)),
         # The agent can call "search_memory" if it needs to recall
         # similar memories for a given conversation
@@ -96,7 +103,7 @@ agent = create_react_agent( # (3)
 
     You can think of threads like conversations, akin to an email thread. This "short-term" memory tracks the state of the agent/graph , ensuring that conversations remain independent. For production deployments, use a persistent store like [`AsyncPostgresStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.AsyncPostgresStore). `InMemoryStore` works fine for development but doesn't persist data between restarts.
 
-3. These tools (and any of the other stateful components) will also work in any node in [`StateGraph`](https://langchain-ai.github.io/langgraph/reference/graphs/#langgraph.graph.state.StateGraph), [`@entrypoint`](https://langchain-ai.github.io/langgraph/reference/func/#langgraph.func.entrypoint), and any other `langgraph` graph. We're using `create_react_agent` here because it's easy to use and concise to write. Check out its [api ref](https://langchain-ai.github.io/langgraph/reference/prebuilt/?h=create+react#langgraph.prebuilt.chat_agent_executor.create_react_agent) for more information on what the agent is.
+3. These tools (and any of the other stateful components) will also work in any node in [`StateGraph`](https://langchain-ai.github.io/langgraph/reference/graphs/#langgraph.graph.state.StateGraph), [`@entrypoint`](https://langchain-ai.github.io/langgraph/reference/func/#langgraph.func.entrypoint), and any other `langgraph` graph. Wie're using `create_react_agent` here because it's easy to use and concise to write. Check out its [api ref](https://langchain-ai.github.io/langgraph/reference/prebuilt/?h=create+react#langgraph.prebuilt.chat_agent_executor.create_react_agent) for more information on what the agent is.
 
 4. The [`InMemoryStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.PostgresStore.asearch) provides ephemeral storage suitable for development. In production, replace this with a DB-backed [`BaseStore`](https://langchain-ai.github.io/langgraph/reference/stores/#basestore) implementation for persistence. When deploying on the LangGraph platform, a postgres-backed store is automatically provided. This store enables saving and retrieving information from any namespace, letting you scope memories by user, agent, organization, or other arbitrary categories.
 
@@ -104,9 +111,11 @@ agent = create_react_agent( # (3)
 
     They can address overlapping concerns, but the store is more flexible and well-suited for long-term, cross-thread memory.
 
-5. `get_store()` fetches store you compiled in the graph from within the given node or function. This is easier than having to pass it through each function explicitly.
+5. `get_store()` gets whichever store you've compiled into the graph. This is easier than having to pass it through each function explicitly.
 
     LangGraph manages some objects (such as the `config`, `store`, etc.) using [contextvars](https://docs.python.org/3/library/contextvars.html); this lets you fetch the store or other configured infromation from the context without having to add them to all your function signatures. This is especially convenient when fetching contextual information with `tools` or within the `prompt` function here.
+
+6. To see how to dynamically configure namespaces, see [how to dynamically configure namespaces](guides/dynamically_configure_namespaces.md).
 
 ## Using the agent
 

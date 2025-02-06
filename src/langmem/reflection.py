@@ -101,7 +101,7 @@ def ReflectionExecutor(
     reflector: Runnable,
     /,
     *,
-    store: BaseStore,
+    store: Optional[BaseStore] = None,
 ) -> "LocalReflectionExecutor": ...
 
 
@@ -135,8 +135,6 @@ def ReflectionExecutor(
             namespace, reflector, url=url, client=client, sync_client=sync_client
         )
     else:
-        if store is None:
-            raise ValueError("store is required for local reflection")
         return LocalReflectionExecutor(reflector, store)
 
 
@@ -254,7 +252,7 @@ class RemoteReflectionExecutor:
 class LocalReflectionExecutor:
     """Handles local reflection tasks with queuing and cancellation support."""
 
-    def __init__(self, reflector: Runnable, store: BaseStore):
+    def __init__(self, reflector: Runnable, store: BaseStore | None):
         namespace = getattr(reflector, "namespace", None)
         if namespace is None:
             raise ValueError("reflector must have a namespace attribute")
@@ -263,10 +261,12 @@ class LocalReflectionExecutor:
         self._store = store
         self._task_queue = queue.PriorityQueue()
         self._pending_tasks: dict[str, PendingTask] = {}
+        self._worker_running = True
         self._worker = threading.Thread(
             target=functools.partial(_process_queue, self), daemon=True
         )
         self._worker.start()
+        self._store_lock = threading.Lock()
 
     def submit(
         self,
@@ -277,12 +277,29 @@ class LocalReflectionExecutor:
         after_seconds: int = 0,
         thread_id: Optional[typing.Union[str, uuid.UUID]] = SENTINEL,  # type: ignore[arg-type]
     ) -> Future:
-        config = config or get_config()
+        try:
+            config = config or get_config()
+        except RuntimeError as e:
+            raise ValueError(
+                "Could not find configurable context. Please ensure you call "
+                "executor.submit() within a LangGraph node or entrypoint"
+                " OR provide a config explicitly via executor.submit(..., config=config)."
+            ) from e
         if thread_id is SENTINEL:
             if CONF in config and "thread_id" in config[CONF]:
                 thread_id = config["configurable"]["thread_id"]
         elif thread_id:
             thread_id = str(thread_id)
+        if self._store is None:
+            with self._store_lock:
+                if self._store is None:
+                    try:
+                        self._store = config[CONF][CONFIG_KEY_STORE]
+                    except KeyError:
+                        raise ValueError(
+                            "ReflectionExecutor could not resolve store to persist memories to."
+                            " Please initialize the store with ReflectionExecutor(my_memory_manager, store=your_base_store)."
+                        ) from None
         thread_id = typing.cast(typing.Optional[str], thread_id)
         if thread_id in self._pending_tasks:
             existing = self._pending_tasks.get(thread_id)
@@ -375,7 +392,7 @@ class PendingTask(NamedTuple):
 
 
 def _process_queue(self: "LocalReflectionExecutor"):
-    while self._worker.is_alive():
+    while self._worker_running:
         try:
             execute_at, task = self._task_queue.get(timeout=1)
 

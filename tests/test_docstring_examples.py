@@ -115,14 +115,14 @@ def get_module_functions(module_path: str) -> Dict[str, Any]:
         return {}
 
 
-def extract_readme_examples():
-    """Extract Python code blocks from README.md."""
-    readme_path = Path(__file__).parent.parent / "README.md"
-    if not readme_path.exists():
-        logger.warning(f"README.md not found at {readme_path}")
+
+def extract_markdown_examples(file_path: Path) -> List[pytest.param]:
+    """Extract Python code blocks from a markdown file."""
+    if not file_path.exists():
+        logger.warning(f"Markdown file not found at {file_path}")
         return []
 
-    with open(readme_path, "r", encoding="utf-8") as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
 
     code_blocks = extract_code_blocks(content)
@@ -133,28 +133,39 @@ def extract_readme_examples():
     ]
 
     if python_blocks:
-        logger.info(f"Adding {len(python_blocks)} README code blocks")
+        logger.info(f"Adding {len(python_blocks)} code blocks from {file_path}")
         return [
             pytest.param(
                 None,  # No module
-                "README.md",  # Function name placeholder
+                str(file_path),  # Use file path as function name
                 python_blocks,  # All Python blocks together
-                id="README.md::examples",
+                id=f"{file_path.name}::examples",
             )
         ]
     return []
 
 
 def collect_docstring_tests():
-    """Collect all docstring Python code blocks from the 'src/' tree and README.md."""
+    """Collect all docstring Python code blocks from the 'src/' tree and markdown files."""
     src_dir = Path(__file__).parent.parent / "src"
+    docs_dir = Path(__file__).parent.parent / "docs" / "docs"
     logger.info(f"Scanning for Python files in {src_dir}")
     py_files = list(src_dir.rglob("*.py"))
     logger.info(f"Found {len(py_files)} Python files")
 
     test_cases = []
 
-    test_cases.extend(extract_readme_examples())
+    # Process README
+    readme_path = Path(__file__).parent.parent / "README.md"
+    test_cases.extend(extract_markdown_examples(readme_path))
+
+    # Process docs directory
+    if docs_dir.exists():
+        logger.info(f"Scanning for markdown files in {docs_dir}")
+        md_files = list(docs_dir.rglob("*.md"))
+        logger.info(f"Found {len(md_files)} markdown files")
+        for md_file in md_files:
+            test_cases.extend(extract_markdown_examples(md_file))
 
     for py_file in py_files:
         logger.debug(f"Processing file: {py_file}")

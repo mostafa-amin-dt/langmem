@@ -920,13 +920,13 @@ def create_memory_store_enricher(
     participant Store
     participant LLM
 
-    Client->>Enricher: messages
+    Client->>Enricher: conversation history
     Enricher->>Store: find similar memories
     Store-->>Enricher: memories
     Enricher->>LLM: analyze & extract
     LLM-->>Enricher: memory updates
     Enricher->>Store: apply changes
-    Enricher-->>Client: result
+    Enricher-->>Client: updated memories
     ```
 
     ???+ example "Examples"
