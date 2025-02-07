@@ -2,6 +2,7 @@ import typing
 import uuid
 
 from langchain_core.tools import StructuredTool
+from langgraph.store.base import BaseStore
 from langgraph.utils.config import get_store
 
 from langmem import utils
@@ -21,6 +22,7 @@ def create_manage_memory_tool(
     actions_permitted: typing.Optional[
         tuple[typing.Literal["create", "update", "delete"], ...]
     ] = ("create", "update", "delete"),
+    store: typing.Optional[BaseStore] = None,
 ):
     """Create a tool for managing persistent memories in conversations.
 
@@ -46,6 +48,8 @@ def create_manage_memory_tool(
             Defaults to a predefined set of guidelines for proactive memory management.
         namespace: The namespace structure for organizing memories in LangGraph's BaseStore.
             Uses runtime configuration with placeholders like `{langgraph_user_id}`.
+        store: The BaseStore to use for searching. If not provided, the tool will use the configured BaseStore in your graph or entrypoint.
+            Only set if you intend on using these tools outside the LangGraph context.
 
     !!! note "Namespace Configuration"
         The namespace is configured at runtime through the `config` parameter:
@@ -65,6 +69,7 @@ def create_manage_memory_tool(
 
     !!! example "Examples"
         ```python
+        from langmem import create_manage_memory_tool
         from langgraph.func import entrypoint
         from langgraph.store.memory import InMemoryStore
 
@@ -234,6 +239,7 @@ def create_manage_memory_tool(
     action_type = typing.Literal[*actions_permitted]
     assert actions_permitted, "actions_permitted cannot be empty"
     default_action = "create" if "create" in actions_permitted else actions_permitted[0]
+    initial_store = store
 
     async def amanage_memory(
         content: typing.Optional[schema] = None,  # type: ignore
@@ -241,7 +247,10 @@ def create_manage_memory_tool(
         *,
         id: typing.Optional[uuid.UUID] = None,
     ):
-        store = get_store()
+        if initial_store is not None:
+            store = initial_store
+        else:
+            store = get_store()
         if action not in actions_permitted:
             raise ValueError(
                 f"Invalid action {action}. Must be one of {actions_permitted}."
@@ -275,7 +284,10 @@ def create_manage_memory_tool(
         *,
         id: typing.Optional[uuid.UUID] = None,
     ):
-        store = get_store()
+        if initial_store is not None:
+            store = initial_store
+        else:
+            store = get_store()
 
         if action == "create" and id is not None:
             raise ValueError(
@@ -315,6 +327,8 @@ def create_search_memory_tool(
     namespace: tuple[str, ...] | str,
     *,
     instructions: str = _MEMORY_SEARCH_INSTRUCTIONS,
+    store: BaseStore | None = None,
+    response_format: typing.Literal["content", "content_and_artifact"] = "content",
 ):
     """Create a tool for searching memories stored in a LangGraph BaseStore.
 
@@ -339,6 +353,8 @@ def create_search_memory_tool(
         namespace: The namespace structure for organizing memories in LangGraph's BaseStore.
             Uses runtime configuration with placeholders like `{langgraph_user_id}`.
             See [Memory Namespaces](../concepts/conceptual_guide.md#memory-namespaces).
+        store: The BaseStore to use for searching. If not provided, the tool will use the configured BaseStore in your graph or entrypoint.
+            Only set if you intend on using these tools outside the LangGraph context.
 
     Tip:
         This tool connects with the LangGraph [BaseStore](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.base.BaseStore) configured in your graph or entrypoint.
@@ -346,6 +362,7 @@ def create_search_memory_tool(
 
     !!! example "Examples"
         ```python
+        from langmem import create_search_memory_tool
         from langgraph.func import entrypoint
         from langgraph.store.memory import InMemoryStore
 
@@ -370,6 +387,7 @@ def create_search_memory_tool(
         search_tool (Tool): A decorated function that can be used as a tool for memory search.
             The tool returns both serialized memories and raw memory objects."""
     namespacer = utils.NamespaceTemplate(namespace)
+    initial_store = store
 
     async def asearch_memory(
         query: str,
@@ -378,7 +396,10 @@ def create_search_memory_tool(
         offset: int = 0,
         filter: typing.Optional[dict] = None,
     ):
-        store = get_store()
+        if initial_store is not None:
+            store = initial_store
+        else:
+            store = get_store()
         namespace = namespacer()
         memories = await store.asearch(
             namespace,
@@ -387,7 +408,9 @@ def create_search_memory_tool(
             limit=limit,
             offset=offset,
         )
-        return [m.dict() for m in memories], memories
+        if response_format == "content_and_artifact":
+            return [m.dict() for m in memories], memories
+        return [m.dict() for m in memories]
 
     def search_memory(
         query: str,
@@ -396,7 +419,10 @@ def create_search_memory_tool(
         offset: int = 0,
         filter: typing.Optional[dict] = None,
     ):
-        store = get_store()
+        if initial_store is not None:
+            store = initial_store
+        else:
+            store = get_store()
         namespace = namespacer()
         memories = store.search(
             namespace,
@@ -405,7 +431,9 @@ def create_search_memory_tool(
             limit=limit,
             offset=offset,
         )
-        return [m.dict() for m in memories], memories
+        if response_format == "content_and_artifact":
+            return [m.dict() for m in memories], memories
+        return [m.dict() for m in memories]
 
     description = """Search your long-term memories for information relevant to your current context. {instructions}""".format(
         instructions=instructions
@@ -416,5 +444,5 @@ def create_search_memory_tool(
         asearch_memory,
         name="search_memory",
         description=description,
-        response_format="content_and_artifact",
+        response_format=response_format,
     )

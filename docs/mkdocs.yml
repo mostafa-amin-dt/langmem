@@ -106,6 +106,8 @@ nav:
       - Optimize Single Prompts: guides/optimize_memory_prompt.md
       - Optimize Multiple Prompts: guides/optimize_compound_system.md
       - Configure Dynamic Namespaces: guides/dynamically_configure_namespaces.md
+      - Use Tools in Custom Agents: guides/use_tools_in_custom_agent.md
+      - Use Tools in CrewAI: guides/use_tools_in_crewai.md
   - API Reference 📓:
       - Overview: reference/index.md
       - Extractive Memory: reference/memory.md

@@ -68,7 +68,10 @@ class NamespaceTemplate:
         }
 
     def __call__(self, config: RunnableConfig | None = None):
-        config = config or get_config()
+        try:
+            config = config or get_config()
+        except RuntimeError:
+            config = {}
         if self.vars:
             configurable = config["configurable"] if "configurable" in config else {}
             try:

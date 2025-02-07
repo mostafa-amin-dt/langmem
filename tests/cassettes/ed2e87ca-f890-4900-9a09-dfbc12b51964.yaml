@@ -15881,4 +15881,1646 @@ interactions:
     status:
       code: 200
       message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"You are tasked
+      with extracting or upserting memories for all entities, concepts, etc.\n\nExtract
+      all important facts or entities. If an existing MEMORY is incorrect or outdated,
+      update it based on the new information.\n\nEnrich, prune, and organize memories
+      based on any new information. If an existing memory is incorrect or outdated,
+      update it based on the new information. All operations must be done in single
+      parallel call.\n\n<session_2b1bca88-0115-4988-bef0-999a6c458dcd>\n================================
+      Human Message =================================\n\nI like dogs. My dog''s name
+      is Fido.\n\n================================== Ai Message ==================================\n\nThat''s
+      nice! Dogs can be wonderful companions. Since you mentioned your dog Fido, what
+      breed is he? I''d be happy to hear more about him.\n</session_2b1bca88-0115-4988-bef0-999a6c458dcd>"}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a memory subroutine for an AI.\n\n","tool_choice":{"type":"any"},"tools":[{"name":"Memory","description":"Call
+      this tool once for each new memory you want to record. Use multi-tool calling
+      to record multiple new memories.","input_schema":{"description":"Call this tool
+      once for each new memory you want to record. Use multi-tool calling to record
+      multiple new memories.","properties":{"content":{"description":"The memory as
+      a well-written, standalone episode/fact/note/preference/etc. Refer to the user''s
+      instructions for more information the prefered memory organization.","title":"Content","type":"string"}},"required":["content"],"title":"Memory","type":"object"}}]}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA5RQS0vDQBD+K2HOG0iixjY3+8jBVqhCRSoS1uyQxiY7aWa3tYb8d9lK0eJBPM73
+        ZjooFSRQc5EFYTy7Zj2zm/tisSyHu5v9w+gjTUGAOTToVMgsCwQBLVUOkMwlG6kNCKhJYQUJ5JW0
+        Cv0L/8pn0hqNHwXRZRhEEQjISRvUBpLn7hRqiKrMsks9TnG3zYJw9ESHyeRdr9aLeD6Mp2MaNG9b
+        EKBl7Xx3WFN7cC7dWANJ9x0OS8bWq8oNsqeoYE+y16Bh6Hvxd+9etuN0Eo1vH8PRajufLst49/qP
+        3rVkT7pezzmUl5aKoO9fBLChJmtRMunzAUeCcWtR5wiJtlUlwB5/nXRfRZmhDWqGJB7GAnKZrzHL
+        W5SmJJ2dK4IT36JUvzmy5icyCPv+EwAA//8DACL/4lsGAgAA
+    headers:
+      CF-RAY:
+      - 90e73207b9480fe1-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:35:18 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '399000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:35:16Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:35:18Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:35:16Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '479000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:35:16Z'
+      cf-cache-status:
+      - DYNAMIC
+      request-id:
+      - req_01C3oeabNov6nL1uqGSujjXq
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"You are tasked
+      with extracting or upserting memories for all entities, concepts, etc.\n\nExtract
+      all important facts or entities. If an existing MEMORY is incorrect or outdated,
+      update it based on the new information.\n\nEnrich, prune, and organize memories
+      based on any new information. If an existing memory is incorrect or outdated,
+      update it based on the new information. All operations must be done in single
+      parallel call.\n\n<session_f435703d-cfc0-449f-aa9e-a8aa3692f85e>\n================================
+      Human Message =================================\n\nI like dogs. My dog''s name
+      is Fido.\n\n================================== Ai Message ==================================\n\nThat''s
+      nice! Dogs make wonderful companions. Fido is a classic dog name. What kind
+      of dog is Fido?\n</session_f435703d-cfc0-449f-aa9e-a8aa3692f85e>"}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a memory subroutine for an AI.\n\n","tool_choice":{"type":"any"},"tools":[{"name":"Memory","description":"Call
+      this tool once for each new memory you want to record. Use multi-tool calling
+      to record multiple new memories.","input_schema":{"description":"Call this tool
+      once for each new memory you want to record. Use multi-tool calling to record
+      multiple new memories.","properties":{"content":{"description":"The memory as
+      a well-written, standalone episode/fact/note/preference/etc. Refer to the user''s
+      instructions for more information the prefered memory organization.","title":"Content","type":"string"}},"required":["content"],"title":"Memory","type":"object"}}]}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA5RQzWrCQBB+lTDnDSRabczRWi1Sc1Dbg6WEJTuYkGQnZnZRG/LuZS3SSg+lx/n+
+        mQ4KBTHUvE+D8HmzKo7jw66ZLzePal1s8iSxBALMuUGnQma5RxDQUuUAyVywkdqAgJoUVhBDVkmr
+        0B/6I59JazT+IBjchcFgAAIy0ga1gfitu4Yaoiq17FIvU9xt0yCcrV8ftkO5KLNdFC0mOrmfFdsP
+        EKBl7XwrrKk9O5durIG4+w6HF8bWq4oS2VO0Z0+y16Bh6HvxZ+80wZzyk7XLURku+Pi0XtFp+o/e
+        XLInXa/nHMqbF4qg798FsKEmbVEy6dsBF4LxYFFnCLG2VSXAXn4dd19FqaESNUM8jiYCMpnlmGYt
+        SlOQTm8VwZVvUarfHFnzE4nCvv8EAAD//wMAyyT8yAYCAAA=
+    headers:
+      CF-RAY:
+      - 90e7338bac487bb0-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:36:20 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:36:19Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:36:20Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:36:18Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:36:19Z'
+      cf-cache-status:
+      - DYNAMIC
+      request-id:
+      - req_01N3Cq4dka2JZqerAGnvWjeJ
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"You are tasked
+      with extracting or upserting memories for all entities, concepts, etc.\n\nExtract
+      all important facts or entities. If an existing MEMORY is incorrect or outdated,
+      update it based on the new information.\n\nEnrich, prune, and organize memories
+      based on any new information. If an existing memory is incorrect or outdated,
+      update it based on the new information. All operations must be done in single
+      parallel call.\n\n<session_b5bbee84-46a7-4fa8-b97d-95369b2fc2b2>\n================================
+      Human Message =================================\n\nI like dogs. My dog''s name
+      is Fido.\n\n================================== Ai Message ==================================\n\nThat''s
+      nice! Dogs make wonderful companions. Fido is a classic dog name. What kind
+      of dog is Fido and how long have you had him?\n</session_b5bbee84-46a7-4fa8-b97d-95369b2fc2b2>"}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a memory subroutine for an AI.\n\n","tool_choice":{"type":"any"},"tools":[{"name":"Memory","description":"Call
+      this tool once for each new memory you want to record. Use multi-tool calling
+      to record multiple new memories.","input_schema":{"description":"Call this tool
+      once for each new memory you want to record. Use multi-tool calling to record
+      multiple new memories.","properties":{"content":{"description":"The memory as
+      a well-written, standalone episode/fact/note/preference/etc. Refer to the user''s
+      instructions for more information the prefered memory organization.","title":"Content","type":"string"}},"required":["content"],"title":"Memory","type":"object"}}]}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA4xRTW/aQBD9K6M525ENSWl9gygh6gcKlXogVWWtvQNYXnacndkggvjv0VKlbdRD
+        e5x5H/Oe5oidxQp3sqmLcjp76n1cHBaf1uvL1XTRyvX9uMQM9TBQYpGI2RBmGNilhRHpRI1XzHDH
+        lhxW2DoTLeXj/CoX9p40HxWjy7IYjTDDlr2SV6y+H19NldnVUZLrOUqaY12Uk37/1Nw9PC7p+uPn
+        u9K3fLUa5pihN7uk+0I7Doek8kNUrI6/zfHGa6eHCm47y5DDFCxvQLdGoSHHfiOgDLoliELhAhYM
+        xtpOO/bGgSU1nRMwDUeFJhBZ4AC89xRk2w1gYzCJCyYQ9J73/gJPp+yfjb6O3z0/N/vZvBzP55Nl
+        XE7jbL36v0b3gdYUyLdUwTehAK7rSVIvScd/ZCjKQx3ICPu3Gc6A0GNMaqx8dC7DeH5kdfx5q1bu
+        yQtWk6LIsDXtluo20Lll/ZbxCw9k7N8YR/1z8+H96fQCAAD//wMAXppa92MCAAA=
+    headers:
+      CF-RAY:
+      - 90e734b38c2fcba0-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:37:08 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:37:06Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:37:08Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:37:05Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:37:06Z'
+      cf-cache-status:
+      - DYNAMIC
+      request-id:
+      - req_018VnbLXRRg3zinxkRtdhVab
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"I''m Alice from
+      California"}],"model":"claude-3-5-sonnet-latest","system":"You are a helpful
+      assistant.None"}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA2SP0UoDMRBFfyXOc1a2a0ttXkR8WUH8AEWWmEzbYHZmN5lU29J/ly0WFJ8Gzrn3
+        whwheDDQ501Xz9r50/vKLw+7RbPaLV/GRcHxcAsaZD/glMKc7QZBQ+I4AZtzyGJJQEPPHiMYcNEW
+        j9VNtagyE6FUTd3MZ3XTgAbHJEgC5vV4GRX8murnY6AN6j4Gh2qduFcPNoY1Jwr2Sj1PVFj1iKL2
+        XK5Vy5/KWVKPaotxmJgS9nZ/B6c3DVl46BLazAQGkHwnJRH8iIxjQXIIhkqMGsr5MXOEQEORTvgD
+        KYOZrTQ467bYuYRWAlP3N1BffELr/zsu8ps09en0DQAA//8DAJfYem9yAQAA
+    headers:
+      CF-RAY:
+      - 90e73529df122b73-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:37:26 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:37:24Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:37:26Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:37:24Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:37:24Z'
+      cf-cache-status:
+      - DYNAMIC
+      request-id:
+      - req_01QnyYwEYqYTYtt2gny3sP6X
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"You are tasked
+      with extracting or upserting memories for all entities, concepts, etc.\n\nExtract
+      all important facts or entities. If an existing MEMORY is incorrect or outdated,
+      update it based on the new information.\n\nEnrich, prune, and organize memories
+      based on any new information. If an existing memory is incorrect or outdated,
+      update it based on the new information. All operations must be done in single
+      parallel call.\n\n<session_d607840d-616e-47a9-93bb-1cac1b44756e>\n================================
+      Human Message =================================\n\nI''m Alice from California\n</session_d607840d-616e-47a9-93bb-1cac1b44756e>"}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a memory subroutine for an AI.\n\n","tool_choice":{"type":"any"},"tools":[{"name":"UserProfile","description":"Represents
+      the full representation of a user.","input_schema":{"description":"Represents
+      the full representation of a user.","properties":{"name":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Name"},"language":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Language"},"timezone":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Timezone"}},"title":"UserProfile","type":"object"}}]}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA2SQQWvCQBCF/8ucVxpTtXVvYsUiCiq0l1KWZTPGrZtZzcweNOS/l6QILT3O994b
+        3kwDvgANFZcmG45u/DVfTY+30/KwX1/2lyt5WYECuZ6xcyGzLREU1DF0wDJ7FksCCqpYYAANLthU
+        4OBxMB5wJEIZ5Fk+GmZ5DgpcJEES0B/NfanEGEzibmtfpZuTyYbL9cvx+X3hd7LdpOXrfLHfTHcT
+        UEC26nJvjPW2jgcf+iidk4Bu7uoseNdx8RXeIvWowto7+7CObGZUYkAGBcFSmbqjNCBB234qYIln
+        U6PlSH/79QLjJSE5BE0pBAWpf4lufioYiSckBj0Z5QqcdUc0rkYrPpL568jueo22+K/FJL/J07ht
+        vwEAAP//AwBGWvUIrQEAAA==
+    headers:
+      CF-RAY:
+      - 90e7353358dacb86-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:37:28 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:37:27Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:37:28Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:37:26Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:37:27Z'
+      cf-cache-status:
+      - DYNAMIC
+      request-id:
+      - req_01J9MFUygCJjFLmTFyn9VEuE
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"I just passed
+      the N1 exam!"}],"model":"claude-3-5-sonnet-latest","system":"You are a helpful
+      assistant.<User Profile>:\n\n    {''kind'': ''UserProfile'', ''content'': {''name'':
+      ''Alice'', ''language'': ''en'', ''timezone'': ''America/Los_Angeles''}}\n    </User
+      Profile>\n    "}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//ZJNPb9swDMW/CqvLLk6RpN2K+TJsPW0IhmIIsH8dAlZibLUy5YpUGqPo
+        dx+kNOuGnQyQj79H6cmPxjvTmkG6zXyxWJ110+R+7NztbcZv5x8uL1Zvv5jG6DRSUZEIdmQak2Io
+        BRTxoshqGjNER8G0xgbMjmZns9czicyks+V8eb6YL5emMTayEqtpfz4eoUr7Ml4/rbmM3CXUHFB9
+        ZIH3wVs6gavixB1oT/BpdbWGzwugPQ7gBRASDZju8CYQoO097Wgg1hNY91SEXupc77ueRAHZwRBF
+        wfnt1tscFALtKEDcHvg4IpMQrJC7jB3BVYpbbz2xnWBNok1leIVE99knEpgIkxSAI+ctKjkQzW6q
+        wjGhVW8JNEIitD1o7+XF9I9hOBoOKEppOoVrvuZ1EVtK6rcF7SODoyGyaEKlcjZUmGIGiwyZHaUS
+        iXvBegaEHSZPOhU/iWPvRZ/3rJHsVeqqBWHjMGSuXdiGTKxhOoWP+krqFYYJEslItgzfTEDDGOJE
+        6QBAi44Gb8GzqNdcUzwtx/gac3B1z8GzA+kxlUQfyvaHuxpI++gEHmK6K+wS1jamOuMZxkTjYaYU
+        S1LlBbyD7zEnoP1IqSREYKvRDcEOQ66Pouij9mXHwq4PKT5gcpUiOBB0EcOJefrVGNE4bhKhRDat
+        IXYbzYnNc0PoPhcX03IOoTG5/hDto/E8Zt1ovCMW016cN8ai7WljE9XMNv8K5sd+InT/92LWvyuL
+        5Zunp98AAAD//wMA6XD5N6sDAAA=
+    headers:
+      CF-RAY:
+      - 90e73541ee742b73-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:37:31 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:37:29Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:37:31Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:37:28Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:37:29Z'
+      cf-cache-status:
+      - DYNAMIC
+      request-id:
+      - req_01KgJC1YDo5MBLcbRfncwUMm
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"You are tasked
+      with extracting or upserting memories for all entities, concepts, etc.\n\nExtract
+      all important facts or entities. If an existing MEMORY is incorrect or outdated,
+      update it based on the new information.\n\nEnrich, prune, and organize memories
+      based on any new information. If an existing memory is incorrect or outdated,
+      update it based on the new information. All operations must be done in single
+      parallel call.\n\n<session_e8a24afd-a0e5-418a-826b-c8800bbbdb2c>\n================================
+      Human Message =================================\n\nI just passed the N1 exam!\n</session_e8a24afd-a0e5-418a-826b-c8800bbbdb2c>"}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a memory subroutine for an AI.\n\n\n\nGenerate JSONPatches to update the
+      existing schema instances.\n<existing>\n<instance id=f27383ce322f53c0890adc95686b528c
+      schema_type=\"UserProfile\">\n{''name'': ''Alice'', ''language'': ''en'', ''timezone'':
+      ''America/Los_Angeles''}\n</instance>\n</existing>\n","tool_choice":{"type":"any"},"tools":[{"name":"PatchDoc","description":"Respond
+      with JSONPatch operations to update the existing JSON document based on the
+      provided text and schema.","input_schema":{"properties":{"json_doc_id":{"description":"The
+      json_doc_id of the document you are patching.","type":"string"},"planned_edits":{"description":"Think
+      step-by-step, reasoning over each required update and the corresponding JSONPatch
+      operation to accomplish it. Cite the fields in the JSONSchema you referenced
+      in developing this plan. Address each path as a group; don''t switch between
+      paths.\n Plan your patches in the following order:1. replace - this keeps collection
+      size the same.\n2. remove - BE CAREFUL ABOUT ORDER OF OPERATIONS. Each operation
+      is applied sequentially. For arrays, remove the highest indexed value first
+      to avoid shifting indices. This ensures subsequent remove operations remain
+      valid.\n 3. add (for arrays, use /- to efficiently append to end).","type":"string"},"patches":{"description":"A
+      list of JSONPatch operations to be applied to the previous tool call''s response
+      arguments. If none are required, return an empty list. This field is REQUIRED.
+      Multiple patches in the list are applied sequentially in the order provided,
+      with each patch building upon the result of the previous one. Take care to respect
+      array bounds. Order patches as follows:\n 1. replace - this keeps collection
+      size the same\n 2. remove - BE CAREFUL about order of operations. For arrays,
+      remove the highest indexed value first to avoid shifting indices.\n 3. add -
+      for arrays, use /- to efficiently append to end.","items":{"description":"A
+      JSON Patch document represents an operation to be performed on a JSON document.\n\nNote
+      that the op and path are ALWAYS required. Value is required for ALL operations
+      except ''remove''.","examples":[{"op":"replace","path":"/path/to/my_array/1","value":"the
+      newer value to be patched"},{"op":"replace","path":"/path/to/broken_object","value":{"new":"object"}},{"op":"add","path":"/path/to/my_array/-","value":["some","values"]},{"op":"add","path":"/path/to/my_array/-","value":["newer"]},{"op":"remove","path":"/path/to/my_array/1"}],"properties":{"op":{"description":"The
+      operation to be performed. Must be one of ''add'', ''remove'', ''replace''.","enum":["add","remove","replace"],"type":"string"},"path":{"description":"A
+      JSON Pointer path that references a location within the target document where
+      the operation is performed. Note: patches are applied sequentially. If you remove
+      a value, the collection size changes before the next patch is applied.","type":"string"},"value":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"type":"null"}]},"type":"object"},{"type":"null"}],"description":"The
+      value to be used within the operation. REQUIRED for ''add'', ''replace'', and
+      ''test'' operations. Pay close attention to the json schema to ensure patched
+      document will be valid."}},"required":["op","path","value"],"type":"object"},"type":"array"}},"required":["json_doc_id","planned_edits","patches"],"type":"object"}},{"name":"RemoveDoc","description":"Use
+      this tool to remove (delete) a doc by its ID.","input_schema":{"properties":{"json_doc_id":{"description":"ID
+      of the document to remove. Must be one of: (''f27383ce322f53c0890adc95686b528c'',)","type":"string"}},"required":["json_doc_id"],"type":"object"}}]}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA2xS227bMAz9FYEv2QCns52kTfy2dRuwoi0CtAF2SWGwEm2rkynXknpZkH8f5DS9
+        YHsUz4WHIjegFRTQurpMs8XH5uz4z/Rkcba6XtL3+58k5eIWEvCPHUUWOYc1QQK9NbGAzmnnkT0k
+        0FpFBgqQBoOi8WQ8GzvLTH6cp/k0S/McEpCWPbGH4tdmb+qtNWVw0XWIEt+hTLPV+Y+6um2mqKrZ
+        QytPv7Rf8+kxJMDYRt0SvWw+Wxl13AUPxQZunOVSWVkOTlV+NJlPJE3yvJpNZDpfpKjkYnY4P7ye
+        5fOo7AwykypJae+ggE/oSAnLwjckgqNePM0snEevuY7Ao+jQRV4knWeCHrAV7+4bLRvRU0W9E94O
+        YKPrhpwXhu7ICFsNxRPskMmROEWuQ/Re9rbSUhPLR3FJzr9PxDfhGhuMEqFT6GkQdpFmqFjzmrMD
+        caFZ0kvQp0znWSJ2UbQT+NLM7JvFtP/3f6Z4+6w7WPNYXL4GK01GCc1i5ahf7iLtza5JyAa5JiWq
+        3rZiRDyKbqMbHMXfjisjN2zfdlBAT51BSTuogQI+7NtAAndoQlz0DcL2aru9SsB525U9obP89nAG
+        wNFtIJYEBQdjEgjDrRab3XmU3v4mdlBki2yegETZUCl7Qq8tl28p6R7vCdW/mA3+dSVPj7bbvwAA
+        AP//AwDI+GQbSAMAAA==
+    headers:
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-RAY:
+      - 90e735564b69cb86-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:37:38 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:37:32Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:37:38Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:37:32Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:37:32Z'
+      request-id:
+      - req_01WDpVcychWRqvWDnR7nVec3
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"Alice manages
+      the ML team and mentors Bob, who is also on the team."}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a helpful assistant."}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//ZJFRaxRRDIX/SsiThRmc3VqVebPgg9CCTwpVGbJ34syld5LpTW7XZdn/
+        LnexavUpJOecj4QcMY7Y42LT0G0+T5tPmzd3d4erKb5/+/HxYdzvDxEb9MPK1cVmNDE2mDXVAZlF
+        cxLHBhcdOWGPIVEZub1sr1pTEfZ2221fbbrtFhsMKs7i2H85PkGdf9T4ufT4AYqMnCt0BJ/JIQr4
+        HA0ssFCO2n+VFt6lGBiigc8MCwlNnEG/n9vbG3hxS2GOwnDDlCXKdAHOtPxJUjIF4/zIBmRAsLC4
+        ZnCFa91V37XuKr8qy+4Z/B+SjGcvZYagKTFNha2BffT5aU0BAmOJml8mpnreHFdY1aJHFTx9a9Bc
+        1yEzmQr2yDIOXrLgL8H4obAExl5KSg2W8xv6I0ZZiw+u9yyG/WXXYKAw8xAyU2UPzw2/9cw0/q9p
+        8b8nr7vT6ScAAAD//wMAhwEUDyACAAA=
+    headers:
+      CF-RAY:
+      - 90e735d86c4028fa-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:37:54 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:37:53Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:37:54Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:37:52Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:37:53Z'
+      cf-cache-status:
+      - DYNAMIC
+      request-id:
+      - req_01E6b4t2HmjzdnvtEErtSH8M
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"Extract all user
+      information and events as triples.\n\nEnrich, prune, and organize memories based
+      on any new information. If an existing memory is incorrect or outdated, update
+      it based on the new information. All operations must be done in single parallel
+      call.\n\n<session_6039bdff-c315-41bc-b0e2-9a3d265cc6e2>\n================================
+      Human Message =================================\n\nAlice manages the ML team
+      and mentors Bob, who is also on the team.\n</session_6039bdff-c315-41bc-b0e2-9a3d265cc6e2>"}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a memory subroutine for an AI.\n\n","tool_choice":{"type":"any"},"tools":[{"name":"Triple","description":"Store
+      all new facts, preferences, and relationships as triples.","input_schema":{"description":"Store
+      all new facts, preferences, and relationships as triples.","properties":{"subject":{"title":"Subject","type":"string"},"predicate":{"title":"Predicate","type":"string"},"object":{"title":"Object","type":"string"},"context":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Context"}},"required":["subject","predicate","object"],"title":"Triple","type":"object"}}]}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6SSQUvDQBCF/8uct5CktWpuVqyH2lJqtSsiy2YzidFkN9mdbdHS/y6JFKwKFjzO
+        vPdmPobZQpFCDJXLRRCOr0Or1id4NTwbzRc8sZWdFS/AgN5qbF3onMwRGFhTtg3pXOFIagIGlUmx
+        hBhUKX2KvX7vpOeM1ki9KIgGYRBFwEAZTagJ4sftfigZUwrv2qkdSlt7EYSTxYqPn7PqbsBHq9PM
+        rCZNdceBgZZVm1vaoi67lK49QbwF55MXVAQxXJSFaqXaYlooSR281DJHBwzM3ja9EYSygt2O/Ykz
+        P29WC+SblOeXGfWJ33s7Sf6Bg5qMPcAZmeQolHEymzYPDVd0nXH13t/c5rRcH4fS7vgOUiVohcl+
+        v8wTA0emFhalM/qQqhMcNh61Qoi1L0sGvnuRePu5XZB5Re0gHvYjBkqqZxTKoqTCaHHoCPa6RZn+
+        1Iynr50oHO52HwAAAP//AwAadILfvgIAAA==
+    headers:
+      CF-RAY:
+      - 90e735e3b9aa2ae8-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:37:57 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:37:55Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:37:57Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:37:54Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:37:55Z'
+      cf-cache-status:
+      - DYNAMIC
+      request-id:
+      - req_01LJ13MWTNvZV7tNRqqLV6Cu
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"Bob now leads
+      the ML team and the NLP project."}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a helpful assistant."}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA2SQUUvsQAyF/0rIk0JXdqsrOG93VVBZRV8UVi8ldxrb0W6mTjKiLPvfpVVBuU+B
+        851zQrLBUKPDtTbVdHZ8c3t2N1+tji4eTxfhhPo/5dHNMRZo7z0PLlalhrHAFLtBINWgRmJY4DrW
+        3KFD31GuebI/mU80irBNyml5MJuWJRbooxiLobvffJcavw3xcThckHINUcBaMlAj4zWLFXAOngSy
+        1JyGjfVocA8y24NF/ActKRB0TANvQw991GAhCsRXTmAtwyX5NgjDkilJkAZ2Lpe7YEzrByk/W4JC
+        EPAtpYYhPo6xK7KcqIMlSZOpYbhO0bPq2HC1vN6FPsUn9obbvwWqxb5KTBoFHbLUleUk+AWUXzKL
+        Z3SSu67APL7TbTBIn62y+Myi6Mp5gZ58y5VPTMMV1W/D9Jsnpvp/FrP9VA4Ot9sPAAAA//8DAI3B
+        903oAQAA
+    headers:
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-RAY:
+      - 90e735f86d0928fa-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:37:59 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:37:58Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:37:59Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:37:57Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:37:58Z'
+      request-id:
+      - req_01AeviueN4W6DKcSpeeGR6pV
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"Extract all user
+      information and events as triples.\n\nEnrich, prune, and organize memories based
+      on any new information. If an existing memory is incorrect or outdated, update
+      it based on the new information. All operations must be done in single parallel
+      call.\n\n<session_22743d8e-540a-47bd-8cdd-5080b79d8329>\n================================
+      Human Message =================================\n\nBob now leads the ML team
+      and the NLP project.\n</session_22743d8e-540a-47bd-8cdd-5080b79d8329>"}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a memory subroutine for an AI.\n\n\n\nGenerate JSONPatches to update the
+      existing schema instances. If you need to extract or insert *new* instances
+      of the schemas, call the relevant function(s).\n<existing>\n<instance id=a72ded60c38f5146b77c3327896d690b
+      schema_type=\"Triple\">\n{''subject'': ''Alice'', ''predicate'': ''manages'',
+      ''object'': ''ML_team'', ''context'': None}\n</instance>\n<instance id=7c88fda866ff50ccb1e7a41dfd769fea
+      schema_type=\"Triple\">\n{''subject'': ''Alice'', ''predicate'': ''mentors'',
+      ''object'': ''Bob'', ''context'': None}\n</instance>\n<instance id=c4692de4a44459e4a2bc9dbd9d71d871
+      schema_type=\"Triple\">\n{''subject'': ''Bob'', ''predicate'': ''member_of'',
+      ''object'': ''ML_team'', ''context'': None}\n</instance>\n</existing>\n","tool_choice":{"type":"any"},"tools":[{"name":"PatchDoc","description":"Respond
+      with JSONPatch operations to update the existing JSON document based on the
+      provided text and schema.","input_schema":{"properties":{"json_doc_id":{"description":"The
+      json_doc_id of the document you are patching.","type":"string"},"planned_edits":{"description":"Think
+      step-by-step, reasoning over each required update and the corresponding JSONPatch
+      operation to accomplish it. Cite the fields in the JSONSchema you referenced
+      in developing this plan. Address each path as a group; don''t switch between
+      paths.\n Plan your patches in the following order:1. replace - this keeps collection
+      size the same.\n2. remove - BE CAREFUL ABOUT ORDER OF OPERATIONS. Each operation
+      is applied sequentially. For arrays, remove the highest indexed value first
+      to avoid shifting indices. This ensures subsequent remove operations remain
+      valid.\n 3. add (for arrays, use /- to efficiently append to end).","type":"string"},"patches":{"description":"A
+      list of JSONPatch operations to be applied to the previous tool call''s response
+      arguments. If none are required, return an empty list. This field is REQUIRED.
+      Multiple patches in the list are applied sequentially in the order provided,
+      with each patch building upon the result of the previous one. Take care to respect
+      array bounds. Order patches as follows:\n 1. replace - this keeps collection
+      size the same\n 2. remove - BE CAREFUL about order of operations. For arrays,
+      remove the highest indexed value first to avoid shifting indices.\n 3. add -
+      for arrays, use /- to efficiently append to end.","items":{"description":"A
+      JSON Patch document represents an operation to be performed on a JSON document.\n\nNote
+      that the op and path are ALWAYS required. Value is required for ALL operations
+      except ''remove''.","examples":[{"op":"replace","path":"/path/to/my_array/1","value":"the
+      newer value to be patched"},{"op":"replace","path":"/path/to/broken_object","value":{"new":"object"}},{"op":"add","path":"/path/to/my_array/-","value":["some","values"]},{"op":"add","path":"/path/to/my_array/-","value":["newer"]},{"op":"remove","path":"/path/to/my_array/1"}],"properties":{"op":{"description":"The
+      operation to be performed. Must be one of ''add'', ''remove'', ''replace''.","enum":["add","remove","replace"],"type":"string"},"path":{"description":"A
+      JSON Pointer path that references a location within the target document where
+      the operation is performed. Note: patches are applied sequentially. If you remove
+      a value, the collection size changes before the next patch is applied.","type":"string"},"value":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"type":"null"}]},"type":"object"},{"type":"null"}],"description":"The
+      value to be used within the operation. REQUIRED for ''add'', ''replace'', and
+      ''test'' operations. Pay close attention to the json schema to ensure patched
+      document will be valid."}},"required":["op","path","value"],"type":"object"},"type":"array"}},"required":["json_doc_id","planned_edits","patches"],"type":"object"}},{"name":"Triple","description":"Store
+      all new facts, preferences, and relationships as triples.","input_schema":{"properties":{"subject":{"type":"string"},"predicate":{"type":"string"},"object":{"type":"string"},"context":{"anyOf":[{"type":"string"},{"type":"null"}],"default":null}},"required":["subject","predicate","object"],"type":"object"}},{"name":"RemoveDoc","description":"Use
+      this tool to remove (delete) a doc by its ID.","input_schema":{"properties":{"json_doc_id":{"description":"ID
+      of the document to remove. Must be one of: (''7c88fda866ff50ccb1e7a41dfd769fea'',
+      ''a72ded60c38f5146b77c3327896d690b'', ''c4692de4a44459e4a2bc9dbd9d71d871'')","type":"string"}},"required":["json_doc_id"],"type":"object"}}]}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6ySTW/aQBCG/8ucF8kfYDu+haC0UiFKoFGCqmq13h2owd4x3lkKQv7vlV2hFvXQ
+        HnqceT/mOcwFSgM51G4rg/Atfh9nq+W9ft2/cNT49Thcn3YggM8N9i50Tm0RBLRU9QvlXOlYWQYB
+        NRmsIAddKW9wFI8mI0fWIo+iIBqHQRSBAE2W0TLkXy7XUiaqpHd964DSz14GYTJtv38on8/TV8UP
+        sT/xav6kMxBgVd3nlljTEWek+6BtPEN+gZ0jKw1pOVSpNDJokkDH2WYSjpMiTXUcR2l2l5jkLiig
+        68RfOWaH3XHycbO/f8uOS7dSmX+ffTr/4vjclk2Fv0M4X+xQM+QwpQIENC2aUivu3RUq40AAXS2L
+        uWRU9T+hLB6Lh83j3i14fWiSxcuKTttV+t9QnubPsmlpmLruqwDH1MgWlSN7SzUIDg8erUbIra8q
+        AX74jfzy87pk2qN1kEdRkArQSn9DqVtUXJKVt5bgqreozJ8aeb4pDOKu+wEAAP//AwDLM9HRuAIA
+        AA==
+    headers:
+      CF-RAY:
+      - 90e73604592d2ae8-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:38:03 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:38:01Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:38:03Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:37:59Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:38:01Z'
+      cf-cache-status:
+      - DYNAMIC
+      request-id:
+      - req_01RkedDdxu54ZGQK9m7dZWge
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"Alice left the
+      company."}],"model":"claude-3-5-sonnet-latest","system":"You are a helpful assistant."}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA2SQTUsDQQyG/0rIxctW+mGx7EXUi3rwVkVElulM2h06m6yTDFhK/7tstaJ4Crwf
+        Dy/ZYwxYY6ebZjy56ZaXi4cXWz3xbZ77u5c87x+XWKHtehpSpOo2hBVmSYPgVKOaY8MKOwmUsEaf
+        XAk0mo3mIxVmstF0PL2YjKdTrNALG7Fh/bo/QY0+hvrx1HgPhQPlARrAWmdwnaInaJ1CorWBtQRe
+        ut7x7hyepaQAOymQ4pbABLR1maCTTBDIXEwKbiXlq6fRirMoDJIh6qBlApWOrI28Ae3Jx3X0A/Es
+        /DBDVF/0BDruOVMI1LtsJdMVHt4qVJO+yeRUGGskDo2VzPhtKL0XYk9Yc0mpwnL8Y73HyH2xxmRL
+        rFhPFhV651tqfKbj0uZvYHzyM7nw35Niv5XZ5eHwCQAA//8DAD002mzhAQAA
+    headers:
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-RAY:
+      - 90e7361bfa6128fa-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:38:05 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:38:04Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:38:05Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:38:03Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:38:04Z'
+      request-id:
+      - req_01SZwhxJdXsM2LeGuuhosyPE
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"Extract all user
+      information and events as triples.\n\nEnrich, prune, and organize memories based
+      on any new information. If an existing memory is incorrect or outdated, update
+      it based on the new information. All operations must be done in single parallel
+      call.\n\n<session_6e26f24b-7c9d-4a46-b810-e8a0a02d0afa>\n================================
+      Human Message =================================\n\nAlice left the company.\n</session_6e26f24b-7c9d-4a46-b810-e8a0a02d0afa>"}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a memory subroutine for an AI.\n\n\n\nGenerate JSONPatches to update the
+      existing schema instances. If you need to extract or insert *new* instances
+      of the schemas, call the relevant function(s).\n<existing>\n<instance id=7c88fda866ff50ccb1e7a41dfd769fea
+      schema_type=\"Triple\">\n{''subject'': ''Alice'', ''predicate'': ''mentors'',
+      ''object'': ''Bob'', ''context'': None}\n</instance>\n<instance id=c4692de4a44459e4a2bc9dbd9d71d871
+      schema_type=\"Triple\">\n{''subject'': ''Bob'', ''predicate'': ''member_of'',
+      ''object'': ''ML_team'', ''context'': None}\n</instance>\n<instance id=f5213e53ad2b53019444acb740f8fbf2
+      schema_type=\"Triple\">\n{''subject'': ''Bob'', ''predicate'': ''leads'', ''object'':
+      ''ML_team'', ''context'': None}\n</instance>\n<instance id=5e00019cba2f5c5db430c61f8c4145df
+      schema_type=\"Triple\">\n{''subject'': ''Bob'', ''predicate'': ''leads'', ''object'':
+      ''NLP_project'', ''context'': None}\n</instance>\n</existing>\n","tool_choice":{"type":"any"},"tools":[{"name":"PatchDoc","description":"Respond
+      with JSONPatch operations to update the existing JSON document based on the
+      provided text and schema.","input_schema":{"properties":{"json_doc_id":{"description":"The
+      json_doc_id of the document you are patching.","type":"string"},"planned_edits":{"description":"Think
+      step-by-step, reasoning over each required update and the corresponding JSONPatch
+      operation to accomplish it. Cite the fields in the JSONSchema you referenced
+      in developing this plan. Address each path as a group; don''t switch between
+      paths.\n Plan your patches in the following order:1. replace - this keeps collection
+      size the same.\n2. remove - BE CAREFUL ABOUT ORDER OF OPERATIONS. Each operation
+      is applied sequentially. For arrays, remove the highest indexed value first
+      to avoid shifting indices. This ensures subsequent remove operations remain
+      valid.\n 3. add (for arrays, use /- to efficiently append to end).","type":"string"},"patches":{"description":"A
+      list of JSONPatch operations to be applied to the previous tool call''s response
+      arguments. If none are required, return an empty list. This field is REQUIRED.
+      Multiple patches in the list are applied sequentially in the order provided,
+      with each patch building upon the result of the previous one. Take care to respect
+      array bounds. Order patches as follows:\n 1. replace - this keeps collection
+      size the same\n 2. remove - BE CAREFUL about order of operations. For arrays,
+      remove the highest indexed value first to avoid shifting indices.\n 3. add -
+      for arrays, use /- to efficiently append to end.","items":{"description":"A
+      JSON Patch document represents an operation to be performed on a JSON document.\n\nNote
+      that the op and path are ALWAYS required. Value is required for ALL operations
+      except ''remove''.","examples":[{"op":"replace","path":"/path/to/my_array/1","value":"the
+      newer value to be patched"},{"op":"replace","path":"/path/to/broken_object","value":{"new":"object"}},{"op":"add","path":"/path/to/my_array/-","value":["some","values"]},{"op":"add","path":"/path/to/my_array/-","value":["newer"]},{"op":"remove","path":"/path/to/my_array/1"}],"properties":{"op":{"description":"The
+      operation to be performed. Must be one of ''add'', ''remove'', ''replace''.","enum":["add","remove","replace"],"type":"string"},"path":{"description":"A
+      JSON Pointer path that references a location within the target document where
+      the operation is performed. Note: patches are applied sequentially. If you remove
+      a value, the collection size changes before the next patch is applied.","type":"string"},"value":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"type":"null"}]},"type":"object"},{"type":"null"}],"description":"The
+      value to be used within the operation. REQUIRED for ''add'', ''replace'', and
+      ''test'' operations. Pay close attention to the json schema to ensure patched
+      document will be valid."}},"required":["op","path","value"],"type":"object"},"type":"array"}},"required":["json_doc_id","planned_edits","patches"],"type":"object"}},{"name":"Triple","description":"Store
+      all new facts, preferences, and relationships as triples.","input_schema":{"properties":{"subject":{"type":"string"},"predicate":{"type":"string"},"object":{"type":"string"},"context":{"anyOf":[{"type":"string"},{"type":"null"}],"default":null}},"required":["subject","predicate","object"],"type":"object"}},{"name":"RemoveDoc","description":"Use
+      this tool to remove (delete) a doc by its ID.","input_schema":{"properties":{"json_doc_id":{"description":"ID
+      of the document to remove. Must be one of: (''5e00019cba2f5c5db430c61f8c4145df'',
+      ''7c88fda866ff50ccb1e7a41dfd769fea'', ''c4692de4a44459e4a2bc9dbd9d71d871'',
+      ''f5213e53ad2b53019444acb740f8fbf2'')","type":"string"}},"required":["json_doc_id"],"type":"object"}}]}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA4SRQUvDQBCF/8uct5Bs2qbNzVJFsAWrLaIiy3Z3YpNudmJ211JL/rskUlQ8eJz3
+        3rz5YE5QaMigcq8iipND/G4v8vpJ7i6Tj8V8eXN1e9wBA3+ssUuhc/IVgUFDphOkc4Xz0npgUJFG
+        AxkoI4PGQTIYDRxZi37AIz6MI86BgSLr0XrInk/nUk9kRHBda4/SzUFE8cPtYXNT3suHNLnbDmfx
+        aL64DitgYGXV7a2bojb9lq2Dh+wELmxLVB4yuDCF6qy6QV0o6bu8wdwLRVUt7REY0Dm7bgJC27J/
+        gTYLvvJ8unpM76eXVyWfrZdhX34D3WFF7zgn9ZOpdGSFJiX6qlRNJrmWk/E4z0eRUtsYUzmMda7T
+        8TRHCW37wsB5qkWD0pH9jdMbDt8CWoWQ2WAMg9C/JDt93RSe9mgdZDyJxgyUVDsUqkHpC7LidyQ6
+        +w1K/dej4H8qccLb9hMAAP//AwCHlUZ6LwIAAA==
+    headers:
+      CF-RAY:
+      - 90e73626ac3e2ae8-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:38:08 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:38:06Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:38:08Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:38:05Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:38:06Z'
+      cf-cache-status:
+      - DYNAMIC
+      request-id:
+      - req_01YSqtoCjbxiC7uVDEy2uuCW
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"You are tasked
+      with extracting or upserting memories for all entities, concepts, etc.\n\nExtract
+      all important facts or entities. If an existing MEMORY is incorrect or outdated,
+      update it based on the new information.\n\nEnrich, prune, and organize memories
+      based on any new information. If an existing memory is incorrect or outdated,
+      update it based on the new information. All operations must be done in single
+      parallel call.\n\n<session_aca92eb1-8514-4ec7-85ba-e8394ca00304>\n================================
+      Human Message =================================\n\nI like dogs. My dog''s name
+      is Fido.\n\n================================== Ai Message ==================================\n\nThat''s
+      nice! Dogs make wonderful companions. Fido is a classic dog name with a lot
+      of history. What kind of dog is Fido?\n</session_aca92eb1-8514-4ec7-85ba-e8394ca00304>"}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a memory subroutine for an AI.\n\n","tool_choice":{"type":"any"},"tools":[{"name":"Memory","description":"Call
+      this tool once for each new memory you want to record. Use multi-tool calling
+      to record multiple new memories.","input_schema":{"description":"Call this tool
+      once for each new memory you want to record. Use multi-tool calling to record
+      multiple new memories.","properties":{"content":{"description":"The memory as
+      a well-written, standalone episode/fact/note/preference/etc. Refer to the user''s
+      instructions for more information the prefered memory organization.","title":"Content","type":"string"}},"required":["content"],"title":"Memory","type":"object"}}]}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA5SRT0/CQBDFv0oz523SLSqyNzmYBsUQBNQY06zt2Ja2u2VnC8Gm390sxD/Eg/E4
+        7828+U2mgyIFATVlccCH2S4Kxw9Pt1e83Azn7yuar5ccGNh9g64LiWSGwMDoygmSqCArlQUGtU6x
+        AgFJJdsU/YF/7pNWCq0fBuEZD8IQGCRaWVQWxHP3GWq1ruKWXOoBxdVtHPClLvkdn7w+ym0Y3Sym
+        u220TnNgoGTt5qZYa7N3U6ppLYjuOxzuG5QlGr8x+IYGVYLCW+To0VH3qqJE8lKdEfQ9+xNllRfv
+        k9k0Ww3MOBqNZ/NmYjT/JwraU4Zckicdg+dSUu+6SDX0/QsDsrqJDUrS6hTqYBBuWncRCNVWFYP2
+        8BLRHZfHVpeoCMTFKGCQyCTHODEobaFVfNrx5RuU6W9Pt/ancjnq+w8AAAD//wMAPA1Gpy0CAAA=
+    headers:
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-RAY:
+      - 90e739cbbe0908c6-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:40:36 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:40:35Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:40:36Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:40:34Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:40:35Z'
+      request-id:
+      - req_0164D54Xgti9Wf2Te9N1coMw
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"You are tasked
+      with extracting or upserting memories for all entities, concepts, etc.\n\nExtract
+      all important facts or entities. If an existing MEMORY is incorrect or outdated,
+      update it based on the new information.\n\nEnrich, prune, and organize memories
+      based on any new information. If an existing memory is incorrect or outdated,
+      update it based on the new information. All operations must be done in single
+      parallel call.\n\n<session_497f9d38-c968-4462-ab0a-0c10664e1421>\n================================
+      Human Message =================================\n\nI''m Alice from California\n</session_497f9d38-c968-4462-ab0a-0c10664e1421>"}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a memory subroutine for an AI.\n\n","tool_choice":{"type":"any"},"tools":[{"name":"UserProfile","description":"Represents
+      the full representation of a user.","input_schema":{"description":"Represents
+      the full representation of a user.","properties":{"name":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Name"},"language":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Language"},"timezone":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Timezone"}},"title":"UserProfile","type":"object"}}]}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//ZJBLT8MwEIT/y54dkYSGh28FISrooYRHKyFkGWebGpx1mrUPEOW/owRV
+        ouK438ysZrcHW4GEhmuVZnf7q3sq292yuFyVm9n8mhZmvQAB4avF0YXMukYQ0Hk3As1sOWgKIKDx
+        FTqQYJyOFSanSZGwJ8KQ5Gk+y9I8BwHGU0AKIF/7w9LgvVORx61TlXGOKs0ey81Hsbx5eXrI7Pp2
+        XW754j3uQQDpZsw9M3arzm+tm6LUxgCyP6hzZ83Ig23w29OEGuys0SdLz2pONTpkEOA01XE8SgIS
+        DMObAA6+VR1q9nTcbxIY9xHJIEiKzgmI00tk/1tBBf+JxCDPZrkAo80OlelQB+tJHTvSg96hrv5r
+        Poa/5LwYhh8AAAD//wMAtxHj4K0BAAA=
+    headers:
+      CF-RAY:
+      - 90e73a5458fe2b95-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:40:58 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:40:57Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:40:58Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:40:56Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:40:57Z'
+      cf-cache-status:
+      - DYNAMIC
+      request-id:
+      - req_013txzopsGukMrJWG9Br8Rc8
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"You are tasked
+      with extracting or upserting memories for all entities, concepts, etc.\n\nExtract
+      all important facts or entities. If an existing MEMORY is incorrect or outdated,
+      update it based on the new information.\n\nEnrich, prune, and organize memories
+      based on any new information. If an existing memory is incorrect or outdated,
+      update it based on the new information. All operations must be done in single
+      parallel call.\n\n<session_9c196f65-0d0b-4b63-8687-dd3bad7cffcc>\n================================
+      Human Message =================================\n\nI just passed the N1 exam!\n</session_9c196f65-0d0b-4b63-8687-dd3bad7cffcc>"}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a memory subroutine for an AI.\n\n\n\nGenerate JSONPatches to update the
+      existing schema instances.\n<existing>\n<instance id=fa3888c4ab6954628d5b43db6f8a6d0f
+      schema_type=\"UserProfile\">\n{''name'': ''Alice'', ''language'': ''en'', ''timezone'':
+      ''America/Los_Angeles''}\n</instance>\n</existing>\n","tool_choice":{"type":"any"},"tools":[{"name":"PatchDoc","description":"Respond
+      with JSONPatch operations to update the existing JSON document based on the
+      provided text and schema.","input_schema":{"properties":{"json_doc_id":{"description":"The
+      json_doc_id of the document you are patching.","type":"string"},"planned_edits":{"description":"Think
+      step-by-step, reasoning over each required update and the corresponding JSONPatch
+      operation to accomplish it. Cite the fields in the JSONSchema you referenced
+      in developing this plan. Address each path as a group; don''t switch between
+      paths.\n Plan your patches in the following order:1. replace - this keeps collection
+      size the same.\n2. remove - BE CAREFUL ABOUT ORDER OF OPERATIONS. Each operation
+      is applied sequentially. For arrays, remove the highest indexed value first
+      to avoid shifting indices. This ensures subsequent remove operations remain
+      valid.\n 3. add (for arrays, use /- to efficiently append to end).","type":"string"},"patches":{"description":"A
+      list of JSONPatch operations to be applied to the previous tool call''s response
+      arguments. If none are required, return an empty list. This field is REQUIRED.
+      Multiple patches in the list are applied sequentially in the order provided,
+      with each patch building upon the result of the previous one. Take care to respect
+      array bounds. Order patches as follows:\n 1. replace - this keeps collection
+      size the same\n 2. remove - BE CAREFUL about order of operations. For arrays,
+      remove the highest indexed value first to avoid shifting indices.\n 3. add -
+      for arrays, use /- to efficiently append to end.","items":{"description":"A
+      JSON Patch document represents an operation to be performed on a JSON document.\n\nNote
+      that the op and path are ALWAYS required. Value is required for ALL operations
+      except ''remove''.","examples":[{"op":"replace","path":"/path/to/my_array/1","value":"the
+      newer value to be patched"},{"op":"replace","path":"/path/to/broken_object","value":{"new":"object"}},{"op":"add","path":"/path/to/my_array/-","value":["some","values"]},{"op":"add","path":"/path/to/my_array/-","value":["newer"]},{"op":"remove","path":"/path/to/my_array/1"}],"properties":{"op":{"description":"The
+      operation to be performed. Must be one of ''add'', ''remove'', ''replace''.","enum":["add","remove","replace"],"type":"string"},"path":{"description":"A
+      JSON Pointer path that references a location within the target document where
+      the operation is performed. Note: patches are applied sequentially. If you remove
+      a value, the collection size changes before the next patch is applied.","type":"string"},"value":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"type":"null"}]},"type":"object"},{"type":"null"}],"description":"The
+      value to be used within the operation. REQUIRED for ''add'', ''replace'', and
+      ''test'' operations. Pay close attention to the json schema to ensure patched
+      document will be valid."}},"required":["op","path","value"],"type":"object"},"type":"array"}},"required":["json_doc_id","planned_edits","patches"],"type":"object"}},{"name":"RemoveDoc","description":"Use
+      this tool to remove (delete) a doc by its ID.","input_schema":{"properties":{"json_doc_id":{"description":"ID
+      of the document to remove. Must be one of: (''fa3888c4ab6954628d5b43db6f8a6d0f'',)","type":"string"}},"required":["json_doc_id"],"type":"object"}}]}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA2xSX2/TMBD/Kta9FKS0NFlbtXmbxASMUm3QF2BTdLUvsYdje7HdtVT97sgpZUzw
+        ZPl+/86+O4ASUELrm2qcf3xfbL+q5eVSeCd+fuL7b8XtbAcZhL2jxCLvsSHIoLM6FdB75QOaABm0
+        VpCGErjGKGh4MZwOvTWGwrAYF5N8XBSQAbcmkAlQfj+cTYO1uoo+ufatpHusxvnlysWrXbO6egyL
+        hXtabdwjLVOQwTbpbjBw+dbypDMuBigP8OCtqYTlVe9U48V8PucT3MwW08msmIvpZnIhNrN6jjMx
+        riEDp9EYEhUJFTyUsJbEoqeOtWSCsoYEc+mRpmFBElvljHbYZuxJKi6Z8n1VqkaSD0zTljSzdV+8
+        RoeGPLElmiZiQ+yms7Xiigzfs3Xiv7pe3qxfj9haKs+UEYpjoJNl34NE/2yjzzbu2WbE3qktGRak
+        8hn7wLy0UQsWncBAvc8fVa1IC1Z3tmUDMgMWLBs8YH92VGviIfFVxwS11vjQYSDxn3TcKK3CfnRn
+        7syXQM6XdyYfsc/kNPJT5uBMHvxOfVJB9mnpw9PUyPcLYB2U0J2UJ0hCCW/OcshgizqmWT8gHO+P
+        x/sMfLCu6gi9NS93pwc8PUYynKA0UesMYr+u5eG0IVWwP8h4KPNFMcuAI5dU8Y4wTbp6SRmf8Y5Q
+        /IvZGP6uFPn0ePwFAAD//wMAsgTD2UsDAAA=
+    headers:
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-RAY:
+      - 90e73a603a802b95-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:41:02 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:40:59Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:41:02Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:40:58Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:40:59Z'
+      request-id:
+      - req_01HzSEhffgWLQPvyiLha8xPJ
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"Extract all user
+      information and events as triples.\n\nEnrich, prune, and organize memories based
+      on any new information. If an existing memory is incorrect or outdated, update
+      it based on the new information. All operations must be done in single parallel
+      call.\n\n<session_bc86ef88-92c9-402c-bdeb-942070b76005>\n================================
+      Human Message =================================\n\nAlice manages the ML team
+      and mentors Bob, who is also on the team.\n</session_bc86ef88-92c9-402c-bdeb-942070b76005>"}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a memory subroutine for an AI.\n\n","tool_choice":{"type":"any"},"tools":[{"name":"Triple","description":"Store
+      all new facts, preferences, and relationships as triples.","input_schema":{"description":"Store
+      all new facts, preferences, and relationships as triples.","properties":{"subject":{"title":"Subject","type":"string"},"predicate":{"title":"Predicate","type":"string"},"object":{"title":"Object","type":"string"},"context":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Context"}},"required":["subject","predicate","object"],"title":"Triple","type":"object"}}]}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6SS3UrDQBCF32Wut5DEpra5s2IRq+K/FJFluxnjanY37sxWa+m7SyIFi4KCl3PO
+        mZmPYVZgSijAUiWTNH97mhgacj47elkEXC7GU3t9BgJ42WCbQiJVIQgIvm4FRWSIlWMQYH2JNRSg
+        axVL7O308h5555B7WZL10yTLQID2jtExFHerzVD2vpaR2qkdSltHmaQH4WwyuB0t3cjOpvvj89Hu
+        seE25ZRt+66CaequyzWRoVgBxfkTaoYC9mqjW6sJWBqtuINXTlVIIMBvYifHklFZWK/FrzhHr409
+        fJ6o1+lJdTOevS8WzbA6/AcOOvZhC2fs539COb3oDy5nj3ncOaDdyUU+TOn68o8o7Y5tEEPSop1j
+        kP7h5+PcCyD2jQyoyLttsM4gfInoNELhYl0LiN2XFKtPAMn+GR1BMcgyAVrpR5Q6oGLjndxOJBs/
+        oCq/ez7yVyVLh+v1BwAAAP//AwAhARUNwQIAAA==
+    headers:
+      CF-RAY:
+      - 90e73ab869357d3f-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:41:15 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:41:13Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:41:15Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:41:12Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:41:13Z'
+      cf-cache-status:
+      - DYNAMIC
+      request-id:
+      - req_01W7BdQvPDqXnujqhEn5LB3T
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"Extract all user
+      information and events as triples.\n\nEnrich, prune, and organize memories based
+      on any new information. If an existing memory is incorrect or outdated, update
+      it based on the new information. All operations must be done in single parallel
+      call.\n\n<session_75b0d634-0599-4456-ac26-95ec530320d4>\n================================
+      Human Message =================================\n\nBob now leads the ML team
+      and the NLP project.\n</session_75b0d634-0599-4456-ac26-95ec530320d4>"}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a memory subroutine for an AI.\n\n\n\nGenerate JSONPatches to update the
+      existing schema instances. If you need to extract or insert *new* instances
+      of the schemas, call the relevant function(s).\n<existing>\n<instance id=73ee4a51fb8451f8a9abdaddfd2cdfef
+      schema_type=\"Triple\">\n{''subject'': ''Alice'', ''predicate'': ''manages'',
+      ''object'': ''ML_team'', ''context'': None}\n</instance>\n<instance id=a3dd7e0dc0c654d59db78778c18db555
+      schema_type=\"Triple\">\n{''subject'': ''Alice'', ''predicate'': ''mentors'',
+      ''object'': ''Bob'', ''context'': None}\n</instance>\n<instance id=e34a006a4c7954618d3807d3dbedb95d
+      schema_type=\"Triple\">\n{''subject'': ''Bob'', ''predicate'': ''is_member_of'',
+      ''object'': ''ML_team'', ''context'': None}\n</instance>\n</existing>\n","tool_choice":{"type":"any"},"tools":[{"name":"PatchDoc","description":"Respond
+      with JSONPatch operations to update the existing JSON document based on the
+      provided text and schema.","input_schema":{"properties":{"json_doc_id":{"description":"The
+      json_doc_id of the document you are patching.","type":"string"},"planned_edits":{"description":"Think
+      step-by-step, reasoning over each required update and the corresponding JSONPatch
+      operation to accomplish it. Cite the fields in the JSONSchema you referenced
+      in developing this plan. Address each path as a group; don''t switch between
+      paths.\n Plan your patches in the following order:1. replace - this keeps collection
+      size the same.\n2. remove - BE CAREFUL ABOUT ORDER OF OPERATIONS. Each operation
+      is applied sequentially. For arrays, remove the highest indexed value first
+      to avoid shifting indices. This ensures subsequent remove operations remain
+      valid.\n 3. add (for arrays, use /- to efficiently append to end).","type":"string"},"patches":{"description":"A
+      list of JSONPatch operations to be applied to the previous tool call''s response
+      arguments. If none are required, return an empty list. This field is REQUIRED.
+      Multiple patches in the list are applied sequentially in the order provided,
+      with each patch building upon the result of the previous one. Take care to respect
+      array bounds. Order patches as follows:\n 1. replace - this keeps collection
+      size the same\n 2. remove - BE CAREFUL about order of operations. For arrays,
+      remove the highest indexed value first to avoid shifting indices.\n 3. add -
+      for arrays, use /- to efficiently append to end.","items":{"description":"A
+      JSON Patch document represents an operation to be performed on a JSON document.\n\nNote
+      that the op and path are ALWAYS required. Value is required for ALL operations
+      except ''remove''.","examples":[{"op":"replace","path":"/path/to/my_array/1","value":"the
+      newer value to be patched"},{"op":"replace","path":"/path/to/broken_object","value":{"new":"object"}},{"op":"add","path":"/path/to/my_array/-","value":["some","values"]},{"op":"add","path":"/path/to/my_array/-","value":["newer"]},{"op":"remove","path":"/path/to/my_array/1"}],"properties":{"op":{"description":"The
+      operation to be performed. Must be one of ''add'', ''remove'', ''replace''.","enum":["add","remove","replace"],"type":"string"},"path":{"description":"A
+      JSON Pointer path that references a location within the target document where
+      the operation is performed. Note: patches are applied sequentially. If you remove
+      a value, the collection size changes before the next patch is applied.","type":"string"},"value":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"type":"null"}]},"type":"object"},{"type":"null"}],"description":"The
+      value to be used within the operation. REQUIRED for ''add'', ''replace'', and
+      ''test'' operations. Pay close attention to the json schema to ensure patched
+      document will be valid."}},"required":["op","path","value"],"type":"object"},"type":"array"}},"required":["json_doc_id","planned_edits","patches"],"type":"object"}},{"name":"Triple","description":"Store
+      all new facts, preferences, and relationships as triples.","input_schema":{"properties":{"subject":{"type":"string"},"predicate":{"type":"string"},"object":{"type":"string"},"context":{"anyOf":[{"type":"string"},{"type":"null"}],"default":null}},"required":["subject","predicate","object"],"type":"object"}},{"name":"RemoveDoc","description":"Use
+      this tool to remove (delete) a doc by its ID.","input_schema":{"properties":{"json_doc_id":{"description":"ID
+      of the document to remove. Must be one of: (''73ee4a51fb8451f8a9abdaddfd2cdfef'',
+      ''a3dd7e0dc0c654d59db78778c18db555'', ''e34a006a4c7954618d3807d3dbedb95d'')","type":"string"}},"required":["json_doc_id"],"type":"object"}}]}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6ySTW/aQBCG/8ucF8lecADfoI0SIRIR0irQKFqtd8fEjr1jvLu0DvJ/r+wKJSiH
+        5pDjzPsxz2GOkGmIobQ7EYTT8ez+9Xr5kF8d9O8wks3qkEQ/gYFrKuxcaK3cITCoqegW0trMOmkc
+        MChJYwExqEJ6jYPhIBpYMgbdgAd8FAacAwNFxqFxED8eT6WOqBDedq09Sjd7EYQbPt9vsJ5uXobT
+        WbVXSf5rM94CAyPLLrfGkg74nVQXNJV3EB8ht2SEJiX6qvEQcSSjME0moyhMJ3IqEy21TjVXOsUU
+        2pb9l2O2OKyqNV8k+s9km2XrfHy33y7eOH7UWVXgewjrkxyVgxjmlACDqkadKek6d4FSW2BAJ8vN
+        UjiU5adQovXDrrmZNdni9dtF0sxv84lvLr8M5Xa5ElVN/dS2Twyso0rUKC2Zc6pesLj3aBRCbHxR
+        MPD9b8THf9eFoxc0FmLOg5CBkuoZhapRuoyMOLcEJ71GqT9q5N1ZYTBs278AAAD//wMAMkdjp7gC
+        AAA=
+    headers:
+      CF-RAY:
+      - 90e73acb0a947d3f-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:41:19 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:41:16Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:41:19Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:41:15Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:41:16Z'
+      cf-cache-status:
+      - DYNAMIC
+      request-id:
+      - req_01Tf6NT89o9xjkNPw7xhN3G9
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"max_tokens":1024,"messages":[{"role":"user","content":"Extract all user
+      information and events as triples.\n\nEnrich, prune, and organize memories based
+      on any new information. If an existing memory is incorrect or outdated, update
+      it based on the new information. All operations must be done in single parallel
+      call.\n\n<session_7b9becdd-ed23-4be6-af68-f2a16a3d777d>\n================================
+      Human Message =================================\n\nAlice left the company.\n</session_7b9becdd-ed23-4be6-af68-f2a16a3d777d>"}],"model":"claude-3-5-sonnet-latest","system":"You
+      are a memory subroutine for an AI.\n\n\n\nGenerate JSONPatches to update the
+      existing schema instances. If you need to extract or insert *new* instances
+      of the schemas, call the relevant function(s).\n<existing>\n<instance id=a3dd7e0dc0c654d59db78778c18db555
+      schema_type=\"Triple\">\n{''subject'': ''Alice'', ''predicate'': ''mentors'',
+      ''object'': ''Bob'', ''context'': None}\n</instance>\n<instance id=e34a006a4c7954618d3807d3dbedb95d
+      schema_type=\"Triple\">\n{''subject'': ''Bob'', ''predicate'': ''is_member_of'',
+      ''object'': ''ML_team'', ''context'': None}\n</instance>\n<instance id=5680e20d97e1598f8f32905c27c45c81
+      schema_type=\"Triple\">\n{''subject'': ''Bob'', ''predicate'': ''leads'', ''object'':
+      ''ML_team'', ''context'': None}\n</instance>\n<instance id=2ec955a0d836529a9702e5722d21fbc3
+      schema_type=\"Triple\">\n{''subject'': ''Bob'', ''predicate'': ''leads'', ''object'':
+      ''NLP_project'', ''context'': None}\n</instance>\n</existing>\n","tool_choice":{"type":"any"},"tools":[{"name":"PatchDoc","description":"Respond
+      with JSONPatch operations to update the existing JSON document based on the
+      provided text and schema.","input_schema":{"properties":{"json_doc_id":{"description":"The
+      json_doc_id of the document you are patching.","type":"string"},"planned_edits":{"description":"Think
+      step-by-step, reasoning over each required update and the corresponding JSONPatch
+      operation to accomplish it. Cite the fields in the JSONSchema you referenced
+      in developing this plan. Address each path as a group; don''t switch between
+      paths.\n Plan your patches in the following order:1. replace - this keeps collection
+      size the same.\n2. remove - BE CAREFUL ABOUT ORDER OF OPERATIONS. Each operation
+      is applied sequentially. For arrays, remove the highest indexed value first
+      to avoid shifting indices. This ensures subsequent remove operations remain
+      valid.\n 3. add (for arrays, use /- to efficiently append to end).","type":"string"},"patches":{"description":"A
+      list of JSONPatch operations to be applied to the previous tool call''s response
+      arguments. If none are required, return an empty list. This field is REQUIRED.
+      Multiple patches in the list are applied sequentially in the order provided,
+      with each patch building upon the result of the previous one. Take care to respect
+      array bounds. Order patches as follows:\n 1. replace - this keeps collection
+      size the same\n 2. remove - BE CAREFUL about order of operations. For arrays,
+      remove the highest indexed value first to avoid shifting indices.\n 3. add -
+      for arrays, use /- to efficiently append to end.","items":{"description":"A
+      JSON Patch document represents an operation to be performed on a JSON document.\n\nNote
+      that the op and path are ALWAYS required. Value is required for ALL operations
+      except ''remove''.","examples":[{"op":"replace","path":"/path/to/my_array/1","value":"the
+      newer value to be patched"},{"op":"replace","path":"/path/to/broken_object","value":{"new":"object"}},{"op":"add","path":"/path/to/my_array/-","value":["some","values"]},{"op":"add","path":"/path/to/my_array/-","value":["newer"]},{"op":"remove","path":"/path/to/my_array/1"}],"properties":{"op":{"description":"The
+      operation to be performed. Must be one of ''add'', ''remove'', ''replace''.","enum":["add","remove","replace"],"type":"string"},"path":{"description":"A
+      JSON Pointer path that references a location within the target document where
+      the operation is performed. Note: patches are applied sequentially. If you remove
+      a value, the collection size changes before the next patch is applied.","type":"string"},"value":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"items":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"array"},{"additionalProperties":{"anyOf":[{"type":"string"},{"type":"integer"},{"type":"boolean"},{"type":"number"},{"type":"null"}]},"type":"object"},{"type":"null"}]},"type":"object"},{"type":"null"}],"description":"The
+      value to be used within the operation. REQUIRED for ''add'', ''replace'', and
+      ''test'' operations. Pay close attention to the json schema to ensure patched
+      document will be valid."}},"required":["op","path","value"],"type":"object"},"type":"array"}},"required":["json_doc_id","planned_edits","patches"],"type":"object"}},{"name":"Triple","description":"Store
+      all new facts, preferences, and relationships as triples.","input_schema":{"properties":{"subject":{"type":"string"},"predicate":{"type":"string"},"object":{"type":"string"},"context":{"anyOf":[{"type":"string"},{"type":"null"}],"default":null}},"required":["subject","predicate","object"],"type":"object"}},{"name":"RemoveDoc","description":"Use
+      this tool to remove (delete) a doc by its ID.","input_schema":{"properties":{"json_doc_id":{"description":"ID
+      of the document to remove. Must be one of: (''2ec955a0d836529a9702e5722d21fbc3'',
+      ''5680e20d97e1598f8f32905c27c45c81'', ''a3dd7e0dc0c654d59db78778c18db555'',
+      ''e34a006a4c7954618d3807d3dbedb95d'')","type":"string"}},"required":["json_doc_id"],"type":"object"}}]}'
+    headers: {}
+    method: POST
+    uri: https://api.anthropic.com/v1/messages
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA4SR0UvjQBDG/5d53kKSmjbNm5wYOL1DjwpaOZbt7FiT2+zE7GxVSv53SaSc4oOP
+        833ffPODOUBtoYQ27HSS/q5+NKk0i+z6V7pf8aau8LGqQYG8djSmKASzI1DQsxsFE0IdxHgBBS1b
+        clACOhMtzeazfBbYe5JZlmQnaZJloADZC3mB8v5wLBVmp2MYWyeUcY46Se8W+W2xumzkYn2x2fnn
+        68vmpahAgTftuLfu685NW76LAuUBQtw2hAIlnLoaR6vrydZoZMw7ehCN3HbGv4ICPmaljwTDoL4F
+        uqn2fo5P1aK4oYfz/dVPuXq+Xf8H+kMt7+mM8SNTE9hry6inKjO3dkmJxQQX+YnNV3a7LJbLAtPC
+        bvM8h2H4qyAId7onE9h/xpmMQE+RPBKUPjqnIE4vKQ/vN7XwP/IByixb5QrQ4CNp7MlIzV5/jiRH
+        vydjv3oc5aOSztNheAMAAP//AwCyqDD1LwIAAA==
+    headers:
+      CF-RAY:
+      - 90e73ae3b8d37d3f-LAX
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Feb 2025 23:41:21 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Robots-Tag:
+      - none
+      anthropic-ratelimit-input-tokens-limit:
+      - '400000'
+      anthropic-ratelimit-input-tokens-remaining:
+      - '400000'
+      anthropic-ratelimit-input-tokens-reset:
+      - '2025-02-07T23:41:20Z'
+      anthropic-ratelimit-output-tokens-limit:
+      - '80000'
+      anthropic-ratelimit-output-tokens-remaining:
+      - '80000'
+      anthropic-ratelimit-output-tokens-reset:
+      - '2025-02-07T23:41:21Z'
+      anthropic-ratelimit-requests-limit:
+      - '4000'
+      anthropic-ratelimit-requests-remaining:
+      - '3999'
+      anthropic-ratelimit-requests-reset:
+      - '2025-02-07T23:41:19Z'
+      anthropic-ratelimit-tokens-limit:
+      - '480000'
+      anthropic-ratelimit-tokens-remaining:
+      - '480000'
+      anthropic-ratelimit-tokens-reset:
+      - '2025-02-07T23:41:20Z'
+      cf-cache-status:
+      - DYNAMIC
+      request-id:
+      - req_01Xvu2mS2YWYewhNPws38EbM
+      via:
+      - 1.1 google
+    status:
+      code: 200
+      message: OK
 version: 1

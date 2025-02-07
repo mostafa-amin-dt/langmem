@@ -476,7 +476,9 @@ def create_memory_searcher(
     model_instance = (
         model if isinstance(model, BaseChatModel) else init_chat_model(model)
     )
-    search_tool = create_search_memory_tool(namespace=namespace)
+    search_tool = create_search_memory_tool(
+        namespace=namespace, response_format="content_and_artifact"
+    )
     query_gen = model_instance.bind_tools([search_tool], tool_choice="search_memory")
 
     def return_sorted(tool_messages: list):

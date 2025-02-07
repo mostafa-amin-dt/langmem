@@ -9,7 +9,6 @@ from typing import Any, Dict, List
 
 import langsmith as ls
 import pytest
-import vcr
 
 pytestmark = pytest.mark.anyio
 
@@ -17,12 +16,6 @@ logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
-
-vcr_instance = vcr.VCR(
-    cassette_library_dir="tests/vcr_cassettes",
-    record_mode=vcr.record_mode.RecordMode.NEW_EPISODES,
-    match_on=["uri", "method", "body"],
-)
 
 
 def extract_code_blocks(docstring: str) -> List[str]:
@@ -165,40 +158,39 @@ def collect_docstring_tests():
 
     # Process README
     readme_path = Path(__file__).parent.parent / "README.md"
-    # test_cases.extend(extract_markdown_examples(readme_path))
+    test_cases.extend(extract_markdown_examples(readme_path))
 
     # Process docs directory
-    included = ("delayed_processing", "background_quickstart", "manage_user_profil")
-
     if docs_dir.exists():
         logger.info(f"Scanning for markdown files in {docs_dir}")
         md_files = list(docs_dir.rglob("*.md"))
         logger.info(f"Found {len(md_files)} markdown files")
         for md_file in md_files:
-            if any(include in md_file.name for include in included):
-                test_cases.extend(extract_markdown_examples(md_file))
-    # for py_file in py_files:
-    #     logger.debug(f"Processing file: {py_file}")
-    #     funcs = get_module_functions(str(py_file))
-    #     logger.debug(f"Found {len(funcs)} functions with examples in {py_file}")
+            if "crewai" in str(md_file):
+                # We don't install in CI. Tested locally and don't really care about them.
+                continue
+            test_cases.extend(extract_markdown_examples(md_file))
+    for py_file in py_files:
+        logger.debug(f"Processing file: {py_file}")
+        funcs = get_module_functions(str(py_file))
+        logger.debug(f"Found {len(funcs)} functions with examples in {py_file}")
 
-    #     for func_name, details in funcs.items():
-    #         test_id = f"{py_file.relative_to(src_dir)}::{func_name}"
-    #         logger.info(f"Adding test case: {test_id}")
-    #         test_cases.append(
-    #             pytest.param(
-    #                 details["module"],
-    #                 func_name,
-    #                 details["examples"],  # Pass all examples together
-    #                 id=test_id,
-    #             )
-    #         )
+        for func_name, details in funcs.items():
+            test_id = f"{py_file.relative_to(src_dir)}::{func_name}"
+            logger.info(f"Adding test case: {test_id}")
+            test_cases.append(
+                pytest.param(
+                    details["module"],
+                    func_name,
+                    details["examples"],  # Pass all examples together
+                    id=test_id,
+                )
+            )
     logger.info(f"Collected {len(test_cases)} test cases")
     return test_cases
 
 
 @pytest.mark.parametrize("module_name,func_name,code_blocks", collect_docstring_tests())
-@pytest.mark.asyncio_cooperative
 @pytest.mark.langsmith
 async def test_docstring_example(
     module_name: str | None, func_name: str, code_blocks: List[str]
