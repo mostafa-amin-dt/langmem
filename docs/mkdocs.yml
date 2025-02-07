@@ -99,8 +99,9 @@ nav:
   - Concepts 💡:
     - Core Concepts: concepts/conceptual_guide.md
   - How-to Guides 🔨:
-      - Extract Semantic Memories: guides/extract_semantic_memories.md
-      - Manage User Profile: guides/manage_user_profile.md
+      - Defer Background Memory Processing: guides/delayed_processing.md
+      - Manage a Semantic Memory Collection: guides/extract_semantic_memories.md
+      - Manage User Profiles: guides/manage_user_profile.md
       - Use Memory Tools: guides/memory_tools.md
       - Optimize Single Prompts: guides/optimize_memory_prompt.md
       - Optimize Multiple Prompts: guides/optimize_compound_system.md

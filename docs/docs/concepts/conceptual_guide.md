@@ -317,7 +317,7 @@ Check out the ["background" quickstart](../background_quickstart.md) for an exam
 
 ## Integration Patterns
 
-LangMem's memory utilities are organized in three layers of increasing abstraction, each serving different integration needs:
+LangMem's memory utilities are organized in two layers of integration patterns:
 
 ### 1. Core API {#functional-core}
 
@@ -345,7 +345,7 @@ Use these if you're using LangGraph Platform or LangGraph OSS, since it's an eas
     Remember that LangMem's core functionality is built around that don't require any specific storage layer. The storage features described here are part of LangMem's higher-level integration with LangGraph, useful when you want built-in persistence.
 
 
-When using LangMem's stateful operators or platform services, the storage system is built on LangGraph's storage primitives, providing a flexible and powerful way to organize and access memories. The storage system is designed around three key concepts:
+When using LangMem's stateful operators or platform services, the storage system is built on LangGraph's storage primitives, providing a flexible and powerful way to organize and access memories. The storage system is designed around two concepts:
 
 ### Memory Namespaces {#memory-namespaces}
 

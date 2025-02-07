@@ -252,3 +252,9 @@ for item in store.search(("chat", "user123")):
 
 
 See [Storage System](../concepts/conceptual_guide.md#storage-system) for namespace patterns.
+
+## When to Use Semantic Memories
+
+Semantic memories help agents learn from conversations. They extract and store meaningful information that might be useful in future interactions. For example, when discussing a project, the agent might remember technical requirements, team structure, or key decisions - anything that could provide helpful context later.
+
+The goal is to build understanding over time, just like humans do through repeated interactions. Not everything needs to be remembered - focus on information that helps the agent be more helpful in future conversations. Semantic memory works best when the agent is able to save important memories and the dense relationships between them so that it can later recall not just "what" but "why" and "how".

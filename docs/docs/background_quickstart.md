@@ -37,6 +37,9 @@ from langgraph.store.memory import InMemoryStore
 
 from langmem import ReflectionExecutor, create_memory_store_enricher
 
+store = InMemoryStore()  # (4)
+llm = init_chat_model("anthropic:claude-3-5-sonnet-latest")
+
 # Create memory manager Runnable to extract memories from conversations
 memory_manager = create_memory_store_enricher(
     "anthropic:claude-3-5-sonnet-latest",
@@ -44,59 +47,39 @@ memory_manager = create_memory_store_enricher(
     namespace=("memories",),  # (1)
 )
 
-# Run memory management in a background thread to avoid slowing down our app (2)
-# highlight-next-line
-executor = ReflectionExecutor(memory_manager)
-
-store = InMemoryStore()  # (4)
-# Create agent (no memory tools needed)
-llm = init_chat_model("anthropic:claude-3-5-sonnet-latest")
-
-
 @entrypoint(store=store)  # Create a LangGraph workflow
-def chat(message: str):
+async def chat(message: str):
     response = llm.invoke(message)
 
-    # Our `memory_manager` expects a conversation history. We'll provide it in OpenAI's message format.
-    # highlight-next-line
+    # memory_manager extracts memories from conversation history
+    # We'll provide it in OpenAI's message format
     to_process = {"messages": [{"role": "user", "content": message}] + [response]}
-    # This calls memory_manager.invoke(to_process) in the background
-    # If **new** messages arrive for this conversation before `after_seconds` completes,
-    # the management task is canceled and replaced with the new one
-    # Typically you'd choose a larger value (like 30 minutes)
-    executor.submit(to_process, after_seconds=0.5)  # (3)
+    await memory_manager.ainvoke(to_process)  # (2)
     return response.content
-
-
 # Run conversation as normal
-response = chat.invoke(
+response = await chat.ainvoke(
     "I like dogs. My dog's name is Fido.",
 )
 print(response)
 # Output: That's nice! Dogs make wonderful companions. Fido is a classic dog name. What kind of dog is Fido?
 ```
+
 1. The `namespace` parameter lets you isolate memories that are stored and retrieved. In this example, we store memories in a global "memories" path, but you could instead use template variables to scope to a user-specific path based on configuration. See [how to dynamically configure namespaces](guides/dynamically_configure_namespaces.md) for more information.
 
-2. The [`ReflectionExecutor`](reference/utils.md#langmem.ReflectionExecutor) schedules memories either in a background thread (as we are doing in this case), or remotely via a LangGraph Platform instance. This reduces impact on the main conversation.
-
-   A common concern with background processing is that it could get expensive if you're running it on every interaction turn. You often don't know when a conversatino completes, so a common pattern is to schedule processing of memories for some time in the future. If a new input arrives for a particular thread before memories are processed, you can just cancel and reschedule it.
-
-   The `ReflectionExecutor` offers an `after_seconds` argument for this purpose. Note that for this type of use case, the **local** thread version wouldn't be useful if you're trying to deploy using serverless functions, since the thread would be terminated.
-   Check out the [`ReflectionExecutor`](reference/utils.md#langmem.ReflectionExecutor) reference docs for more information.
+2. We are using the memory manager to process the conversation every time a new message arrives. For more efficient processing patterns that let you debounce (aka avoid redundant) work, see [Delayed Memory Processing](guides/delayed_processing.md).
 
 3. You can also process memories directly with `memory_manager.process(messages)` if you don't need background processing
 
 4. What's a store? It's a document store you can add vector-search too. The "InMemoryStore" is, as it says, saved in-memory and not persistent.
 
-   ???+ tip "For Production"
-   Use a persistent store like [`AsyncPostgresStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.AsyncPostgresStore) instead of `InMemoryStore` to persist data between restarts.
+    !!! tip "For Production"
+    Use a persistent store like [`AsyncPostgresStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.AsyncPostgresStore) instead of `InMemoryStore` to persist data between restarts.
 
 
 If you want to see what memories have been extracted, you can search the store:
 
 ```python
 # (in case our memory manager is still running)
-executor.shutdown(wait=True)  # block until all tasks are done
 print(store.search(("memories",)))
 # [
 #     Item(
@@ -118,6 +101,9 @@ print(store.search(("memories",)))
 # ]
 ```
 
+!!! tip "For more efficient processing"
+
+    💡 For active conversations, processing every message can be expensive. See [Delayed Memory Processing](guides/delayed_processing.md) to learn how to defer processing until conversation activity settles down.
 
 ## What's Next
 

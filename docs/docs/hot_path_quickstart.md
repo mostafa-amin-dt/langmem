@@ -40,8 +40,6 @@ from langgraph.utils.config import get_store
 from langmem import (
     # Lets agent create, update, and delete memories (1)
     create_manage_memory_tool,
-    # Lets the agent search its memory
-    create_search_memory_tool,
 )
 
 
@@ -55,7 +53,7 @@ def prompt(state):
         ("memories",),
         query=state["messages"][-1].content,
     )
-    system_msg = """You are a helpful assistant.
+    system_msg = f"""You are a helpful assistant.
 
 ## Memories
 <memories>
@@ -77,9 +75,6 @@ agent = create_react_agent(
         # Namespaces add scope to memories. To
         # scope memories per-user, do ("memories", "{user_id}"): (6)
         create_manage_memory_tool(namespace=("memories",)),
-        # The agent can call "search_memory" if it needs to recall
-        # similar memories for a given conversation
-        create_search_memory_tool(namespace=("memories",)),
     ],
     # Our memories will be stored in this provided BaseStore instance
     store=store,
@@ -89,7 +84,7 @@ agent = create_react_agent(
 )
 ```
 
-1. The tools [`create_manage_memory_tool`](reference/tools.md#langmem.create_manage_memory_tool) and [`create_search_memory_tool`](reference/tools.md#langmem.create_search_memory_tool) allow agents to store and retrieve information from their memory. The `namespace` parameter scopes the memories, ensuring that data is kept separate based on however you configure it.
+1. The tools [`create_manage_memory_tool`](reference/tools.md#langmem.create_manage_memory_tool) and [`create_search_memory_tool`](reference/tools.md#langmem.create_search_memory_tool) allow agents to manually store and retrieve information from their memory. The `namespace` parameter scopes the memories, ensuring that data is kept separate based on however you configure it.
 
     Here, we save all memories to the ("memories",) namespace, meaning no matter which user interacts with the agent, all memories would be shared in the same directory. We could also configure it to organize memories in other ways. For instance::
 
