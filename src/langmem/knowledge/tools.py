@@ -5,9 +5,9 @@ from langchain_core.tools import StructuredTool
 from langgraph.store.base import BaseStore
 from langgraph.utils.config import get_store
 
-from langmem import utils
+from langmem import errors, utils
 
-## LangGraph Tools
+# LangGraph Tools
 
 
 def create_manage_memory_tool(
@@ -23,6 +23,7 @@ def create_manage_memory_tool(
         tuple[typing.Literal["create", "update", "delete"], ...]
     ] = ("create", "update", "delete"),
     store: typing.Optional[BaseStore] = None,
+    name: str = "manage_memory",
 ):
     """Create a tool for managing persistent memories in conversations.
 
@@ -249,10 +250,7 @@ def create_manage_memory_tool(
         *,
         id: typing.Optional[uuid.UUID] = None,
     ):
-        if initial_store is not None:
-            store = initial_store
-        else:
-            store = get_store()
+        store = _get_store(initial_store)
         if action not in actions_permitted:
             raise ValueError(
                 f"Invalid action {action}. Must be one of {actions_permitted}."
@@ -286,11 +284,7 @@ def create_manage_memory_tool(
         *,
         id: typing.Optional[uuid.UUID] = None,
     ):
-        if initial_store is not None:
-            store = initial_store
-        else:
-            store = get_store()
-
+        store = _get_store(initial_store)
         if action == "create" and id is not None:
             raise ValueError(
                 "You cannot provide a MEMORY ID when creating a MEMORY. Please try again, omitting the id argument."
@@ -318,7 +312,7 @@ Include the MEMORY ID when updating or deleting a MEMORY. Omit when creating a n
 {instructions}""".format(instructions=instructions)
 
     return StructuredTool.from_function(
-        manage_memory, amanage_memory, name="manage_memory", description=description
+        manage_memory, amanage_memory, name=name, description=description
     )
 
 
@@ -331,6 +325,7 @@ def create_search_memory_tool(
     instructions: str = _MEMORY_SEARCH_INSTRUCTIONS,
     store: BaseStore | None = None,
     response_format: typing.Literal["content", "content_and_artifact"] = "content",
+    name: str = "search_memory",
 ):
     """Create a tool for searching memories stored in a LangGraph BaseStore.
 
@@ -400,10 +395,7 @@ def create_search_memory_tool(
         offset: int = 0,
         filter: typing.Optional[dict] = None,
     ):
-        if initial_store is not None:
-            store = initial_store
-        else:
-            store = get_store()
+        store = _get_store(initial_store)
         namespace = namespacer()
         memories = await store.asearch(
             namespace,
@@ -423,10 +415,7 @@ def create_search_memory_tool(
         offset: int = 0,
         filter: typing.Optional[dict] = None,
     ):
-        if initial_store is not None:
-            store = initial_store
-        else:
-            store = get_store()
+        store = _get_store(initial_store)
         namespace = namespacer()
         memories = store.search(
             namespace,
@@ -446,7 +435,18 @@ def create_search_memory_tool(
     return StructuredTool.from_function(
         search_memory,
         asearch_memory,
-        name="search_memory",
+        name=name,
         description=description,
         response_format=response_format,
     )
+
+
+def _get_store(initial_store: BaseStore | None = None) -> BaseStore:
+    try:
+        if initial_store is not None:
+            store = initial_store
+        else:
+            store = get_store()
+        return store
+    except RuntimeError as e:
+        raise errors.ConfigurationError("Could not get store") from e

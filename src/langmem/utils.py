@@ -8,6 +8,8 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.utils.config import get_config
 from pydantic import BaseModel, Field, model_validator
 
+from langmem import errors
+
 
 class NamespaceTemplate:
     """Utility for templating namespace strings from configuration.
@@ -80,7 +82,7 @@ class NamespaceTemplate:
                     for ix, ns in enumerate(self.template)
                 )
             except KeyError as e:
-                raise KeyError(
+                raise errors.ConfigurationError(
                     f"Missing key in 'configurable' field: {e.args[0]}."
                     f" Available keys: {list(configurable.keys())}"
                 )

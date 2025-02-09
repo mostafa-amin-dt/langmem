@@ -23,28 +23,12 @@ from langmem.prompts.types import Prompt
 KINDS = typing.Literal["gradient", "metaprompt", "prompt_memory"]
 
 
-class PromptOptimizerProto(Runnable[prompt_types.OptimizerInput, str]):
-    """
-    Protocol for a single-prompt optimizer that can be called as:
-       await optimizer(trajectories, prompt)
-    or
-       await optimizer.ainvoke({"trajectories": ..., "prompt": ...})
-    returning an updated prompt string.
-    """
-
-    async def __call__(
-        self,
-        trajectories: typing.Sequence[prompt_types.AnnotatedTrajectory] | str,
-        prompt: str | Prompt,
-    ) -> str: ...
-
-
 @typing.overload
 def create_prompt_optimizer(
     model: str | BaseChatModel,
     kind: typing.Literal["gradient"] = "gradient",
     config: typing.Optional[GradientOptimizerConfig] = None,
-) -> PromptOptimizerProto: ...
+) -> Runnable[prompt_types.OptimizerInput, str]: ...
 
 
 @typing.overload
@@ -52,7 +36,7 @@ def create_prompt_optimizer(
     model: str | BaseChatModel,
     kind: typing.Literal["metaprompt"] = "metaprompt",
     config: typing.Optional[MetapromptOptimizerConfig] = None,
-) -> PromptOptimizerProto: ...
+) -> Runnable[prompt_types.OptimizerInput, str]: ...
 
 
 @typing.overload
@@ -60,7 +44,7 @@ def create_prompt_optimizer(
     model: str | BaseChatModel,
     kind: typing.Literal["prompt_memory"] = "prompt_memory",
     config: None = None,
-) -> PromptOptimizerProto: ...
+) -> Runnable[prompt_types.OptimizerInput, str]: ...
 
 
 def create_prompt_optimizer(
@@ -71,7 +55,7 @@ def create_prompt_optimizer(
     config: typing.Union[
         GradientOptimizerConfig, MetapromptOptimizerConfig, None
     ] = None,
-) -> PromptOptimizerProto:
+) -> Runnable[prompt_types.OptimizerInput, str]:
     """Create a prompt optimizer that improves prompt effectiveness.
 
     This function creates an optimizer that can analyze and improve prompts for better
@@ -97,7 +81,7 @@ def create_prompt_optimizer(
             Defaults to None.
 
     Returns:
-        optimizer (PromptOptimizerProto): A callable that takes conversation trajectories and/or prompts and returns optimized versions.
+        optimizer (Runnable[prompt_types.OptimizerInput, str]): A callable that takes conversation trajectories and/or prompts and returns optimized versions.
 
     ## Optimization Strategies
 
@@ -173,6 +157,7 @@ def create_prompt_optimizer(
     ```
 
     Learns from conversation history:
+
     1. Extracts successful patterns from past interactions
     2. Identifies improvement areas from feedback
     3. Applies learned patterns to new prompts
@@ -263,6 +248,7 @@ def create_prompt_optimizer(
 
     !!! tip "Strategy Selection"
         Choose based on your needs:
+
         1. Prompt Memory: Simplest prompting strategy
             - Limited ability to learn from complicated patterns
         2. Metaprompt: Balance of speed and improvement

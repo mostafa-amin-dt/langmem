@@ -101,19 +101,19 @@ inputs = {
   ]
 }
 #%%
-from langmem import create_memory_enricher
+from langmem import create_memory_manager
 
-enricher = create_memory_enricher(
+manager = create_memory_manager(
     "gpt-4o",
 )
-results = await enricher(inputs["messages"], existing=inputs["existing"])
+results = await manager(inputs["messages"], existing=inputs["existing"])
 
 #%%
 
 #%%
 results[0]
 #%%
-consolidator = create_memory_enricher(
+consolidator = create_memory_manager(
     "gpt-4o",
     instructions="Your task is to deduplicate, conslidate,"
     " and enrich the provided memories for future use. Try to compress without loss of information."
@@ -232,15 +232,15 @@ print(json.dumps(inputs, indent=2))
 
 # # %% [markdown]
 # # ## 2. Memory Extraction and Updates
-# # The `create_memory_enricher` can be customized with schemas to extract specific types of information
+# # The `create_memory_manager` can be customized with schemas to extract specific types of information
 # # and instructions to guide the extraction process.
 
 # # %%
-# from langmem import create_memory_enricher
+# from langmem import create_memory_manager
 
 # # Default string-based memories
-# basic_enricher = create_memory_enricher("gpt-4o-mini")
-# basic_memories = await basic_enricher(conversation[:4])
+# basic_manager = create_memory_manager("gpt-4o-mini")
+# basic_memories = await basic_manager(conversation[:4])
 # print("Basic Memories:", basic_memories)
 
 # # Custom schema for structured memories
@@ -264,14 +264,14 @@ print(json.dumps(inputs, indent=2))
 # 2. Billing events and their resolutions
 # 3. Update existing memories if new information contradicts or clarifies them"""
 
-# structured_enricher = create_memory_enricher(
+# structured_manager = create_memory_manager(
 #     "gpt-4o-mini",
 #     schemas=[CustomerPreference, BillingEvent],
 #     instructions=support_memory_instructions,
 #     enable_inserts=True  # Allow creating new memories
 # )
 
-# structured_memories = await structured_enricher(conversation)
+# structured_memories = await structured_manager(conversation)
 # print("\nStructured Memories:", structured_memories)
 
 # # %% [markdown]
@@ -327,7 +327,7 @@ print(json.dumps(inputs, indent=2))
 # # to create a complete memory management system.
 
 # # %%
-# from langmem import create_memory_store_enricher
+# from langmem import create_memory_store_manager
 # from langgraph.func import entrypoint
 
 # # Define comprehensive memory schemas
@@ -339,7 +339,7 @@ print(json.dumps(inputs, indent=2))
 #     content: dict = Field(description="The actual memory content")
 
 # # Create pipeline with custom configuration
-# processor = create_memory_store_enricher(
+# processor = create_memory_store_manager(
 #     "gpt-4o-mini",
 #     schemas=[SupportMemory],
 #     instructions="""Extract and maintain support-related memories:

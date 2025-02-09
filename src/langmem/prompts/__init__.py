@@ -3,7 +3,7 @@
 This module provides utilities for improving prompts based on conversation history:
 
 1. Single Prompt Optimization:
-    - `create_prompt_optimizer(model, kind="metaprompt"|"gradient"|"prompt_memory") -> PromptOptimizerProto`:
+    - `create_prompt_optimizer(model, kind="metaprompt"|"gradient"|"prompt_memory") -> Runnable[prompt_types.OptimizerInput, str]`:
         Create an optimizer for improving individual prompts using different strategies:
         - metaprompt: Uses meta-prompting for structured improvements
         - gradient: Uses gradient-based techniques for iterative refinement

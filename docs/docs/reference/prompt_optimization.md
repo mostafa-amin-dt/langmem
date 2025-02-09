@@ -10,3 +10,12 @@ title: Prompt Optimization API Reference
       members:
         - create_prompt_optimizer
         - create_multi_prompt_optimizer
+
+::: langmem.prompts.types
+    handler: python
+    options:
+      members:
+        - Prompt
+        - OptimizerInput
+        - MultiPromptOptimizerInput
+        - AnnotatedTrajectory
