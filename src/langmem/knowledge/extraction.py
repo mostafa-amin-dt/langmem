@@ -440,7 +440,7 @@ def create_memory_searcher(
         from langgraph.store.memory import InMemoryStore
         from langgraph.func import entrypoint
 
-        store = InMemoryStore()
+        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
         user_id = "abcd1234"
         store.put(
             ("memories", user_id), key="preferences", value={"content": "I like sushi"}
@@ -944,7 +944,7 @@ def create_memory_store_manager(
 
         from langmem import create_memory_store_manager
 
-        store = InMemoryStore()
+        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
         manager = create_memory_store_manager("anthropic:claude-3-5-sonnet-latest", namespace=("memories", "{langgraph_user_id}"))
         client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
@@ -993,7 +993,7 @@ def create_memory_store_manager(
 
         from langmem import create_memory_store_manager
 
-        store = InMemoryStore()
+        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
         manager = create_memory_store_manager(
             "anthropic:claude-3-5-sonnet-latest",
             namespace=("memories", "{langgraph_user_id}"),
@@ -1006,7 +1006,7 @@ def create_memory_store_manager(
             context: str
 
 
-        store = InMemoryStore()
+        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
         manager = create_memory_store_manager(
             "anthropic:claude-3-5-sonnet-latest",
             schemas=[PreferenceMemory],
@@ -1065,7 +1065,7 @@ def create_memory_store_manager(
         from langgraph.store.memory import InMemoryStore
         from langgraph.func import entrypoint
 
-        store = InMemoryStore()
+        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
         manager = create_memory_store_manager(
             "anthropic:claude-3-5-sonnet-latest",  # Main model for memory processing
             query_model="anthropic:claude-3-5-haiku-latest",  # Faster model for search
@@ -1117,7 +1117,7 @@ def create_memory_store_manager(
         from langgraph.store.memory import InMemoryStore
         from langgraph.func import entrypoint
 
-        store = InMemoryStore()
+        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
         manager = create_memory_store_manager(
             "anthropic:claude-3-5-sonnet-latest", namespace=("memories", "{user_id}")
         )

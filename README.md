@@ -38,7 +38,9 @@ from langgraph.store.memory import InMemoryStore
 from langmem import create_manage_memory_tool, create_search_memory_tool
 
 # Set up storage
-store = InMemoryStore() # (2)
+store = InMemoryStore(# (2)
+    index={"embed": "openai:text-embedding-3-small"},
+) 
 
 # Create an agent with memory capabilities (3)
 agent = create_react_agent(

@@ -35,7 +35,7 @@ Organize memories by user, organization, or feature:
 tool = create_manage_memory_tool(
     namespace=("memories", "{org_id}")
 )
-# ... re-create app, then:
+app = create_react_agent("anthropic:claude-3-5-sonnet-latest", tools=[tool])
 app.invoke(
     {"messages": [{"role": "user", "content": "I'm questioning the new company health plan.."}]},
     config={"configurable": {"org_id": "acme"}}
@@ -50,7 +50,7 @@ tool = create_manage_memory_tool(
 tool = create_search_memory_tool(
     namespace=("memories", "{org_id}")
 )
-# ... re-create app, then:
+app = create_react_agent("anthropic:claude-3-5-sonnet-latest", tools=[tool])
 app.invoke(
     {"messages": [{"role": "user", "content": "What's our policy on dogs at work?"}]},
     config={"configurable": {"org_id": "acme", "user_id": "alice"}}
@@ -60,7 +60,7 @@ app.invoke(
 tool = create_manage_memory_tool(
     namespace=("agent_smith", "memories", "{user_id}", "preferences")
 )
-# ... re-create app, then:
+app = create_react_agent("anthropic:claude-3-5-sonnet-latest", tools=[tool])
 app.invoke(
     {"messages": [{"role": "user", "content": "I like dolphins"}]},
     config={"configurable": {"user_id": "alice"}}

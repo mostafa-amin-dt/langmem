@@ -99,7 +99,7 @@ def run_agent(tools: List[Any], user_input: str, max_steps: int = 5) -> str:
 
 
 # Set up memory store and tools
-store = InMemoryStore()  # (1)
+store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})  # (1)
 memory_tools = [
     create_manage_memory_tool(namespace="memories", store=store),
     create_search_memory_tool(namespace="memories", store=store),
@@ -218,7 +218,7 @@ def run_agent(tools: List[Any], user_input: str, max_steps: int = 5) -> str:
 
 
 # Set up memory store and tools
-store = InMemoryStore()
+store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
 memory_tools = [
     create_manage_memory_tool(namespace="memories", store=store),
     create_search_memory_tool(namespace="memories", store=store),

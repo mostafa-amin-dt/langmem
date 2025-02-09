@@ -129,7 +129,7 @@ from langgraph.store.memory import InMemoryStore
 from langmem import create_memory_store_manager
 
 # Set up store and models
-store = InMemoryStore() # (1)
+store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"}) # (1)
 manager = create_memory_store_manager(
     "anthropic:claude-3-5-sonnet-latest",
     namespace=("chat", "{user_id}", "triples"),

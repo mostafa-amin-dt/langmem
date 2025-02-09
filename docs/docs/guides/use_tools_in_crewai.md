@@ -24,7 +24,7 @@ from langmem import create_manage_memory_tool, create_search_memory_tool
 from langgraph.store.memory import InMemoryStore
 
 # Set up memory store
-store = InMemoryStore()  # (1)
+store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})  # (1)
 
 # Create memory tools
 memory_tools = [
@@ -56,7 +56,7 @@ from langgraph.store.memory import InMemoryStore
 from langmem import create_manage_memory_tool, create_search_memory_tool
 
 # Set up shared store
-store = InMemoryStore()
+store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
 
 # Create base tools
 base_tools = [
