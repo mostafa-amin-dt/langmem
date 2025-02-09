@@ -85,7 +85,12 @@ def create_manage_memory_tool(
             namespace=("project_memories", "{langgraph_user_id}"),
         )
 
-        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
+        store = InMemoryStore(
+            index={
+                "dims": 1536,
+                "embed": "openai:text-embedding-3-small",
+            }
+        )
 
 
         @entrypoint(store=store)
@@ -178,7 +183,12 @@ def create_manage_memory_tool(
             actions_permitted=["create", "update"],
             instructions="Update the existing user profile (or create a new one if it doesn't exist) based on the shared information.",
         )
-        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
+        store = InMemoryStore(
+            index={
+                "dims": 1536,
+                "embed": "openai:text-embedding-3-small",
+            }
+        )
         agent = create_react_agent(
             "anthropic:claude-3-5-sonnet-latest",
             prompt=prompt,
@@ -372,7 +382,12 @@ def create_search_memory_tool(
             namespace=("project_memories", "{langgraph_user_id}"),
         )
 
-        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
+        store = InMemoryStore(
+            index={
+                "dims": 1536,
+                "embed": "openai:text-embedding-3-small",
+            }
+        )
 
 
         @entrypoint(store=store)

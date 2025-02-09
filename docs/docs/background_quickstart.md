@@ -37,7 +37,12 @@ from langgraph.store.memory import InMemoryStore
 
 from langmem import ReflectionExecutor, create_memory_store_manager
 
-store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})  # (4)
+store = InMemoryStore( # (4)
+    index={
+        "dims": 1536,
+        "embed": "openai:text-embedding-3-small",
+    }
+)  
 llm = init_chat_model("anthropic:claude-3-5-sonnet-latest")
 
 # Create memory manager Runnable to extract memories from conversations

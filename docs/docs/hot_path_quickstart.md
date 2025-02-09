@@ -63,7 +63,12 @@ def prompt(state):
     return [{"role": "system", "content": system_msg}, *state["messages"]]
 
 
-store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"}) # Store extracted memories (4)
+store = InMemoryStore(
+    index={ # Store extracted memories (4)
+        "dims": 1536,
+        "embed": "openai:text-embedding-3-small",
+    }
+) 
 checkpointer = MemorySaver() # Checkpoint graph state (2)
 
 agent = create_react_agent( 

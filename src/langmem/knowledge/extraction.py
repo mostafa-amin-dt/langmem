@@ -26,7 +26,7 @@ class MessagesState(TypedDict):
 
 
 class MemoryState(MessagesState):
-    existing: typing.NotRequired[list[BaseModel]]
+    existing: typing.NotRequired[list[tuple[str, BaseModel]]]
 
 
 class SummarizeThread(BaseModel):
@@ -138,7 +138,9 @@ def create_thread_extractor(
 
     return (
         merge_messages | template | extractor | (lambda out: out["responses"][0])
-    ).with_config({"run_name": "thread_extractor"})  # type: ignore
+    ).with_config(
+        {"run_name": "thread_extractor"}
+    )  # type: ignore
 
 
 _MEMORY_INSTRUCTIONS = """You are tasked with extracting or upserting memories for all entities, concepts, etc.
@@ -440,7 +442,12 @@ def create_memory_searcher(
         from langgraph.store.memory import InMemoryStore
         from langgraph.func import entrypoint
 
-        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
+        store = InMemoryStore(
+            index={
+                "dims": 1536,
+                "embed": "openai:text-embedding-3-small",
+            }
+        )
         user_id = "abcd1234"
         store.put(
             ("memories", user_id), key="preferences", value={"content": "I like sushi"}
@@ -944,7 +951,13 @@ def create_memory_store_manager(
 
         from langmem import create_memory_store_manager
 
-        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
+        store = InMemoryStore(
+            index={
+                "dims": 1536,
+                "embed": "openai:text-embedding-3-small",
+            }
+        )
+
         manager = create_memory_store_manager("anthropic:claude-3-5-sonnet-latest", namespace=("memories", "{langgraph_user_id}"))
         client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
@@ -993,7 +1006,12 @@ def create_memory_store_manager(
 
         from langmem import create_memory_store_manager
 
-        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
+        store = InMemoryStore(
+            index={
+                "dims": 1536,
+                "embed": "openai:text-embedding-3-small",
+            }
+        )
         manager = create_memory_store_manager(
             "anthropic:claude-3-5-sonnet-latest",
             namespace=("memories", "{langgraph_user_id}"),
@@ -1006,7 +1024,12 @@ def create_memory_store_manager(
             context: str
 
 
-        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
+        store = InMemoryStore(
+            index={
+                "dims": 1536,
+                "embed": "openai:text-embedding-3-small",
+            }
+        )
         manager = create_memory_store_manager(
             "anthropic:claude-3-5-sonnet-latest",
             schemas=[PreferenceMemory],
@@ -1065,7 +1088,12 @@ def create_memory_store_manager(
         from langgraph.store.memory import InMemoryStore
         from langgraph.func import entrypoint
 
-        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
+        store = InMemoryStore(
+            index={
+                "dims": 1536,
+                "embed": "openai:text-embedding-3-small",
+            }
+        )
         manager = create_memory_store_manager(
             "anthropic:claude-3-5-sonnet-latest",  # Main model for memory processing
             query_model="anthropic:claude-3-5-haiku-latest",  # Faster model for search
@@ -1117,7 +1145,12 @@ def create_memory_store_manager(
         from langgraph.store.memory import InMemoryStore
         from langgraph.func import entrypoint
 
-        store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
+        store = InMemoryStore(
+            index={
+                "dims": 1536,
+                "embed": "openai:text-embedding-3-small",
+            }
+        )
         manager = create_memory_store_manager(
             "anthropic:claude-3-5-sonnet-latest", namespace=("memories", "{user_id}")
         )

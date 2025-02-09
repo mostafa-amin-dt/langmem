@@ -75,7 +75,12 @@ from langgraph.config import get_config
 from langmem import create_memory_store_manager
 
 # Set up store and models (1)
-store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
+store = InMemoryStore(
+    index={
+        "dims": 1536,
+        "embed": "openai:text-embedding-3-small",
+    }
+)
 my_llm = init_chat_model("anthropic:claude-3-5-sonnet-latest")
 
 # Create profile manager (2)

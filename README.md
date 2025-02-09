@@ -37,9 +37,12 @@ from langgraph.prebuilt import create_react_agent
 from langgraph.store.memory import InMemoryStore
 from langmem import create_manage_memory_tool, create_search_memory_tool
 
-# Set up storage
-store = InMemoryStore(# (2)
-    index={"embed": "openai:text-embedding-3-small"},
+# Set up storage (2)
+store = InMemoryStore(
+    index={
+        "dims": 1536,
+        "embed": "openai:text-embedding-3-small",
+    }
 ) 
 
 # Create an agent with memory capabilities (3)
@@ -90,3 +93,4 @@ For more examples and detailed documentation:
 - [Background Quickstart](background_quickstart.md) - Learn how to use a memory manager "in the background"
 - [Core Concepts](concepts/conceptual_guide.md) - Learn key ideas
 - [API Reference](reference/index.md) - Full function documentation
+- Build RSI :)

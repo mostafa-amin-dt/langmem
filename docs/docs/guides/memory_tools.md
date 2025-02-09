@@ -17,7 +17,12 @@ from langgraph.store.memory import InMemoryStore
 from langmem import create_manage_memory_tool, create_search_memory_tool
 
 # Set up store and memory saver
-store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"}) # (1)
+store = InMemoryStore(
+    index={
+        "dims": 1536,
+        "embed": "openai:text-embedding-3-small",
+    }
+) # (1)
 ```
 
 1. For production deployments, use a persistent store like [`AsyncPostgresStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.AsyncPostgresStore). `InMemoryStore` works fine for development but doesn't persist data between restarts.

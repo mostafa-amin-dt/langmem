@@ -92,7 +92,12 @@ from langgraph.store.memory import InMemoryStore
 from langmem import create_memory_store_manager
 
 # Set up vector store for similarity search
-store = InMemoryStore(index={"embed": "openai:text-embedding-3-small"})
+store = InMemoryStore(
+    index={
+        "dims": 1536,
+        "embed": "openai:text-embedding-3-small",
+    }
+)
 
 # Configure memory manager with storage
 manager = create_memory_store_manager(

@@ -1,6 +1,6 @@
 [project]
 name = "langmem"
-version = "0.0.7rc1"
+version = "0.0.7rc2"
 description = "Prebuilt utilities for memory management and retrieval."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -11,9 +11,16 @@ dependencies = [
     "trustcall>=0.0.35",
     "langgraph>=0.2.66",
     "langchain-anthropic>=0.3.3",
-    "langsmith>=0.3.4",
+    "langsmith>=0.3.8",
     "langgraph-checkpoint>=2.0.12",
 ]
+
+[project.packages]
+find = {where = ["src"]}
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [

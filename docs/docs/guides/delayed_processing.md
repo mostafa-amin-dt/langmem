@@ -29,8 +29,14 @@ memory_manager = create_memory_store_manager(
 )
 # Wrap memory_manager to handle deferred background processing (2)
 executor = ReflectionExecutor(memory_manager)
+store = InMemoryStore(
+    index={
+        "dims": 1536,
+        "embed": "openai:text-embedding-3-small",
+    }
+)
 
-@entrypoint(store=InMemoryStore(index={"embed": "openai:text-embedding-3-small"}))
+@entrypoint(store=store)
 def chat(message: str):
     response = llm.invoke(message)
     # Format conversation for memory processing
