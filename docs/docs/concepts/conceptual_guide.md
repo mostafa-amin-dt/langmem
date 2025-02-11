@@ -21,11 +21,11 @@ The best memory systems are often application-specific. In designing yours, the 
 Memory in LLM applications can reflect some of the structure of human memory, with each type serving a distinct purpose in building adaptive, context-aware systems:
 
 
-| Memory Type | Purpose | Typical Storage Pattern | Human Example | Agent Example |
-|-------------|---------|-----------------|---------------|---------------|
-| Semantic | Facts & Knowledge | Profile or Collection | Knowing Python is a programming language | User preferences; knowledge triplets |
-| Episodic | Past Experiences | Collection | Remembering your first day at work | Few-shot examples; Summaries of past conversations |
-| Procedural | System Behavior | Prompt rules or Collection | Knowing how to ride a bicycle | Core personality and response patterns |
+| Memory Type | Purpose | Agent Example | Human Example | Typical Storage Pattern |
+|-------------|---------|---------------|---------------|-----------------------|
+| Semantic | Facts & Knowledge | User preferences; knowledge triplets | Knowing Python is a programming language | Profile or Collection |
+| Episodic | Past Experiences | Few-shot examples; Summaries of past conversations | Remembering your first day at work | Collection |
+| Procedural | System Behavior | Core personality and response patterns | Knowing how to ride a bicycle | Prompt rules or Collection |
 
 ### Semantic Memory: Facts and Knowledge
 

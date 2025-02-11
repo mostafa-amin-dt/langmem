@@ -93,4 +93,4 @@ For more examples and detailed documentation:
 - [Background Quickstart](background_quickstart.md) - Learn how to use a memory manager "in the background"
 - [Core Concepts](concepts/conceptual_guide.md) - Learn key ideas
 - [API Reference](reference/index.md) - Full function documentation
-- Build RSI :)
+- Build RSI 🙂 

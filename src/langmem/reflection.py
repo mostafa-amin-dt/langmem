@@ -5,7 +5,7 @@ import threading
 import time
 import typing
 import uuid
-from concurrent.futures import Future
+from concurrent.futures import CancelledError, Future
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Protocol
 
@@ -394,6 +394,7 @@ class PendingTask(NamedTuple):
 def _process_queue(self: "LocalReflectionExecutor"):
     while self._worker_running:
         try:
+            logger.info(f"Queue size: {self._task_queue.qsize()}")
             execute_at, task = self._task_queue.get(timeout=1)
 
             now = time.time()
@@ -417,11 +418,15 @@ def _process_queue(self: "LocalReflectionExecutor"):
                 var_child_runnable_config.set(original.old_value)
                 task.future.set_result(result)
             except Exception as e:
+                logger.error(f"Error in memory task: {task}", exc_info=e)
                 task.future.set_exception(e)
             finally:
                 self._pending_tasks.pop(task.thread_id, None)
 
         except queue.Empty:
+            continue
+        except CancelledError:
+            logger.info(f"Debouncing cancelled task: {task}")
             continue
         except Exception as e:
             logger.error(f"Error in local reflection worker: {e}")

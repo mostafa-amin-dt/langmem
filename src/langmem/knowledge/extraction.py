@@ -27,6 +27,7 @@ class MessagesState(TypedDict):
 
 class MemoryState(MessagesState):
     existing: typing.NotRequired[list[tuple[str, BaseModel]]]
+    max_steps: int  # Default of 1
 
 
 class SummarizeThread(BaseModel):
@@ -143,10 +144,35 @@ def create_thread_extractor(
     )  # type: ignore
 
 
-_MEMORY_INSTRUCTIONS = """You are tasked with extracting or upserting memories for all entities, concepts, etc.
+_MEMORY_INSTRUCTIONS = """You are a memory manager that processes inputs to maintain a coherent knowledge store. For each input:
 
-Extract all important facts or entities. If an existing MEMORY is incorrect or outdated, update it based on the new information.
-"""
+1. **Extract & Contextualize**  
+   - Identify essential facts, relationships, preferences, procedures, and other information alongside their context
+   - Caveat with confidence levels (p(x)) for uncertain or suppositional information; provide reason.
+   - Quote or cite supporting information when necessary.
+
+2. **Compare & Update**  
+   - Especially attend to novel information that deviates from existing memories and that you find surprising (wouldn't have guessed).
+   - Consolidate and compress redundant memories to maintain information-density. Strengthen memories based on reliability and recency
+   - Remove memories if they are no longer correct or if they are redundant. Strive for internal consistency.
+
+3. **Synthesize & Reason**  
+   - What can you conclude about the user or agent using deduction, induction, and abduction?
+   - What patterns, relationships, and principles emerge about the user, domain, or best way to respond?
+   - Qualify conclusions with probabilistic confidence and justification.
+
+The synthesized memories power the core state of a life-long learning agent.
+
+Pay special attention to information the agent oughtn't forget, especially surprising (pattern/expectation deviation) and persistent (frequent/reinforced) details,
+ensuring that nothing worth remembering is forgotten, and nothing false is remembered. Prefer fewer, dense, and complete memories over more, overlapping memories."""
+
+
+class Done(BaseModel):
+    """Only call this tool once you are done forming & consolidating memories.
+    Before that, continue to refine existing memories by patching and removing them
+    or create new ones."""
+
+    pass
 
 
 class MemoryManager(Runnable[MemoryState, list[ExtractedMemory]]):
@@ -155,12 +181,9 @@ class MemoryManager(Runnable[MemoryState, list[ExtractedMemory]]):
         model: str | BaseChatModel,
         *,
         schemas: typing.Sequence[typing.Union[BaseModel, type]] = (Memory,),
-        instructions: str = (
-            "You are tasked with extracting or upserting memories for all entities, concepts, etc.\n\n"
-            "Extract all important facts or entities. If an existing MEMORY is incorrect or outdated, "
-            "update it based on the new information."
-        ),
+        instructions: str = _MEMORY_INSTRUCTIONS,
         enable_inserts: bool = True,
+        enable_updates: bool = True,
         enable_deletes: bool = False,
     ):
         self.model = (
@@ -169,21 +192,28 @@ class MemoryManager(Runnable[MemoryState, list[ExtractedMemory]]):
         self.schemas = schemas or (Memory,)
         self.instructions = instructions
         self.enable_inserts = enable_inserts
+        self.enable_updates = enable_updates
         self.enable_deletes = enable_deletes
 
-    def _prepare_messages(self, messages: list[AnyMessage]) -> list[dict]:
+    def _prepare_messages(
+        self, messages: list[AnyMessage], max_steps: int = 1
+    ) -> list[dict]:
         id_ = str(uuid.uuid4())
         session = (
             f"\n\n<session_{id_}>\n{utils.get_conversation(messages)}\n</session_{id_}>"
         )
+        if max_steps > 1:
+            session = f"{session}\n\nYou have a maximum of {max_steps-1} attempts"
+            " to form and consolidate memories from this session."
         return [
-            {"role": "system", "content": "You are a memory subroutine for an AI.\n\n"},
+            {"role": "system", "content": "You are a memory subroutine for an AI."},
             {
                 "role": "user",
                 "content": (
                     f"{self.instructions}\n\nEnrich, prune, and organize memories based on any new information. "
                     f"If an existing memory is incorrect or outdated, update it based on the new information. "
-                    f"All operations must be done in single parallel call.{session}"
+                    f"All operations must be done in single parallel multi-tool call."
+                    f" Avoid duplicate extractions. {session}"
                 ),
             },
         ]
@@ -217,36 +247,134 @@ class MemoryManager(Runnable[MemoryState, list[ExtractedMemory]]):
                 result.append((id_, kind, value))
         return result
 
+    @staticmethod
+    def _filter_response(
+        memories: list[ExtractedMemory],
+        external_ids: set[str],
+        exclude_removals: bool = False,
+    ) -> list[ExtractedMemory]:
+        """
+        When exclude_removals is True (for the next iteration payload),
+        drop any memory whose content is a RemoveDoc.
+        When False (final response), drop removal objects only for internal memories.
+        """
+        results = []
+        for rid, value in memories:
+            is_removal = (
+                hasattr(value, "__repr_name__") and value.__repr_name__() == "RemoveDoc"
+            )
+            if exclude_removals:
+                if is_removal:
+                    continue
+            else:
+                # Final response: if this is a removal *and* its id is not external, skip it.
+                if is_removal and (rid not in external_ids):
+                    continue
+            results.append(ExtractedMemory(id=rid, content=value))
+        return results
+
     async def ainvoke(
         self,
         input: MemoryState,
         config: typing.Optional[RunnableConfig] = None,
         **kwargs: typing.Any,
     ) -> list[ExtractedMemory]:
+        max_steps = input.get("max_steps", 1)
         messages = input["messages"]
         existing = input.get("existing")
-        prepared_messages = self._prepare_messages(messages)
+        prepared_messages = self._prepare_messages(messages, max_steps)
         prepared_existing = self._prepare_existing(existing)
+        # Track external memory IDs (those passed in from outside)
+        external_ids = {mem_id for mem_id, _, _ in prepared_existing}
+
         extractor = create_extractor(
             self.model,
-            tools=self.schemas,
-            tool_choice="any",
+            tools=list(self.schemas),
             enable_inserts=self.enable_inserts,
+            enable_updates=self.enable_updates,
             enable_deletes=self.enable_deletes,
             existing_schema_policy=False,
         )
+        # initial payload uses the full prepared_existing list
         payload = {"messages": prepared_messages, "existing": prepared_existing}
-        response = await extractor.ainvoke(payload)
-        results = [
-            (rmeta.get("json_doc_id", str(uuid.uuid4())), r)
-            for r, rmeta in zip(response["responses"], response["response_metadata"])
-        ]
-        # Merge in any existing memories not updated.
-        for mem_tuple in prepared_existing:
-            mem_id, _, mem = mem_tuple
-            if not any(mem_id == rid for rid, _ in results):
-                results.append((mem_id, mem))
-        return [ExtractedMemory(id=rid, content=content) for rid, content in results]
+        # Use a dict to record the latest update for each memory id.
+        results: dict[str, BaseModel] = {}
+
+        for i in range(max_steps):
+            if i == 1:
+                extractor = create_extractor(
+                    self.model,
+                    tools=list(self.schemas) + [Done],
+                    enable_inserts=self.enable_inserts,
+                    enable_updates=self.enable_updates,
+                    enable_deletes=self.enable_deletes,
+                    existing_schema_policy=False,
+                )
+            response = await extractor.ainvoke(payload)
+            is_done = False
+            step_results = {}
+            for r, rmeta in zip(response["responses"], response["response_metadata"]):
+                if hasattr(r, "__repr_name__") and r.__repr_name__() == "Done":
+                    is_done = True
+                    continue
+                mem_id = (
+                    r.json_doc_id
+                    if hasattr(r, "__repr_name__") and r.__repr_name__() == "RemoveDoc"
+                    else rmeta.get("json_doc_id", str(uuid.uuid4()))
+                )
+                step_results[mem_id] = r
+            results.update(step_results)
+
+            for mem_id, _, mem in prepared_existing:
+                if mem_id not in results:
+                    results[mem_id] = mem
+
+            ai_msg = response["messages"][-1]
+            if is_done or not ai_msg.tool_calls:
+                break
+            if i < max_steps - 1:
+                actions = [
+                    (
+                        "updated"
+                        if rmeta.get("json_doc_id")
+                        else (
+                            "deleted"
+                            if hasattr(r, "__repr_name__")
+                            and r.__repr_name__() == "RemoveDoc"
+                            else "inserted"
+                        )
+                    )
+                    for r, rmeta in zip(
+                        response["responses"], response["response_metadata"]
+                    )
+                ]
+                prepared_messages = [
+                    *prepared_messages,
+                    response["messages"][-1],
+                    *[
+                        {
+                            "role": "tool",
+                            "content": f"Memory {rid} {action}.",
+                            "tool_call_id": tc["id"],
+                        }
+                        for tc, ((rid, _), action) in zip(
+                            ai_msg.tool_calls, zip(list(step_results.items()), actions)
+                        )
+                    ],
+                    # (Optional: additional user instructions could go here)
+                ]
+                # For the next iteration payload, drop all removal objects.
+                payload = {
+                    "messages": prepared_messages,
+                    "existing": self._filter_response(
+                        list(results.items()), external_ids, exclude_removals=True
+                    ),
+                }
+
+        # For the final response, include removals only if they refer to an external memory.
+        return self._filter_response(
+            list(results.items()), external_ids, exclude_removals=False
+        )
 
     def invoke(
         self,
@@ -261,8 +389,8 @@ class MemoryManager(Runnable[MemoryState, list[ExtractedMemory]]):
         extractor = create_extractor(
             self.model,
             tools=list(self.schemas),
-            tool_choice="any",
             enable_inserts=self.enable_inserts,
+            enable_updates=self.enable_updates,
             enable_deletes=self.enable_deletes,
             existing_schema_policy=False,
         )
@@ -295,6 +423,7 @@ def create_memory_manager(
     schemas: typing.Sequence[typing.Union[BaseModel, type]] = (Memory,),
     instructions: str = _MEMORY_INSTRUCTIONS,
     enable_inserts: bool = True,
+    enable_updates: bool = True,
     enable_deletes: bool = False,
 ) -> Runnable[MemoryState, list[ExtractedMemory]]:
     """Create a memory manager that processes conversation messages and generates structured memory entries.
@@ -318,6 +447,8 @@ def create_memory_manager(
             from conversations. Defaults to predefined memory instructions.
         enable_inserts (bool, optional): Whether to allow creating new memory entries.
             When False, the manager will only update existing memories. Defaults to True.
+        enable_updates (bool, optional): Whether to allow updating existing memories
+            that are outdated or contradicted by new information. Defaults to True.
         enable_deletes (bool, optional): Whether to allow deleting existing memories
             that are outdated or contradicted by new information. Defaults to False.
 
@@ -384,7 +515,31 @@ def create_memory_manager(
         ]
 
         # The manager will upsert; working with the existing memory instead of always creating a new one
-        updated_memories = await manager(conversation, memories)
+        updated_memories = await manager.ainvoke(
+            {"messages": conversation, "existing": memories}
+        )
+        ```
+
+        Insertion-only memories:
+        ```python
+        manager = create_memory_manager(
+            "anthropic:claude-3-5-sonnet-latest",
+            schemas=[PreferenceMemory],
+            enable_updates=False,
+            enable_deletes=False,
+        )
+
+        conversation = [
+            {
+                "role": "user",
+                "content": "Actually I changed my mind, dark mode is the best mode",
+            },
+            {"role": "assistant", "content": "I'll update your preference"},
+        ]
+
+        # The manager will only create new memories
+        updated_memories = await manager.ainvoke({"messages": conversation, "existing": memories})
+        print(updated_memories)de
         ```
     """
 
@@ -393,6 +548,7 @@ def create_memory_manager(
         schemas=schemas,
         instructions=instructions,
         enable_inserts=enable_inserts,
+        enable_updates=enable_updates,
         enable_deletes=enable_deletes,
     )
 
@@ -533,14 +689,11 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
         /,
         *,
         schemas: list | None = None,
-        instructions: str = (
-            "You are tasked with extracting or upserting memories for all entities, concepts, etc.\n\n"
-            "Extract all important facts or entities. If an existing MEMORY is incorrect or outdated, update it based on the new information."
-        ),
+        instructions: str = _MEMORY_INSTRUCTIONS,
         enable_inserts: bool = True,
         enable_deletes: bool = True,
         query_model: str | BaseChatModel | None = None,
-        query_limit: int = 20,
+        query_limit: int = 5,
         namespace: tuple[str, ...] = ("memories", "{langgraph_user_id}"),
         phases: list[MemoryPhase] | None = None,
     ):
@@ -878,10 +1031,7 @@ def create_memory_store_manager(
     /,
     *,
     schemas: list | None = None,
-    instructions: str = (
-        "You are tasked with extracting or upserting memories for all entities, concepts, etc.\n\n"
-        "Extract all important facts or entities. If an existing MEMORY is incorrect or outdated, update it based on the new information."
-    ),
+    instructions: str = _MEMORY_INSTRUCTIONS,
     enable_inserts: bool = True,
     enable_deletes: bool = True,
     query_model: str | BaseChatModel | None = None,
