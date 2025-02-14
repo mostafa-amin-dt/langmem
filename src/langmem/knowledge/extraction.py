@@ -139,32 +139,31 @@ def create_thread_extractor(
 
     return (
         merge_messages | template | extractor | (lambda out: out["responses"][0])
-    ).with_config(
-        {"run_name": "thread_extractor"}
-    )  # type: ignore
+    ).with_config({"run_name": "thread_extractor"})  # type: ignore
 
 
-_MEMORY_INSTRUCTIONS = """You are a memory manager that processes inputs to maintain a coherent knowledge store. For each input:
+_MEMORY_INSTRUCTIONS = """You are a long-term memory manager maintaining a core store of semantic, procedural, and episodic memory. These memories power a life-long learning agent's core predictive model.
+
+What should the agent learn from this interaction about the user, itself, or how it should act? Reflect on the input trajectory and current memories (if any).
 
 1. **Extract & Contextualize**  
-   - Identify essential facts, relationships, preferences, procedures, and other information alongside their context
-   - Caveat with confidence levels (p(x)) for uncertain or suppositional information; provide reason.
-   - Quote or cite supporting information when necessary.
+   - Identify essential facts, relationships, preferences, reasoning procedures, and context
+   - Caveat uncertain or suppositional information with confidence levels (p(x)) and reasoning
+   - Quote supporting information when necessary
 
 2. **Compare & Update**  
-   - Especially attend to novel information that deviates from existing memories and that you find surprising (wouldn't have guessed).
-   - Consolidate and compress redundant memories to maintain information-density. Strengthen memories based on reliability and recency
-   - Remove memories if they are no longer correct or if they are redundant. Strive for internal consistency.
+   - Attend to novel information that deviates from existing memories and expectations.
+   - Consolidate and compress redundant memories to maintain information-density; strengthen based on reliability and recency; maximize SNR by avoiding idle words.
+   - Remove incorrect or redundant memories while maintaining internal consistency
 
 3. **Synthesize & Reason**  
-   - What can you conclude about the user or agent using deduction, induction, and abduction?
-   - What patterns, relationships, and principles emerge about the user, domain, or best way to respond?
-   - Qualify conclusions with probabilistic confidence and justification.
+   - What can you conclude about the user, agent ("I"), or environment using deduction, induction, and abduction?
+   - What patterns, relationships, and principles emerge about optimal responses?
+   - What generalizations can you make?
+   - Qualify conclusions with probabilistic confidence and justification
 
-The synthesized memories power the core state of a life-long learning agent.
-
-Pay special attention to information the agent oughtn't forget, especially surprising (pattern/expectation deviation) and persistent (frequent/reinforced) details,
-ensuring that nothing worth remembering is forgotten, and nothing false is remembered. Prefer fewer, dense, and complete memories over more, overlapping memories."""
+As the agent, record memory content exactly as you'd want to recall it when predicting how to act or respond. 
+Prioritize retention of surprising (pattern deviation) and persistent (frequently reinforced) information, ensuring nothing worth remembering is forgotten and nothing false is remembered. Prefer dense, complete memories over overlapping ones."""
 
 
 class Done(BaseModel):
@@ -203,7 +202,7 @@ class MemoryManager(Runnable[MemoryState, list[ExtractedMemory]]):
             f"\n\n<session_{id_}>\n{utils.get_conversation(messages)}\n</session_{id_}>"
         )
         if max_steps > 1:
-            session = f"{session}\n\nYou have a maximum of {max_steps-1} attempts"
+            session = f"{session}\n\nYou have a maximum of {max_steps - 1} attempts"
             " to form and consolidate memories from this session."
         return [
             {"role": "system", "content": "You are a memory subroutine for an AI."},
@@ -279,7 +278,9 @@ class MemoryManager(Runnable[MemoryState, list[ExtractedMemory]]):
         config: typing.Optional[RunnableConfig] = None,
         **kwargs: typing.Any,
     ) -> list[ExtractedMemory]:
-        max_steps = input.get("max_steps", 1)
+        max_steps = input.get("max_steps")
+        if max_steps is None:
+            max_steps = 1
         messages = input["messages"]
         existing = input.get("existing")
         prepared_messages = self._prepare_messages(messages, max_steps)
@@ -348,10 +349,10 @@ class MemoryManager(Runnable[MemoryState, list[ExtractedMemory]]):
                         response["responses"], response["response_metadata"]
                     )
                 ]
-                prepared_messages = [
-                    *prepared_messages,
-                    response["messages"][-1],
-                    *[
+                prepared_messages = (
+                    prepared_messages
+                    + [response["messages"][-1]]
+                    + [
                         {
                             "role": "tool",
                             "content": f"Memory {rid} {action}.",
@@ -360,9 +361,8 @@ class MemoryManager(Runnable[MemoryState, list[ExtractedMemory]]):
                         for tc, ((rid, _), action) in zip(
                             ai_msg.tool_calls, zip(list(step_results.items()), actions)
                         )
-                    ],
-                    # (Optional: additional user instructions could go here)
-                ]
+                    ]
+                )
                 # For the next iteration payload, drop all removal objects.
                 payload = {
                     "messages": prepared_messages,
@@ -382,10 +382,16 @@ class MemoryManager(Runnable[MemoryState, list[ExtractedMemory]]):
         config: typing.Optional[RunnableConfig] = None,
         **kwargs: typing.Any,
     ) -> list[ExtractedMemory]:
+        max_steps = input.get("max_steps")
+        if max_steps is None:
+            max_steps = 1
         messages = input["messages"]
         existing = input.get("existing")
-        prepared_messages = self._prepare_messages(messages)
+        prepared_messages = self._prepare_messages(messages, max_steps)
         prepared_existing = self._prepare_existing(existing)
+        # Track external memory IDs (those passed in from outside)
+        external_ids = {mem_id for mem_id, _, _ in prepared_existing}
+
         extractor = create_extractor(
             self.model,
             tools=list(self.schemas),
@@ -395,16 +401,86 @@ class MemoryManager(Runnable[MemoryState, list[ExtractedMemory]]):
             existing_schema_policy=False,
         )
         payload = {"messages": prepared_messages, "existing": prepared_existing}
-        response = extractor.invoke(payload)
-        results = [
-            (rmeta.get("json_doc_id", str(uuid.uuid4())), r)
-            for r, rmeta in zip(response["responses"], response["response_metadata"])
-        ]
-        for mem_tuple in prepared_existing:
-            mem_id, _, mem = mem_tuple
-            if not any(mem_id == rid for rid, _ in results):
-                results.append((mem_id, mem))
-        return [ExtractedMemory(id=rid, content=content) for rid, content in results]
+        # Use a dict to record the latest update for each memory id.
+        results: dict[str, BaseModel] = {}
+
+        for i in range(max_steps):
+            if i == 1:
+                extractor = create_extractor(
+                    self.model,
+                    tools=list(self.schemas) + [Done],
+                    enable_inserts=self.enable_inserts,
+                    enable_updates=self.enable_updates,
+                    enable_deletes=self.enable_deletes,
+                    existing_schema_policy=False,
+                )
+            response = extractor.invoke(payload)
+            is_done = False
+            step_results: dict[str, BaseModel] = {}
+            for r, rmeta in zip(response["responses"], response["response_metadata"]):
+                if hasattr(r, "__repr_name__") and r.__repr_name__() == "Done":
+                    is_done = True
+                    continue
+                mem_id = (
+                    r.json_doc_id
+                    if (
+                        hasattr(r, "__repr_name__") and r.__repr_name__() == "RemoveDoc"
+                    )
+                    else rmeta.get("json_doc_id", str(uuid.uuid4()))
+                )
+                step_results[mem_id] = r
+            results.update(step_results)
+
+            # Ensure any memory from the initial payload that hasn't been updated is retained.
+            for mem_id, _, mem in prepared_existing:
+                if mem_id not in results:
+                    results[mem_id] = mem
+
+            ai_msg = response["messages"][-1]
+            if is_done or not ai_msg.tool_calls:
+                break
+            if i < max_steps - 1:
+                actions = [
+                    (
+                        "updated"
+                        if rmeta.get("json_doc_id")
+                        else (
+                            "deleted"
+                            if (
+                                hasattr(r, "__repr_name__")
+                                and r.__repr_name__() == "RemoveDoc"
+                            )
+                            else "inserted"
+                        )
+                    )
+                    for r, rmeta in zip(
+                        response["responses"], response["response_metadata"]
+                    )
+                ]
+                prepared_messages = (
+                    prepared_messages
+                    + [response["messages"][-1]]
+                    + [
+                        {
+                            "role": "tool",
+                            "content": f"Memory {rid} {action}.",
+                            "tool_call_id": tc["id"],
+                        }
+                        for tc, ((rid, _), action) in zip(
+                            ai_msg.tool_calls, zip(list(step_results.items()), actions)
+                        )
+                    ]
+                )
+                payload = {
+                    "messages": prepared_messages,
+                    "existing": self._filter_response(
+                        list(results.items()), external_ids, exclude_removals=True
+                    ),
+                }
+
+        return self._filter_response(
+            list(results.items()), external_ids, exclude_removals=False
+        )
 
     async def __call__(
         self,
@@ -420,6 +496,7 @@ class MemoryManager(Runnable[MemoryState, list[ExtractedMemory]]):
 def create_memory_manager(
     model: str | BaseChatModel,
     /,
+    *,
     schemas: typing.Sequence[typing.Union[BaseModel, type]] = (Memory,),
     instructions: str = _MEMORY_INSTRUCTIONS,
     enable_inserts: bool = True,
@@ -538,8 +615,30 @@ def create_memory_manager(
         ]
 
         # The manager will only create new memories
-        updated_memories = await manager.ainvoke({"messages": conversation, "existing": memories})
-        print(updated_memories)de
+        updated_memories = await manager.ainvoke(
+            {"messages": conversation, "existing": memories}
+        )
+        print(updated_memories)
+        ```
+
+        Providing multiple max steps for extraction and synthesis:
+        ```python
+        manager = create_memory_manager(
+            "anthropic:claude-3-5-sonnet-latest",
+            schemas=[PreferenceMemory],
+        )
+
+        conversation = [
+            {"role": "user", "content": "I prefer dark mode in all my apps"},
+            {"role": "assistant", "content": "I'll remember that preference"},
+        ]
+
+        # Set max steps for extraction and synthesis
+        max_steps = 3
+        memories = await manager.ainvoke(
+            {"messages": conversation, "max_steps": max_steps}
+        )
+        print(memories)
         ```
     """
 
@@ -680,6 +779,7 @@ class MemoryStoreManagerInput(TypedDict):
     """Input schema for MemoryStoreManager."""
 
     messages: list[AnyMessage]
+    max_steps: int  # Default of 1
 
 
 class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
@@ -848,7 +948,7 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
 
         # --- Enrich memories using the composed MemoryManager (async) ---
         enriched = await self.memory_manager.ainvoke(
-            {"messages": input["messages"], "existing": store_based}
+            {"messages": input["messages"], "existing": store_based, "max_steps": input.get("max_steps")}
         )
         store_based, ephemeral, removed = self._apply_manager_output(
             enriched, store_based, store_map, ephemeral
@@ -962,7 +1062,7 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
         removed_ids: set[str] = set()
 
         enriched = self.memory_manager.invoke(
-            {"messages": input["messages"], "existing": store_based}
+            {"messages": input["messages"], "existing": store_based, "max_steps": input.get("max_steps")}
         )
         store_based, ephemeral, removed = self._apply_manager_output(
             enriched, store_based, store_map, ephemeral
@@ -1037,7 +1137,6 @@ def create_memory_store_manager(
     query_model: str | BaseChatModel | None = None,
     query_limit: int = 5,
     namespace: tuple[str, ...] = ("memories", "{langgraph_user_id}"),
-    phases: list[MemoryPhase] | None = None,
 ) -> MemoryStoreManager:
     """Enriches memories stored in the configured BaseStore.
 
@@ -1345,7 +1444,6 @@ def create_memory_store_manager(
         query_model=query_model,
         query_limit=query_limit,
         namespace=namespace,
-        phases=phases,
     )
 
 

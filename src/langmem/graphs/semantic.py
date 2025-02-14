@@ -6,7 +6,6 @@ from langgraph.graph.state import StateGraph
 from typing_extensions import TypedDict
 
 from langmem import create_memory_store_manager
-from langmem.knowledge import MemoryPhase
 
 
 class InputState(TypedDict, total=False):
@@ -28,7 +27,6 @@ class Config(TypedDict):
     enable_inserts: bool
     enable_deletes: bool
     instructions: str
-    phases: list[MemoryPhase] | None
 
 
 async def enrich(state: InputState, config: RunnableConfig):
@@ -49,27 +47,6 @@ async def enrich(state: InputState, config: RunnableConfig):
 Use parallel tool calling to extract all information the AI will need to adapt and remember. 
 """
     instructions = configurable.get("instructions", instructions)
-    phases = config.get("phases")
-    if not phases:
-        phases = [
-            # {
-            #     "instructions": "You are memory subroutine for an AI. Reflect deeply on all the extracted memories."
-            #     " What *new* generalizations can you make about the user, the AI, or the context that will teach the AI to perform?"
-            #     " What insights are now more nuanced or conditional than before?"
-            #     " Focus on synthesizing new logical conclusions, connections, preferences,"
-            #     " facts, and any other noteworthy information based on what you can deduce from the existing memories."
-            #     " Include all relevant context in your memories.",
-            #     "enable_deletes": False,
-            # },
-            {
-                "instructions": "You are memory subroutine for an AI. Consolidate and de-deuplicate all similar memories to reduce waste."
-                " You want each final memory to be complete, distinct, "
-                " and de-duplicated. To consolidate two or more memories, Patch one with the synthesized content and Remove the others,"
-                " doing so all in a single parallel tool call operation.\n\n",
-                "enable_deletes": True,
-                "enable_inserts": False,
-            },
-        ]
     manager = create_memory_store_manager(
         model,
         instructions=instructions,
@@ -78,7 +55,6 @@ Use parallel tool calling to extract all information the AI will need to adapt a
         enable_inserts=configurable.get("enable_inserts", True),
         enable_deletes=configurable.get("enable_deletes", True),
         namespace=("{langgraph_auth_user_id}", "semantic", *namespace),
-        phases=phases,
     )
 
     updated_memories = await manager(messages)
