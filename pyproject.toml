@@ -1,9 +1,9 @@
 [project]
 name = "langmem"
-version = "0.0.10"
+version = "0.0.11"
 description = "Prebuilt utilities for memory management and retrieval."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 license = {file = "LICENSE"}
 dependencies = [
     "langchain>=0.3.15",
