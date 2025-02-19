@@ -81,7 +81,7 @@ print(response["messages"][-1].content)
 
 1. The agent gets to decide what and when to store the memory. No special commands needed—just chat normally and the agent uses [`create_manage_memory_tool`](reference/tools.md#langmem.create_manage_memory_tool) to store relevant details.
 
-2. The agent maintains context between chats. When you ask about previous interactions, the LLM can invoke [`create_search_memory_tool`](reference/tools.md#langmem.create_search_memory_tool) to search for memories with similar content. See [Memory Tools](guides/memory_tools.md) to customize memory storage and retrieval, and see the [hot path quickstart](hot_path_quickstart.md) for a more complete example on how to include memories without the agent having to expliictly search.
+2. The agent maintains context between chats. When you ask about previous interactions, the LLM can invoke [`create_search_memory_tool`](reference/tools.md#langmem.create_search_memory_tool) to search for memories with similar content. See [Memory Tools](guides/memory_tools.md) to customize memory storage and retrieval, and see the [hot path quickstart](https://langchain-ai.github.io/langmem/hot_path_quickstart) for a more complete example on how to include memories without the agent having to expliictly search.
 
 The agent can now store important information from conversations, search its memory when relevant, and persist knowledge across conversations.
 
@@ -89,8 +89,8 @@ The agent can now store important information from conversations, search its mem
 
 For more examples and detailed documentation:
 
-- [Hot Path Quickstart](hot_path_quickstart.md) - Learn how to let your LangGraph agent manage its own memory "in the hot path"
-- [Background Quickstart](background_quickstart.md) - Learn how to use a memory manager "in the background"
-- [Core Concepts](concepts/conceptual_guide.md) - Learn key ideas
-- [API Reference](reference/index.md) - Full function documentation
+- [Hot Path Quickstart](https://langchain-ai.github.io/langmem/hot_path_quickstart) - Learn how to let your LangGraph agent manage its own memory "in the hot path"
+- [Background Quickstart](https://langchain-ai.github.io/langmem/background_quickstart) - Learn how to use a memory manager "in the background"
+- [Core Concepts](https://langchain-ai.github.io/langmem/concepts/conceptual_guide) - Learn key ideas
+- [API Reference](https://langchain-ai.github.io/langmem/reference) - Full function documentation
 - Build RSI 🙂 
