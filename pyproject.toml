@@ -1,6 +1,6 @@
 [project]
 name = "langmem"
-version = "0.0.11"
+version = "0.0.12"
 description = "Prebuilt utilities for memory management and retrieval."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -70,3 +70,4 @@ docstring-code-line-length = "dynamic"
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "typing.TypedDict".msg = "Use typing_extensions.TypedDict instead."
+

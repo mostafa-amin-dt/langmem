@@ -948,7 +948,11 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
 
         # --- Enrich memories using the composed MemoryManager (async) ---
         enriched = await self.memory_manager.ainvoke(
-            {"messages": input["messages"], "existing": store_based, "max_steps": input.get("max_steps")}
+            {
+                "messages": input["messages"],
+                "existing": store_based,
+                "max_steps": input.get("max_steps"),
+            }
         )
         store_based, ephemeral, removed = self._apply_manager_output(
             enriched, store_based, store_map, ephemeral
@@ -1062,7 +1066,11 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
         removed_ids: set[str] = set()
 
         enriched = self.memory_manager.invoke(
-            {"messages": input["messages"], "existing": store_based, "max_steps": input.get("max_steps")}
+            {
+                "messages": input["messages"],
+                "existing": store_based,
+                "max_steps": input.get("max_steps"),
+            }
         )
         store_based, ephemeral, removed = self._apply_manager_output(
             enriched, store_based, store_map, ephemeral
