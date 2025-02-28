@@ -166,7 +166,7 @@ print(response["messages"][-1].content)
 # Output: "Based on my memory search, I can see that you've previously indicated a preference for dark display mode..."
 ```
 
-This example demonstrates memory persistence across conversations and thread isolation between users. The agent stores the user's dark mode preference in one thread but cannot access it from another thread.
+This example demonstrates memory persistence across conversations and thread isolation between users. The agent stores the user's dark mode preference in one thread and can access it from another thread by searching for it.
 
 
 ## Next Steps

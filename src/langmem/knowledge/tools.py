@@ -1,3 +1,4 @@
+import logging
 import typing
 import uuid
 
@@ -6,6 +7,8 @@ from langgraph.store.base import BaseStore
 from langgraph.utils.config import get_store
 
 from langmem import errors, utils
+
+logger = logging.getLogger(__name__)
 
 # LangGraph Tools
 
@@ -284,7 +287,7 @@ def create_manage_memory_tool(
         await store.aput(
             namespace,
             key=str(id),
-            value={"content": content},
+            value={"content": _ensure_json_serializable(content)},
         )
         return f"{action}d memory {id}"
 
@@ -313,7 +316,7 @@ def create_manage_memory_tool(
         store.put(
             namespace,
             key=str(id),
-            value={"content": content},
+            value={"content": _ensure_json_serializable(content)},
         )
         return f"{action}d memory {id}"
 
@@ -465,3 +468,16 @@ def _get_store(initial_store: BaseStore | None = None) -> BaseStore:
         return store
     except RuntimeError as e:
         raise errors.ConfigurationError("Could not get store") from e
+
+
+def _ensure_json_serializable(content: typing.Any) -> typing.Any:
+    # Right now just support primitives and pydantic models
+    if isinstance(content, (str, int, float, bool, dict, list)):
+        return content
+    if hasattr(content, "model_dump"):
+        try:
+            return content.model_dump(mode="json")
+        except Exception as e:
+            logger.error(e)
+            return str(content)
+    return content
