@@ -2,11 +2,6 @@ name: Build & Release
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (leave empty to use version in pyproject.toml)'
-        required: false
-        type: string
 
 jobs:
   build-and-publish:
@@ -23,20 +18,14 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
       
-      - name: Set up Python
+      - name: "Set up Python"
         uses: actions/setup-python@v5
         with:
-          python-version-file: ".python-version"
+          python-version-file: "pyproject.toml"
       
-      - name: Update version if specified
-        if: ${{ inputs.version != '' }}
-        run: |
-          # Use sed to update the version in pyproject.toml
-          sed -i "s/version = \"[^\"]*\"/version = \"${{ inputs.version }}\"/" pyproject.toml
-          echo "Updated version to ${{ inputs.version }}"
       
       - name: Build package
-        run: uv build
+        run: uv build --wheel
       
       - name: Publish to PyPI
         env:
