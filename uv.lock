@@ -1162,6 +1162,19 @@ inmem = [
 ]
 
 [[package]]
+name = "langgraph-prebuilt"
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "langchain-core" },
+    { name = "langgraph-checkpoint" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/22/15/848593ccace12e4f8b80cc0b159b0ba1da17605e1eecbda5f37d891748a3/langgraph_prebuilt-0.1.1.tar.gz", hash = "sha256:420a748ff93842f2b1a345a0c1ca3939d2bc7a2d46c20e9a9a0d8f148152cc47", size = 23257 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3c/62/a424fdb892f578fa88b2ff4df0bfdebdc8b89501dacb8ca3b480305cbfef/langgraph_prebuilt-0.1.1-py3-none-any.whl", hash = "sha256:148a9558a36ec7e83cc6512f3521425c862b0463251ae0242ade52a448c54e78", size = 24622 },
+]
+
+[[package]]
 name = "langgraph-sdk"
 version = "0.1.51"
 source = { registry = "https://pypi.org/simple" }
@@ -1176,7 +1189,7 @@ wheels = [
 
 [[package]]
 name = "langmem"
-version = "0.0.13"
+version = "0.0.14"
 source = { editable = "." }
 dependencies = [
     { name = "langchain" },
@@ -1184,6 +1197,7 @@ dependencies = [
     { name = "langchain-openai" },
     { name = "langgraph" },
     { name = "langgraph-checkpoint" },
+    { name = "langgraph-prebuilt" },
     { name = "langsmith" },
     { name = "trustcall" },
 ]
@@ -1223,6 +1237,7 @@ requires-dist = [
     { name = "langchain-openai", specifier = ">=0.3.1" },
     { name = "langgraph", specifier = ">=0.2.66" },
     { name = "langgraph-checkpoint", specifier = ">=2.0.12" },
+    { name = "langgraph-prebuilt", specifier = ">=0.1.1" },
     { name = "langsmith", specifier = ">=0.3.8" },
     { name = "trustcall", specifier = ">=0.0.37" },
 ]
