@@ -13,7 +13,6 @@ dependencies = [
     "langchain-anthropic>=0.3.3",
     "langsmith>=0.3.8",
     "langgraph-checkpoint>=2.0.12",
-    "langgraph-prebuilt>=0.1.1",
 ]
 
 [project.packages]
@@ -32,6 +31,7 @@ dev = [
     "pytest>=8.3.4",
     "pytest-watch>=4.2.0",
     "pytest-xdist>=3.6.1",
+    "langgraph-prebuilt>=0.1.1",
 ]
 docs = [
     "markdown-callouts>=0.4.0",
