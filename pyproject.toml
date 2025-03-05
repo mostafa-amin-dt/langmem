@@ -1,10 +1,10 @@
 [project]
 name = "langmem"
-version = "0.0.14"
+version = "0.0.15"
 description = "Prebuilt utilities for memory management and retrieval."
 readme = "README.md"
 requires-python = ">=3.10"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 dependencies = [
     "langchain>=0.3.15",
     "langchain-openai>=0.3.1",
@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.packages]
-find = {where = ["src"]}
+find = { where = ["src"] }
 
 [build-system]
 requires = ["hatchling"]
@@ -31,6 +31,7 @@ dev = [
     "pytest>=8.3.4",
     "pytest-watch>=4.2.0",
     "pytest-xdist>=3.6.1",
+    "langgraph-prebuilt>=0.1.1",
 ]
 docs = [
     "markdown-callouts>=0.4.0",
@@ -54,8 +55,8 @@ docs = [
 members = ["evals/gen"]
 
 [tool.ruff]
-lint.select = [ "E", "F", "I", "TID251" ]
-lint.ignore = [ "E501" ]
+lint.select = ["E", "F", "I", "TID251"]
+lint.ignore = ["E501"]
 line-length = 88
 indent-width = 4
 extend-include = ["*.ipynb"]
@@ -71,3 +72,20 @@ docstring-code-line-length = "dynamic"
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "typing.TypedDict".msg = "Use typing_extensions.TypedDict instead."
 
+[tool.hatch.build]
+exclude = [
+    "tests/",
+    "docs/",
+    ".github/",
+    "examples.py",
+    "examples/",
+    ".editorconfig",
+    "db/",
+    "evals/",
+    ".langgraph_api",
+    "*.ipynb",
+    ".python-version",
+    ".editorconfig",
+    ".venv*/**",
+    "pytest.ini",
+]

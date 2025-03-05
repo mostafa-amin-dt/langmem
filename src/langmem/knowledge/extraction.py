@@ -4,11 +4,10 @@ import uuid
 
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AnyMessage
+from langchain_core.messages import AIMessage, AnyMessage
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import Runnable, RunnableConfig
+from langchain_core.runnables import Runnable, RunnableConfig, RunnableLambda
 from langchain_core.runnables.config import get_executor_for_config
-from langgraph.prebuilt import ToolNode
 from langgraph.store.base import SearchItem
 from langgraph.utils.config import get_store
 from pydantic import BaseModel, Field
@@ -635,9 +634,7 @@ def create_memory_manager(
 
         # Set max steps for extraction and synthesis
         max_steps = 3
-        memories = await manager.ainvoke(
-            {"messages": conversation, "max_steps": max_steps}
-        )
+        memories = await manager.ainvoke({"messages": conversation, "max_steps": max_steps})
         print(memories)
         ```
     """
@@ -758,13 +755,20 @@ def create_memory_searcher(
             )
         ]
 
+    def search(msg: AIMessage) -> list[SearchItem]:
+        return search_tool.batch(
+            [tc for tc in msg.tool_calls if tc["name"] == "search_memory"]
+        )
+
+    async def search_async(msg: AIMessage) -> list[SearchItem]:
+        return await search_tool.abatch(
+            [tc for tc in msg.tool_calls if tc["name"] == "search_memory"]
+        )
+
+    searcher = RunnableLambda(search, search_async)
+
     return (  # type: ignore
-        template
-        | utils.merge_message_runs
-        | query_gen
-        | (lambda msg: [msg])
-        | ToolNode([search_tool])
-        | return_sorted
+        template | utils.merge_message_runs | query_gen | searcher | return_sorted
     ).with_config({"run_name": "search_memory_pipeline"})
 
 
