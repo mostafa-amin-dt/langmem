@@ -8,8 +8,7 @@ from langchain_core.messages import AIMessage, AnyMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable, RunnableConfig, RunnableLambda
 from langchain_core.runnables.config import get_executor_for_config
-from langgraph.store.base import SearchItem
-from langgraph.store.base import BaseStore
+from langgraph.store.base import BaseStore, SearchItem
 from langgraph.utils.config import get_store
 from pydantic import BaseModel, Field
 from trustcall import create_extractor
@@ -635,9 +634,7 @@ def create_memory_manager(
 
         # Set max steps for extraction and synthesis
         max_steps = 3
-        memories = await manager.ainvoke(
-            {"messages": conversation, "max_steps": max_steps}
-        )
+        memories = await manager.ainvoke({"messages": conversation, "max_steps": max_steps})
         print(memories)
         ```
     """
@@ -845,7 +842,7 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
 
     def _get_store(self) -> BaseStore:
         """Get the store to use for memory storage.
-        
+
         Returns the store provided during initialization if available,
         otherwise falls back to the store configured in the LangGraph context.
         """
