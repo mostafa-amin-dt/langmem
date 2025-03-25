@@ -37,6 +37,26 @@ cd examples/standalone_examples
 uv run custom_store_example.py
 ```
 
+Sample output for above example
+```bash
+mjs@Muhammads-MacBook-Pro-3 standalone_examples % uv run custom_store_example.py
+
+
+Starting custom store example...
+
+/Users/mjs/Documents/code/langmem/.venv/lib/python3.13/site-packages/langgraph/store/base/embed.py:95: LangChainBetaWarning: The function `init_embeddings` is in beta. It is actively being worked on, so the API may change.
+  return init_embeddings(embed)
+Processing conversation...
+
+Stored memories:
+
+Memory 31cf472f-3491-4f0c-82ec-09b4fe409cfd:
+Content: {'category': 'User Preference', 'preference': 'Dark Mode', 'context': 'User prefers dark mode in all applications.'}
+Kind: PreferenceMemory
+
+Example completed.
+```
+
 ## What You'll Learn
 
 - How to use LangMem independently of LangGraph
