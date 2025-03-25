@@ -9,6 +9,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable, RunnableConfig, RunnableLambda
 from langchain_core.runnables.config import get_executor_for_config
 from langgraph.store.base import SearchItem
+from langgraph.store.base import BaseStore
 from langgraph.utils.config import get_store
 from pydantic import BaseModel, Field
 from trustcall import create_extractor
@@ -801,6 +802,7 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
         query_model: str | BaseChatModel | None = None,
         query_limit: int = 5,
         namespace: tuple[str, ...] = ("memories", "{langgraph_user_id}"),
+        store: BaseStore | None = None,
         phases: list[MemoryPhase] | None = None,
     ):
         self.model = (
@@ -822,6 +824,7 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
         self.query_limit = query_limit
         self.phases = phases or []
         self.namespace = utils.NamespaceTemplate(namespace)
+        self.store = store
 
         self.memory_manager = create_memory_manager(
             self.model,
@@ -839,6 +842,16 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
             self.query_gen = self.query_model.bind_tools(
                 [self.search_tool], tool_choice="any"
             )
+
+    def _get_store(self) -> BaseStore:
+        """Get the store to use for memory storage.
+        
+        Returns the store provided during initialization if available,
+        otherwise falls back to the store configured in the LangGraph context.
+        """
+        if self.store is not None:
+            return self.store
+        return get_store()
 
     @staticmethod
     def _stable_id(item: SearchItem) -> str:
@@ -916,7 +929,7 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
         config: typing.Optional[RunnableConfig] = None,
         **kwargs: typing.Any,
     ) -> list[dict]:
-        store = get_store()
+        store = self._get_store()
         namespace = self.namespace(config)
 
         if self.query_gen:
@@ -1024,7 +1037,7 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
         config: typing.Optional[RunnableConfig] = None,
         **kwargs: typing.Any,
     ) -> list[dict]:
-        store = get_store()
+        store = self._get_store()
         namespace = self.namespace(config)
         convo = utils.get_conversation(input["messages"])
 
@@ -1151,6 +1164,8 @@ def create_memory_store_manager(
     query_model: str | BaseChatModel | None = None,
     query_limit: int = 5,
     namespace: tuple[str, ...] = ("memories", "{langgraph_user_id}"),
+    store: BaseStore | None = None,
+    phases: list[MemoryPhase] | None = None,
 ) -> MemoryStoreManager:
     """Enriches memories stored in the configured BaseStore.
 
@@ -1179,6 +1194,10 @@ def create_memory_store_manager(
         namespace (tuple[str, ...], optional): Storage namespace structure for
             organizing memories. Supports templated values like "{langgraph_user_id}" which are
             populated from the runtime context. Defaults to `("memories", "{langgraph_user_id}")`.
+        store (Optional[BaseStore], optional): The store to use for memory storage.
+            If None, uses the store configured in the LangGraph config. Defaults to None.
+            When using LangGraph Platform, the server will manage the store for you.
+        phases (Optional[list]): List of MemoryPhase objects defining the phases of the memory enrichment process.
 
     Returns:
         manager: An runnable that processes conversations and automatically manages memories in the LangGraph BaseStore.
@@ -1458,6 +1477,8 @@ def create_memory_store_manager(
         query_model=query_model,
         query_limit=query_limit,
         namespace=namespace,
+        store=store,
+        phases=phases,
     )
 
 
