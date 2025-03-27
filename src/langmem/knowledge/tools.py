@@ -252,8 +252,10 @@ def create_manage_memory_tool(
 
     """
     namespacer = utils.NamespaceTemplate(namespace)
-    action_type = typing.Literal[*actions_permitted]
-    assert actions_permitted, "actions_permitted cannot be empty"
+    if not actions_permitted:
+        raise ValueError("actions_permitted cannot be empty")
+    action_type = typing.Literal[actions_permitted]
+
     default_action = "create" if "create" in actions_permitted else actions_permitted[0]
     initial_store = store
 
@@ -320,9 +322,20 @@ def create_manage_memory_tool(
         )
         return f"{action}d memory {id}"
 
-    description = """Create, update, or delete persistent MEMORIES to persist across conversations.
+    if len(actions_permitted) == 1:
+        verbs = f"{actions_permitted[0]} a memory"
+    elif len(actions_permitted) == 2:
+        verbs = (
+            f"{actions_permitted[0].capitalize()} or {actions_permitted[1]} a memory"
+        )
+    else:
+        prefix_names = ", ".join(
+            (actions_permitted[0].capitalize(), *actions_permitted[1:-1])
+        )
+        verbs = f"{prefix_names}, or {actions_permitted[-1]} a memory"
+    description = f"""{verbs} to persist across conversations.
 Include the MEMORY ID when updating or deleting a MEMORY. Omit when creating a new MEMORY - it will be created for you.
-{instructions}""".format(instructions=instructions)
+{instructions}"""
 
     return StructuredTool.from_function(
         manage_memory, amanage_memory, name=name, description=description
