@@ -154,8 +154,8 @@ A common use case is summarizing message history in a tool calling agent. Below 
 from typing import Any, TypedDict
 
 from langchain_openai import ChatOpenAI
-from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.messages import AnyMessage
+from langchain_core.tools import tool
 from langgraph.graph import StateGraph, START, END, MessagesState
 from langgraph.prebuilt import ToolNode
 from langgraph.checkpoint.memory import InMemorySaver
@@ -164,7 +164,10 @@ from langmem.short_term import SummarizationNode, RunningSummary
 class State(MessagesState):
     context: dict[str, Any]
 
-search = TavilySearchResults(max_results=3)
+def search(query: str):
+    """Search the web for realtim information like weather forecasts."""
+    return "The weather is sunny in New York, with a high of 104 degrees."
+
 tools = [search]
 
 model = ChatOpenAI(model="gpt-4o")
@@ -173,7 +176,7 @@ summarization_model = model.bind(max_tokens=128)
 summarization_node = SummarizationNode(
     token_counter=model.get_num_tokens_from_messages,
     model=summarization_model,
-    max_tokens=2048,
+    max_tokens=256,
     max_summary_tokens=128,
 )
 
