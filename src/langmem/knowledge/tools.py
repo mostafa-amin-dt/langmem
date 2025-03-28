@@ -295,11 +295,16 @@ def create_manage_memory_tool(
 
     def manage_memory(
         content: typing.Optional[schema] = None,  # type: ignore
-        action: action_type = "create",  # type: ignore
+        action: action_type = default_action,  # type: ignore
         *,
         id: typing.Optional[uuid.UUID] = None,
     ):
         store = _get_store(initial_store)
+        if action not in actions_permitted:
+            raise ValueError(
+                f"Invalid action {action}. Must be one of {actions_permitted}."
+            )
+
         if action == "create" and id is not None:
             raise ValueError(
                 "You cannot provide a MEMORY ID when creating a MEMORY. Please try again, omitting the id argument."
