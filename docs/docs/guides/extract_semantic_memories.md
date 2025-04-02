@@ -33,11 +33,10 @@ manager = create_memory_manager(
 
 1. LangMem has two similar objects for extracting and enriching memory collections:
 
-   - `create_memory_manager`: (this examples) You control storage and updates
-   - `create_memory_store_manager`: Handles the memory search, upserts, and deletes directly in whichever BaseStore is configured
-   for the graph context
+    - `create_memory_manager`: (this examples) You control storage and updates
+    - `create_memory_store_manager`: Handles the memory search, upserts, and deletes directly in whichever BaseStore is configured for the graph context
 
-   The latter uses the former. Both of these work by prompting an LLM to use parallel tool calling to extract new memories, update old ones, and (if configured) delete old ones.
+    The latter uses the former. Both of these work by prompting an LLM to use parallel tool calling to extract new memories, update old ones, and (if configured) delete old ones.
 
 2. Here our custom "`Triple`" memory schema shapes memory extraction. Without context, memories can be ambiguous when retrieved later:
     ```python
