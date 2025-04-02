@@ -7,10 +7,12 @@ from langchain_core.messages import (
     AnyMessage,
     HumanMessage,
     MessageLikeRepresentation,
+    RemoveMessage,
     SystemMessage,
 )
 from langchain_core.messages.utils import count_tokens_approximately
 from langchain_core.prompts.chat import ChatPromptTemplate, ChatPromptValue
+from langgraph.graph.message import REMOVE_ALL_MESSAGES
 from langgraph.utils.runnable import RunnableCallable
 from pydantic import BaseModel
 
@@ -58,6 +60,9 @@ class RunningSummary:
 
     summarized_message_ids: set[str]
     """The IDs of all of the messages that have been previously summarized."""
+
+    last_summarized_message_id: str | None
+    """The ID of the last message that was summarized."""
 
 
 @dataclass
@@ -126,6 +131,7 @@ def summarize_messages(
             - running_summary: RunningSummary object
                 - summary: text of the latest summary
                 - summarized_message_ids: set of message IDs that were previously summarized
+                - last_summarized_message_id: ID of the last message that was summarized
 
     Example:
         ```pycon
@@ -198,14 +204,20 @@ def summarize_messages(
 
     # Get previously summarized messages, if any
     summarized_message_ids = set()
+    total_summarized_messages = 0
+    existing_summary = running_summary
     if running_summary:
         summarized_message_ids = running_summary.summarized_message_ids
         # Adjust the summarization token budget to account for the previous summary
         max_tokens_to_summarize -= token_counter(
             [SystemMessage(content=running_summary.summary)]
         )
-
-    total_summarized_messages = len(summarized_message_ids)
+        # If we have an existing running summary, find how many messages have been
+        # summarized so far based on the last summarized message ID.
+        for i, message in enumerate(messages):
+            if message.id == running_summary.last_summarized_message_id:
+                total_summarized_messages = i + 1
+                break
 
     # Go through messages to count tokens and find cutoff point
     n_tokens = 0
@@ -285,15 +297,23 @@ def summarize_messages(
         running_summary = RunningSummary(
             summary=summary_response.content,
             summarized_message_ids=summarized_message_ids,
+            last_summarized_message_id=messages_to_summarize[-1].id,
         )
 
     if running_summary:
+        # Only include system message if it doesn't overlap with the existing summary.
+        # This is useful if the messages passed to summarize_messages already include a system message with summary.
+        # This usually happens when summarization node overwrites the message history.
+        include_system_message = existing_system_message and not (
+            existing_summary
+            and existing_summary.summary in existing_system_message.content
+        )
         updated_messages = cast(
             ChatPromptValue,
             final_prompt.invoke(
                 {
                     "system_message": [existing_system_message]
-                    if existing_system_message
+                    if include_system_message
                     else [],
                     "summary": running_summary.summary,
                     "messages": messages[total_summarized_messages:],
@@ -364,12 +384,11 @@ class SummarizationNode(RunnableCallable):
             final_prompt: Prompt template that combines summary with the remaining messages before returning.
             input_messages_key: Key in the input graph state that contains the list of messages to summarize.
             output_messages_key: Key in the state update that contains the list of updated messages.
-                !!! Note
+                !!! Warning
 
-                    `output_messages_key` **must be different** from the `input_messages_key`.
+                    By default, the `output_messages_key` **is different** from the `input_messages_key`.
                     This is done to decouple summarized messages from the main list of messages in the graph state (i.e., `input_messages_key`).
-                    If you want to update / overwrite the main list of messages, you would need to use `summarize_messages` function directly or wrap
-                    the invocation of this node in a different node.
+                    You should only make them the same if you want to **overwrite** the main list of messages (i.e., `input_messages_key`).
 
             name: Name of the summarization node.
 
@@ -439,11 +458,6 @@ class SummarizationNode(RunnableCallable):
         self.initial_summary_prompt = initial_summary_prompt
         self.existing_summary_prompt = existing_summary_prompt
         self.final_prompt = final_prompt
-        if input_messages_key == output_messages_key:
-            raise ValueError(
-                "`input_messages_key` and `output_messages_key` must be different."
-            )
-
         self.input_messages_key = input_messages_key
         self.output_messages_key = output_messages_key
 
@@ -480,4 +494,11 @@ class SummarizationNode(RunnableCallable):
                 **context,
                 "running_summary": summarization_result.running_summary,
             }
+            # If the input and output messages keys are the same, we need to remove the
+            # summarized messages from the resulting message list
+            if self.input_messages_key == self.output_messages_key:
+                state_update[self.output_messages_key] = [
+                    RemoveMessage(REMOVE_ALL_MESSAGES)
+                ] + state_update[self.output_messages_key]
+
         return state_update
