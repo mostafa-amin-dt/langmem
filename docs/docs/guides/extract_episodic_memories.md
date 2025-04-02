@@ -16,7 +16,7 @@ from langmem import create_memory_manager
 from pydantic import BaseModel, Field
 
 
-class Episode(BaseModel):  # (1)
+class Episode(BaseModel):  # (1)!
     """Write the episode from the perspective of the agent within it. Use the benefit of hindsight to record the memory, saving the agent's key internal thought process so it can learn over time."""
 
     observation: str = Field(..., description="The context and setup - what happened")
@@ -34,19 +34,16 @@ class Episode(BaseModel):  # (1)
         description="Outcome and retrospective. What did you do well? What could you do better next time? I ...",
     )
 
-
-# (2) The Episode schema becomes part of the memory manager's prompt,
-# helping it extract complete reasoning chains that guide future responses
 manager = create_memory_manager(
     "anthropic:claude-3-5-sonnet-latest",
-    schemas=[Episode],
+    schemas=[Episode],  # (2)!
     instructions="Extract examples of successful explanations, capturing the full chain of reasoning. Be concise in your explanations and precise in the logic of your reasoning.",
     enable_inserts=True,
 )
 ```
 
 1. Unlike semantic triples that store facts, episodes capture the full context of successful interactions
-2. Manager extracts complete episodes, not just individual facts
+2. The Episode schema becomes part of the memory manager's prompt, helping it extract complete reasoning chains that guide future responses. The manager extracts complete episodes, not just individual facts.
 
 After a successful explanation:
 

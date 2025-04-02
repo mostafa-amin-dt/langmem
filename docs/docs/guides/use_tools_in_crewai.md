@@ -29,7 +29,7 @@ store = InMemoryStore(
         "dims": 1536,
         "embed": "openai:text-embedding-3-small",
     }
-)  # (1)
+)  # (1)!
 
 # Create memory tools
 memory_tools = [

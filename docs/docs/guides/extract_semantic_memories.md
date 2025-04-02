@@ -11,10 +11,10 @@ Need to extract multiple related facts from conversations? Here's how to use Lan
 Extract semantic memories:
 
 ```python
-from langmem import create_memory_manager # (2)
+from langmem import create_memory_manager # (1)!
 from pydantic import BaseModel
 
-class Triple(BaseModel): # (1)
+class Triple(BaseModel): # (2)!
     """Store all new facts, preferences, and relationships as triples."""
     subject: str
     predicate: str
@@ -31,7 +31,15 @@ manager = create_memory_manager(
 )
 ```
 
-1. Here our custom "`Triple`" memory schema shapes memory extraction. Without context, memories can be ambiguous when retrieved later:
+1. LangMem has two similar objects for extracting and enriching memory collections:
+
+   - `create_memory_manager`: (this examples) You control storage and updates
+   - `create_memory_store_manager`: Handles the memory search, upserts, and deletes directly in whichever BaseStore is configured
+   for the graph context
+
+   The latter uses the former. Both of these work by prompting an LLM to use parallel tool calling to extract new memories, update old ones, and (if configured) delete old ones.
+
+2. Here our custom "`Triple`" memory schema shapes memory extraction. Without context, memories can be ambiguous when retrieved later:
     ```python
     {"content": "User said yes"}  # No context; unhelpful
     ```
@@ -52,13 +60,6 @@ manager = create_memory_manager(
     ```
     It's often a good idea to either schematize memories to encourage certain fields to be stored consistently, or at least to include instructions so the LLM
     saves memories that are sufficiently informative in isolation.
-
-2. LangMem has two similar objects for extracting and enriching memory collections:
-   - `create_memory_manager`: (this examples) You control storage and updates
-   - `create_memory_store_manager`: Handles the memory search, upserts, and deletes directly in whichever BaseStore is configured
-   for the graph context
-
-   The latter uses the former. Both of these work by prompting an LLM to use parallel tool calling to extract new memories, update old ones, and (if configured) delete old ones.
 
 After the first short interaction, the system has extracted some semantic triples:
 
@@ -129,15 +130,15 @@ from langgraph.store.memory import InMemoryStore
 from langmem import create_memory_store_manager
 
 # Set up store and models
-store = InMemoryStore(
+store = InMemoryStore(  # (1)!
     index={
         "dims": 1536,
         "embed": "openai:text-embedding-3-small",
     }
-) # (1)
+)
 manager = create_memory_store_manager(
     "anthropic:claude-3-5-sonnet-latest",
-    namespace=("chat", "{user_id}", "triples"),
+    namespace=("chat", "{user_id}", "triples"),  # (2)!
     schemas=[Triple],
     instructions="Extract all user information and events as triples.",
     enable_inserts=True,
@@ -161,37 +162,42 @@ my_llm = init_chat_model("anthropic:claude-3-5-sonnet-latest")
    ```
    See [Storage System](../concepts/conceptual_guide.md#storage-system) for namespace design patterns
 
-2. Extract multiple memory types at once:
-    ```text
-    schemas=[Triple, Preference, Relationship]
-    ```
-    Each type can have its own extraction rules and storage patterns
-    Namespaces let you organize memories by user, team, or domain:
+You can also extract multiple memory types at once:
 
-    ```text
-    # User-specific memories
-    ("chat", "user_123", "triples")
+```text
+schemas=[Triple, Preference, Relationship]
+```
 
-    # Team-shared knowledge
-    ("chat", "team_x", "triples")
+Each type can have its own extraction rules and storage patterns
+Namespaces let you organize memories by user, team, or domain:
 
-    # Domain-specific extraction
-    ("chat", "user_123", "preferences")
-    ```
+```python
+# User-specific memories
+("chat", "user_123", "triples")
 
-    The `{user_id}` placeholder is replaced at runtime:
-    ```text
-    # Extract memories for User A
-    manager.invoke(
-        messages=[{"role": "user", "content": "I prefer dark mode"}],
-        config={"configurable": {"user_id": "user-a"}}
-    )  # Uses ("chat", "user-a", "triples")
-    ```
+# Team-shared knowledge
+("chat", "team_x", "triples")
+
+# Domain-specific extraction
+("chat", "user_123", "preferences")
+```
+
+The `{user_id}` placeholder is replaced at runtime:
+
+```python
+# Extract memories for User A
+manager.invoke(
+    messages=[{"role": "user", "content": "I prefer dark mode"}],
+    config={"configurable": {"user_id": "user-a"}}  # (1)!
+)
+```
+
+1. Uses `("chat", "user-a", "triples")`
 
 
 ```python
 # Define app with store context
-@entrypoint(store=store) # (1)
+@entrypoint(store=store) # (1)!
 def app(messages: list):
     response = my_llm.invoke(
         [
@@ -313,7 +319,7 @@ manager = create_react_agent(
 
 
 # Run extraction in background
-@entrypoint(store=store)  # (1)
+@entrypoint(store=store)
 def app(messages: list):
     response = my_llm.invoke(
         [
