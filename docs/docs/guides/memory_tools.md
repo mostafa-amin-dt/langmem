@@ -22,7 +22,7 @@ store = InMemoryStore(
         "dims": 1536,
         "embed": "openai:text-embedding-3-small",
     }
-) # (1)
+) # (1)!
 ```
 
 1. For production deployments, use a persistent store like [`AsyncPostgresStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.AsyncPostgresStore). `InMemoryStore` works fine for development but doesn't persist data between restarts.

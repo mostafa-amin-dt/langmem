@@ -37,7 +37,7 @@ from langgraph.store.memory import InMemoryStore
 
 from langmem import ReflectionExecutor, create_memory_store_manager
 
-store = InMemoryStore( # (4)
+store = InMemoryStore( # (1)!
     index={
         "dims": 1536,
         "embed": "openai:text-embedding-3-small",
@@ -49,7 +49,7 @@ llm = init_chat_model("anthropic:claude-3-5-sonnet-latest")
 memory_manager = create_memory_store_manager(
     "anthropic:claude-3-5-sonnet-latest",
     # Store memories in the "memories" namespace (aka directory)
-    namespace=("memories",),  # (1)
+    namespace=("memories",),  # (2)!
 )
 
 @entrypoint(store=store)  # Create a LangGraph workflow
@@ -59,7 +59,7 @@ async def chat(message: str):
     # memory_manager extracts memories from conversation history
     # We'll provide it in OpenAI's message format
     to_process = {"messages": [{"role": "user", "content": message}] + [response]}
-    await memory_manager.ainvoke(to_process)  # (2)
+    await memory_manager.ainvoke(to_process)  # (3)!
     return response.content
 # Run conversation as normal
 response = await chat.ainvoke(
@@ -69,16 +69,14 @@ print(response)
 # Output: That's nice! Dogs make wonderful companions. Fido is a classic dog name. What kind of dog is Fido?
 ```
 
-1. The `namespace` parameter lets you isolate memories that are stored and retrieved. In this example, we store memories in a global "memories" path, but you could instead use template variables to scope to a user-specific path based on configuration. See [how to dynamically configure namespaces](guides/dynamically_configure_namespaces.md) for more information.
-
-2. We are using the memory manager to process the conversation every time a new message arrives. For more efficient processing patterns that let you debounce (aka avoid redundant) work, see [Delayed Memory Processing](guides/delayed_processing.md).
-
-3. You can also process memories directly with `memory_manager.process(messages)` if you don't need background processing
-
-4. What's a store? It's a document store you can add vector-search too. The "InMemoryStore" is, as it says, saved in-memory and not persistent.
+1. What's a store? It's a document store you can add vector-search too. The "InMemoryStore" is, as it says, saved in-memory and not persistent.
 
     !!! tip "For Production"
     Use a persistent store like [`AsyncPostgresStore`](https://langchain-ai.github.io/langgraph/reference/store/#langgraph.store.postgres.AsyncPostgresStore) instead of `InMemoryStore` to persist data between restarts.
+
+2. The `namespace` parameter lets you isolate memories that are stored and retrieved. In this example, we store memories in a global "memories" path, but you could instead use template variables to scope to a user-specific path based on configuration. See [how to dynamically configure namespaces](guides/dynamically_configure_namespaces.md) for more information.
+
+3. We are using the memory manager to process the conversation every time a new message arrives. For more efficient processing patterns that let you debounce (aka avoid redundant) work, see [Delayed Memory Processing](guides/delayed_processing.md). You can also process memories directly with `memory_manager.process(messages)` if you don't need background processing.
 
 
 If you want to see what memories have been extracted, you can search the store:

@@ -104,7 +104,7 @@ store = InMemoryStore(
                 "dims": 1536,
                 "embed": "openai:text-embedding-3-small",
             }
-        )  # (1)
+        )  # (1)!
 memory_tools = [
     create_manage_memory_tool(namespace="memories", store=store),
     create_search_memory_tool(namespace="memories", store=store),
