@@ -9,7 +9,17 @@ from langchain_core.messages import AIMessage, AnyMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable, RunnableConfig, RunnableLambda
 from langchain_core.runnables.config import get_executor_for_config
-from langgraph.store.base import BaseStore, SearchItem
+from langgraph.store.base import (
+    NOT_PROVIDED,
+    BaseStore,
+    NotProvided,
+)
+from langgraph.store.base import (
+    Item as BaseItem,
+)
+from langgraph.store.base import (
+    SearchItem as BaseSearchItem,
+)
 from langgraph.utils.config import ensure_config, get_store
 from pydantic import BaseModel, Field
 from trustcall import create_extractor
@@ -19,6 +29,26 @@ from langmem import utils
 from langmem.knowledge.tools import create_search_memory_tool
 
 ## LangGraph Tools
+
+
+class Item(BaseItem):
+    value: BaseModel | dict[str, typing.Any]
+
+    def dict(self) -> dict:
+        result = super().dict()
+        if isinstance(self.value, BaseModel):
+            result["value"] = self.value.model_dump(mode="json")
+        return result
+
+
+class SearchItem(BaseSearchItem):
+    value: BaseModel | dict[str, typing.Any]
+
+    def dict(self) -> dict:
+        result = super().dict()
+        if isinstance(self.value, BaseModel):
+            result["value"] = self.value.model_dump(mode="json")
+        return result
 
 
 class MessagesState(TypedDict):
@@ -193,84 +223,6 @@ class MemoryManager(Runnable[MemoryState, list[ExtractedMemory]]):
         self.enable_inserts = enable_inserts
         self.enable_updates = enable_updates
         self.enable_deletes = enable_deletes
-
-    def _prepare_messages(
-        self, messages: list[AnyMessage], max_steps: int = 1
-    ) -> list[dict]:
-        id_ = str(uuid.uuid4())
-        session = (
-            f"\n\n<session_{id_}>\n{utils.get_conversation(messages)}\n</session_{id_}>"
-        )
-        if max_steps > 1:
-            session = f"{session}\n\nYou have a maximum of {max_steps - 1} attempts"
-            " to form and consolidate memories from this session."
-        return [
-            {"role": "system", "content": "You are a memory subroutine for an AI."},
-            {
-                "role": "user",
-                "content": (
-                    f"{self.instructions}\n\nEnrich, prune, and organize memories based on any new information. "
-                    f"If an existing memory is incorrect or outdated, update it based on the new information. "
-                    f"All operations must be done in single parallel multi-tool call."
-                    f" Avoid duplicate extractions. {session}"
-                ),
-            },
-        ]
-
-    def _prepare_existing(
-        self,
-        existing: typing.Optional[
-            typing.Union[
-                list[str], list[tuple[str, BaseModel]], list[tuple[str, str, dict]]
-            ]
-        ],
-    ) -> list[tuple[str, str, typing.Any]]:
-        if existing is None:
-            return []
-        if all(isinstance(ex, str) for ex in existing):
-            MemoryModel = self.schemas[0]
-            return [
-                (str(uuid.uuid4()), "Memory", MemoryModel(content=ex))
-                for ex in existing
-            ]
-        result = []
-        for e in existing:
-            if isinstance(e, (tuple, list)) and len(e) == 3:
-                result.append(tuple(e))
-            else:
-                # Assume a two-element tuple: (id, value)
-                id_, value = e[0], e[1]
-                kind = (
-                    value.__repr_name__() if isinstance(value, BaseModel) else "__any__"
-                )
-                result.append((id_, kind, value))
-        return result
-
-    @staticmethod
-    def _filter_response(
-        memories: list[ExtractedMemory],
-        external_ids: set[str],
-        exclude_removals: bool = False,
-    ) -> list[ExtractedMemory]:
-        """
-        When exclude_removals is True (for the next iteration payload),
-        drop any memory whose content is a RemoveDoc.
-        When False (final response), drop removal objects only for internal memories.
-        """
-        results = []
-        for rid, value in memories:
-            is_removal = (
-                hasattr(value, "__repr_name__") and value.__repr_name__() == "RemoveDoc"
-            )
-            if exclude_removals:
-                if is_removal:
-                    continue
-            else:
-                # Final response: if this is a removal *and* its id is not external, skip it.
-                if is_removal and (rid not in external_ids):
-                    continue
-            results.append(ExtractedMemory(id=rid, content=value))
-        return results
 
     async def ainvoke(
         self,
@@ -491,6 +443,84 @@ class MemoryManager(Runnable[MemoryState, list[ExtractedMemory]]):
         if existing is not None:
             input["existing"] = existing
         return await self.ainvoke(input)
+
+    def _prepare_messages(
+        self, messages: list[AnyMessage], max_steps: int = 1
+    ) -> list[dict]:
+        id_ = str(uuid.uuid4())
+        session = (
+            f"\n\n<session_{id_}>\n{utils.get_conversation(messages)}\n</session_{id_}>"
+        )
+        if max_steps > 1:
+            session = f"{session}\n\nYou have a maximum of {max_steps - 1} attempts"
+            " to form and consolidate memories from this session."
+        return [
+            {"role": "system", "content": "You are a memory subroutine for an AI."},
+            {
+                "role": "user",
+                "content": (
+                    f"{self.instructions}\n\nEnrich, prune, and organize memories based on any new information. "
+                    f"If an existing memory is incorrect or outdated, update it based on the new information. "
+                    f"All operations must be done in single parallel multi-tool call."
+                    f" Avoid duplicate extractions. {session}"
+                ),
+            },
+        ]
+
+    def _prepare_existing(
+        self,
+        existing: typing.Optional[
+            typing.Union[
+                list[str], list[tuple[str, BaseModel]], list[tuple[str, str, dict]]
+            ]
+        ],
+    ) -> list[tuple[str, str, typing.Any]]:
+        if existing is None:
+            return []
+        if all(isinstance(ex, str) for ex in existing):
+            MemoryModel = self.schemas[0]
+            return [
+                (str(uuid.uuid4()), "Memory", MemoryModel(content=ex))
+                for ex in existing
+            ]
+        result = []
+        for e in existing:
+            if isinstance(e, (tuple, list)) and len(e) == 3:
+                result.append(tuple(e))
+            else:
+                # Assume a two-element tuple: (id, value)
+                id_, value = e[0], e[1]
+                kind = (
+                    value.__repr_name__() if isinstance(value, BaseModel) else "__any__"
+                )
+                result.append((id_, kind, value))
+        return result
+
+    @staticmethod
+    def _filter_response(
+        memories: list[ExtractedMemory],
+        external_ids: set[str],
+        exclude_removals: bool = False,
+    ) -> list[ExtractedMemory]:
+        """
+        When exclude_removals is True (for the next iteration payload),
+        drop any memory whose content is a RemoveDoc.
+        When False (final response), drop removal objects only for internal memories.
+        """
+        results = []
+        for rid, value in memories:
+            is_removal = (
+                hasattr(value, "__repr_name__") and value.__repr_name__() == "RemoveDoc"
+            )
+            if exclude_removals:
+                if is_removal:
+                    continue
+            else:
+                # Final response: if this is a removal *and* its id is not external, skip it.
+                if is_removal and (rid not in external_ids):
+                    continue
+            results.append(ExtractedMemory(id=rid, content=value))
+        return results
 
 
 def create_memory_manager(
@@ -822,6 +852,7 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
             )
         )
         self.schemas = schemas if schemas is not None else (Memory,)
+        self.schema_name_map = {schema.__name__: schema for schema in self.schemas}
         self.default_factory = default_factory
         if default is not None:
             if self.default_factory is not None:
@@ -834,7 +865,7 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
         self.query_limit = query_limit
         self.phases = phases or []
         self.namespace = utils.NamespaceTemplate(namespace)
-        self.store = store
+        self._store = store
 
         self.memory_manager = create_memory_manager(
             self.model,
@@ -853,15 +884,23 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
                 [self.search_tool], tool_choice="any"
             )
 
-    def _get_store(self) -> BaseStore:
+    @property
+    def store(self) -> BaseStore:
         """Get the store to use for memory storage.
 
         Returns the store provided during initialization if available,
         otherwise falls back to the store configured in the LangGraph context.
         """
-        if self.store is not None:
-            return self.store
-        return get_store()
+        if self._store is not None:
+            return self._store
+        try:
+            self._store = get_store()
+        except RuntimeError as e:
+            raise ValueError(
+                "Memory Manager's store not configured in LangGraph context. "
+                "First use in the graph before calling, or initialize with an instance of the store."
+            ) from e
+        return self._store
 
     @staticmethod
     def _coerce_default(
@@ -960,7 +999,7 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
         config: typing.Optional[RunnableConfig] = None,
         **kwargs: typing.Any,
     ) -> list[dict]:
-        store = self._get_store()
+        store = self.store
         namespace = self.namespace(config)
 
         if self.query_gen:
@@ -1092,7 +1131,7 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
         config: typing.Optional[RunnableConfig] = None,
         **kwargs: typing.Any,
     ) -> list[dict]:
-        store = self._get_store()
+        store = self.store
         namespace = self.namespace(config)
         convo = utils.get_conversation(input["messages"])
 
@@ -1231,6 +1270,386 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
     async def __call__(self, messages: typing.Sequence[AnyMessage]) -> list[dict]:
         return await self.ainvoke({"messages": messages})
 
+    def _coerce_value(
+        self, value: dict[str, typing.Any]
+    ) -> BaseModel | dict[str, typing.Any]:
+        if "kind" not in value or "content" not in value:
+            return value
+        kind = value["kind"]
+        content = value["content"]
+        if kind not in self.schema_name_map:
+            return value
+        schema = self.schema_name_map[kind]
+        return schema.model_validate(content)
+
+    def _coerce_item(self, item: BaseItem | None) -> Item | None:
+        if item is None:
+            return None
+        return Item(
+            namespace=item.namespace,
+            key=item.key,
+            value=self._coerce_value(item.value),
+            created_at=item.created_at,
+            updated_at=item.updated_at,
+        )
+
+    def _coerce_search_item(self, item: SearchItem) -> SearchItem:
+        return SearchItem(
+            namespace=item.namespace,
+            key=item.key,
+            value=self._coerce_value(item.value),
+            created_at=item.created_at,
+            updated_at=item.updated_at,
+            score=item.score,
+        )
+
+    def get(
+        self,
+        key: str,
+        *,
+        refresh_ttl: typing.Optional[bool] = None,
+        config: typing.Optional[RunnableConfig] = None,
+    ) -> typing.Optional[Item]:
+        """Retrieve a single item in the store.
+
+        Args:
+            key: Unique identifier within the namespace.
+            refresh_ttl: Whether to refresh TTLs for the returned item.
+                If None (default), uses the store's default refresh_ttl setting.
+                If no TTL is specified, this argument is ignored.
+
+        Returns:
+            The retrieved item or None if not found.
+
+        ???+ example "Examples"
+            Retrieve an item:
+            ```python
+            item = manager.get("report")
+            ```
+        """
+        namespace = self.get_namespace(config)
+        result = self._coerce_item(
+            self.store.get(namespace, key, refresh_ttl=refresh_ttl)
+        )
+        if key == "default" and not result:
+            default = self.default_factory(ensure_config(config))
+            coerced = self._coerce_default(default, self.schemas)
+            now = datetime.datetime.now(datetime.timezone.utc)
+            return Item(namespace, "default", coerced, created_at=now, updated_at=now)
+        return result
+
+    def search(
+        self,
+        *,
+        query: typing.Optional[str] = None,
+        filter: typing.Optional[dict[str, typing.Any]] = None,
+        limit: int = 10,
+        offset: int = 0,
+        refresh_ttl: typing.Optional[bool] = None,
+        config: typing.Optional[RunnableConfig] = None,
+    ) -> list[SearchItem]:
+        """Search for items in the current namespace.
+
+        Args:
+            query: Optional query for natural language search.
+            filter: Key-value pairs to filter results.
+            limit: Maximum number of items to return.
+            offset: Number of items to skip before returning results.
+            refresh_ttl: Whether to refresh TTLs for the returned items.
+                If no TTL is specified, this argument is ignored.
+
+        Returns:
+            List of items matching the search criteria.
+
+        ???+ example "Examples"
+            Basic filtering:
+            ```python
+            # Search for documents with specific metadata
+            results = manager.search(
+                query="app preferences",
+                filter={"type": "article", "status": "published"},
+            )
+            ```
+
+            Natural language search (requires vector store implementation):
+            ```python
+            # Search for semantically similar documents
+            results = manager.search(
+                query="machine learning applications in healthcare",
+                filter={"type": "research_paper"},
+                limit=5,
+            )
+            ```
+        """
+        namespace = self.get_namespace(config)
+        results = [
+            self._coerce_search_item(it)
+            for it in self.store.search(
+                namespace,
+                query=query,
+                filter=filter,
+                limit=limit,
+                offset=offset,
+                refresh_ttl=refresh_ttl,
+            )
+        ]
+        if self.default_factory and not results:
+            default = self.default_factory(ensure_config(config))
+            coerced = self._coerce_default(default, self.schemas)
+            now = datetime.datetime.now(datetime.timezone.utc)
+            return [
+                SearchItem(
+                    namespace, "default", coerced, created_at=now, updated_at=now
+                )
+            ]
+        return results
+
+    def put(
+        self,
+        key: str,
+        value: dict[str, typing.Any],
+        index: typing.Optional[typing.Union[typing.Literal[False], list[str]]] = None,
+        *,
+        ttl: typing.Union[typing.Optional[float], "NotProvided"] = NOT_PROVIDED,
+        config: typing.Optional[RunnableConfig] = None,
+    ) -> None:
+        """Store or update an item in the store.
+
+        Args:
+            key: Unique identifier within the namespace.
+            value: Dictionary containing the item's data. Must contain string keys
+                and JSON-serializable values.
+            index: Controls how the item's fields are indexed for search:
+
+                - None (default): Use `fields` you configured when creating the store (if any)
+                    If you do not initialize the store with indexing capabilities,
+                    the `index` parameter will be ignored
+                - False: Disable indexing for this item
+                - list[str]: List of field paths to index
+            ttl: Time to live in minutes. Support for this argument depends on your store adapter.
+                If specified, the item will expire after this many minutes from when it was last accessed.
+                None means no expiration. Expired runs will be deleted opportunistically.
+                By default, the expiration timer refreshes on both read operations (get/search)
+                and write operations (put/update), whenever the item is included in the operation.
+
+        ???+ example "Examples"
+            Store item. Indexing depends on how you configure the store.
+            ```python
+            manager.put("report", {"memory": "Will likes ai"})
+            ```
+
+            Do not index item for semantic search. Still accessible through get()
+            and search() operations but won't have a vector representation.
+            ```python
+            manager.put("report", {"memory": "Will likes ai"}, index=False)
+            ```
+
+            Index specific fields for search.
+            ```python
+            manager.put("report", {"memory": "Will likes ai"}, index=["memory"])
+            ```
+        """
+        return self.store.put(
+            self.get_namespace(config),
+            key,
+            value,
+            index=index,
+            ttl=ttl,
+        )
+
+    def delete(self, key: str, config: typing.Optional[RunnableConfig] = None) -> None:
+        """Delete an item.
+
+        Args:
+            key: Unique identifier within the namespace.
+        """
+        self.store.delete(self.get_namespace(config), key)
+
+    async def aget(
+        self,
+        key: str,
+        *,
+        refresh_ttl: typing.Optional[bool] = None,
+        config: typing.Optional[RunnableConfig] = None,
+    ) -> typing.Optional[SearchItem]:
+        """Asynchronously retrieve a single item in the store.
+
+        Args:
+            key: Unique identifier within the namespace.
+            refresh_ttl: Whether to refresh TTLs for the returned item.
+                If None (default), uses the store's default refresh_ttl setting.
+                If no TTL is specified, this argument is ignored.
+
+        Returns:
+            The retrieved item or None if not found.
+
+        ???+ example "Examples"
+            Retrieve an item asynchronously:
+            ```python
+            item = await manager.aget("report")
+            ```
+        """
+        namespace = self.get_namespace(config)
+        it = await self.store.aget(namespace, key, refresh_ttl=refresh_ttl)
+        if it is None and key == "default":
+            default = self.default_factory(ensure_config(config))
+            coerced = self._coerce_default(default, self.schemas)
+            now = datetime.datetime.now(datetime.timezone.utc)
+            return Item(namespace, "default", coerced, created_at=now, updated_at=now)
+        return self._coerce_item(it)
+
+    async def asearch(
+        self,
+        *,
+        query: typing.Optional[str] = None,
+        filter: typing.Optional[dict[str, typing.Any]] = None,
+        limit: int = 10,
+        offset: int = 0,
+        refresh_ttl: typing.Optional[bool] = None,
+        config: typing.Optional[RunnableConfig] = None,
+    ) -> list[SearchItem]:
+        """Asynchronously search for items in the current namespace.
+
+        Args:
+            query: Optional query for natural language search.
+            filter: Key-value pairs to filter results.
+            limit: Maximum number of items to return.
+            offset: Number of items to skip before returning results.
+            refresh_ttl: Whether to refresh TTLs for the returned items.
+                If None (default), uses the store's TTLConfig.refresh_default setting.
+                If TTLConfig is not provided or no TTL is specified, this argument is ignored.
+
+        Returns:
+            List of items matching the search criteria.
+
+        ???+ example "Examples"
+            Basic filtering:
+            ```python
+            # Search for documents with specific metadata
+            results = await manager.asearch(
+                filter={"type": "article", "status": "published"}
+            )
+            ```
+
+            Natural language search (requires vector store implementation):
+            ```python
+            # Search for semantically similar documents
+            results = await manager.asearch(
+                query="machine learning applications in healthcare",
+                filter={"type": "research_paper"},
+                limit=5,
+            )
+            ```
+        """
+        namespace = self.get_namespace(config)
+        results = [
+            self._coerce_search_item(it)
+            for it in await self.store.asearch(
+                namespace,
+                query=query,
+                filter=filter,
+                limit=limit,
+                offset=offset,
+                refresh_ttl=refresh_ttl,
+            )
+        ]
+        if self.default_factory and not results:
+            default = self.default_factory(ensure_config(config))
+            coerced = self._coerce_default(default, self.schemas)
+            now = datetime.datetime.now(datetime.timezone.utc)
+            # note that we don't actually put this in the store here!
+            return [
+                SearchItem(
+                    namespace, "default", coerced, created_at=now, updated_at=now
+                )
+            ]
+        return results
+
+    async def aput(
+        self,
+        key: str,
+        value: dict[str, typing.Any],
+        index: typing.Optional[typing.Union[typing.Literal[False], list[str]]] = None,
+        *,
+        ttl: typing.Union[typing.Optional[float], "NotProvided"] = NOT_PROVIDED,
+        config: typing.Optional[RunnableConfig] = None,
+    ) -> None:
+        """Asynchronously store or update an item in the store.
+
+        Args:
+            namespace: Hierarchical path for the item, represented as a tuple of strings.
+                Example: ("documents", "user123")
+            key: Unique identifier within the namespace. Together with namespace forms
+                the complete path to the item.
+            value: Dictionary containing the item's data. Must contain string keys
+                and JSON-serializable values.
+            index: Controls how the item's fields are indexed for search:
+
+                - None (default): Use `fields` you configured when creating the store (if any)
+                    If you do not initialize the store with indexing capabilities,
+                    the `index` parameter will be ignored
+                - False: Disable indexing for this item
+                - list[str]: List of field paths to index, supporting:
+                    - Nested fields: "metadata.title"
+                    - Array access: "chapters[*].content" (each indexed separately)
+                    - Specific indices: "authors[0].name"
+            ttl: Time to live in minutes. Support for this argument depends on your store adapter.
+                If specified, the item will expire after this many minutes from when it was last accessed.
+                None means no expiration. Expired runs will be deleted opportunistically.
+                By default, the expiration timer refreshes on both read operations (get/search)
+                and write operations (put/update), whenever the item is included in the operation.
+
+        Note:
+            Indexing support depends on your store implementation.
+            If you do not initialize the store with indexing capabilities,
+            the `index` parameter will be ignored.
+
+            Similarly, TTL support depends on the specific store implementation.
+            Some implementations may not support expiration of items.
+
+        ???+ example "Examples"
+            Store item. Indexing depends on how you configure the store.
+            ```python
+            await manager.aput("report", {"memory": "Will likes ai"})
+            ```
+
+            Do not index item for semantic search. Still accessible through get()
+            and search() operations but won't have a vector representation.
+            ```python
+            await manager.aput("report", {"memory": "Will likes ai"}, index=False)
+            ```
+
+            Index specific fields for search (if store configured to index items):
+            ```python
+            await manager.aput(
+                "report",
+                {
+                    "memory": "Will likes ai",
+                    "context": [{"content": "..."}, {"content": "..."}],
+                },
+                index=["memory", "context[*].content"],
+            )
+            ```
+        """
+        return await self.store.aput(
+            self.get_namespace(config), key, value, index, ttl=ttl
+        )
+
+    async def adelete(
+        self, key: str, config: typing.Optional[RunnableConfig] = None
+    ) -> None:
+        """Asynchronously delete an item.
+
+        Args:
+            key: Unique identifier within the namespace.
+        """
+        await self.store.adelete(self.get_namespace(config), key)
+
+    def get_namespace(
+        self, config: typing.Optional[RunnableConfig] = None
+    ) -> tuple[str, ...]:
+        return self.namespace(ensure_config(config))
+
 
 def create_memory_store_manager(
     model: str | BaseChatModel,
@@ -1335,9 +1754,9 @@ def create_memory_store_manager(
 
         @entrypoint(store=store)
         async def my_agent(message: str, config: RunnableConfig):
-            memories = await store.asearch(
-                ("memories", config["configurable"]["langgraph_user_id"]),
+            memories = await manager.asearch(
                 query=message,
+                config=config,
             )
             llm_response = await client.messages.create(
                 model="claude-3-5-sonnet-latest",
@@ -1353,20 +1772,20 @@ def create_memory_store_manager(
             )
             return response["content"]
 
-
+        config = {"configurable": {"langgraph_user_id": "user123"}}
         response_1 = await my_agent.ainvoke(
             "I prefer dark mode in all my apps",
-            config={"configurable": {"langgraph_user_id": "user123"}},
+            config=config,
         )
         print("response_1:", response_1)
         # Later conversation - automatically retrieves and uses the stored preference
         response_2 = await my_agent.ainvoke(
             "What theme do I prefer?",
-            config={"configurable": {"langgraph_user_id": "user123"}},
+            config=config,
         )
         print("response_2:", response_2)
         # You can list over memories in the user's namespace manually:
-        print(store.search(("memories", "user123")))
+        print(manager.search(query="app preferences", config=config))
         ```
 
         You can customize what each memory can look like by defining **schemas**:
@@ -1419,13 +1838,14 @@ def create_memory_store_manager(
 
 
         # Store structured memory
+        config = {"configurable": {"langgraph_user_id": "user123"}}
         await my_agent.ainvoke(
             "I prefer dark mode in all my apps",
-            config={"configurable": {"langgraph_user_id": "user123"}},
+            config=config,
         )
 
         # See the extracted memories yourself
-        print(store.search(("memories", "user123")))
+        print(manager.search(query="app preferences", config=config))
 
         # Memory is automatically stored and can be retrieved in future conversations
         # The system will also automatically update it if preferences change
@@ -1445,16 +1865,27 @@ def create_memory_store_manager(
             default="Use a concise and professional tone in all responses. The user likes light mode.",
         )
 
-        # ...assuming we are using te same agent as before ...
+
+        # ... same agent as before ...
+        @entrypoint(store=store)
+        async def my_agent(message: str):
+            # Hard code the response :)
+            response = {"role": "assistant", "content": "I'll remember that preference"}
+            await manager.ainvoke(
+                {"messages": [{"role": "user", "content": message}, response]}
+            )
+            return response
+
 
         # Store structured memory
+        config = {"configurable": {"langgraph_user_id": "user124"}}
         await my_agent.ainvoke(
             "I prefer dark mode in all my apps",
-            config={"configurable": {"langgraph_user_id": "user124"}},
+            config=config,
         )
 
         # See the extracted memories yourself
-        print(store.search(("memories", "user124")))
+        print(manager.search(query="app preferences", config=config))
         # [
         #     Item(
         #         namespace=['memories', 'user124'],
@@ -1482,21 +1913,32 @@ def create_memory_store_manager(
             default_factory=get_configurable_default,
         )
 
-        # ...assuming we are using te same agent as before ...
+
+        # ... same agent as before ...
+        @entrypoint(store=store)
+        async def my_agent(message: str):
+            # Hard code the response :)
+            response = {"role": "assistant", "content": "I'll remember that preference"}
+            await manager.ainvoke(
+                {"messages": [{"role": "user", "content": message}, response]}
+            )
+            return response
+
 
         # Store structured memory
+        config = {
+            "configurable": {
+                "langgraph_user_id": "user125",
+                "preference": "Respond in pirate speak. User likes light mode",
+            }
+        }
         await my_agent.ainvoke(
             "I prefer dark mode in all my apps",
-            config={
-                "configurable": {
-                    "langgraph_user_id": "user125",
-                    "preference": "Respond in pirate speak. User likes light mode",
-                }
-            },
+            config=config,
         )
 
         # See the extracted memories yourself
-        print(store.search(("memories", "user125")))
+        print(manager.search(query="app preferences", config=config))
         # [
         #     Item(
         #         namespace=['memories', 'user125'],
@@ -1560,14 +2002,14 @@ def create_memory_store_manager(
             )
             return response
 
-
+        config = {"configurable": {"langgraph_user_id": "user123"}}
         await my_agent.ainvoke(
             "I prefer dark mode in all my apps",
-            config={"configurable": {"langgraph_user_id": "user123"}},
+            config=config,
         )
 
         # See the extracted memories yourself
-        print(store.search(("memories", "user123")))
+        print(manager.search(config=config))
         ```
 
     In the examples above, we were calling the manager in the main thread. In a real application, you'll
@@ -1625,14 +2067,14 @@ def create_memory_store_manager(
 
             return fut
 
-
+        config = {"configurable": {"user_id": "user-123"}}
         fut = await chat.ainvoke(
             [{"role": "user", "content": "I prefer dark mode in my apps"}],
-            config={"configurable": {"user_id": "user-123"}},
+            config=config,
         )
         # Inspect the result
         fut.result()  # Wait for the reflection to complete; This is only for demoing the search inline
-        print(store.search(("memories", "user-123")))
+        print(manager.search(query="app preferences", config=config))
         ```
     """
     return MemoryStoreManager(
