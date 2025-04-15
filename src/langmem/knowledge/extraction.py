@@ -831,10 +831,6 @@ class MemoryStoreManager(Runnable[MemoryStoreManagerInput, list[dict]]):
         self.instructions = instructions
         self.enable_inserts = enable_inserts
         self.enable_deletes = enable_deletes
-        if not enable_inserts and not enable_deletes:
-            raise ValueError(
-                "At least one of enable_inserts or enable_deletes must be True"
-            )
         self.query_limit = query_limit
         self.phases = phases or []
         self.namespace = utils.NamespaceTemplate(namespace)
