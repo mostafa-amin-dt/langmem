@@ -102,7 +102,7 @@ Finally, memory relevance is more than just semantic similarity. Recall should c
 
 #### Profiles
 
-**Profiles** on the other hand are well-scoped for a particular task. Profiles are a single document that represents the current state, like a user's main goals with using an app, their preferred name and response stele, etc. When new information arrives, it updates the existing document rather than creating a new one. This approach is ideal when you only care about the latest state and want to avoid remembering extraneous information.
+**Profiles** on the other hand are well-scoped for a particular task. Profiles are a single document that represents the current state, like a user's main goals with using an app, their preferred name and response style, etc. When new information arrives, it updates the existing document rather than creating a new one. This approach is ideal when you only care about the latest state and want to avoid remembering extraneous information.
 
 ![Profile update process](img/update-profile.png)
 
@@ -305,7 +305,7 @@ Memories can form in two ways, each suited for different needs. Active formation
 
 ### Conscious Formation
 
-You may want your agent to save memories "in the hot path." This active memory formation happens during the conversation, enabling immediate updates when critical context emerges. This approach is easy to implement and lets the agent itself choose how to store and update its memory. However, it adds perceptible latency to user interactions, and it adds one more obstacle to the agent's ability to satisfy the user's needs.
+You may want your agent to save memories "in the hot path". This active memory formation happens during the conversation, enabling immediate updates when critical context emerges. This approach is easy to implement and lets the agent itself choose how to store and update its memory. However, it adds perceptible latency to user interactions, and it adds one more obstacle to the agent's ability to satisfy the user's needs.
 
 Check out the ["hot path" quickstart](../hot_path_quickstart.md) for an example of how to use this technique.
 
@@ -330,7 +330,7 @@ These core functions do not depend on any particular database or storage system.
 
 ### 2. Stateful Integration
 
-The next layer up depends on LangGraph's long-term memory store. These components use the core API above to transform memories that exist in the store and upsert/delete them as needed when new conversation information comesin:
+The next layer up depends on LangGraph's long-term memory store. These components use the core API above to transform memories that exist in the store and upsert/delete them as needed when new conversation information comes in:
 
 - [**Store Managers**](../reference/memory.md#langmem.create_memory_store_manager): Automatically persist extracted memories
 - [**Memory Management Tools**](../reference/tools.md#langmem.create_manage_memory_tool): Give agents direct access to memory operations
