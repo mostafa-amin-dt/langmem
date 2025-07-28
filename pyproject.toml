@@ -1,6 +1,6 @@
 [project]
 name = "langmem"
-version = "0.0.28"
+version = "0.0.29"
 description = "Prebuilt utilities for memory management and retrieval."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -10,7 +10,7 @@ dependencies = [
     "langchain-core>=0.3.46",
     "langchain-openai>=0.3.1",
     "trustcall>=0.0.39",
-    "langgraph>=0.3.23",
+    "langgraph>=0.6.0,<0.7.0",
     "langchain-anthropic>=0.3.3",
     "langsmith>=0.3.8",
     "langgraph-checkpoint>=2.0.12",

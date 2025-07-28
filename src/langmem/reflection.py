@@ -11,8 +11,10 @@ from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Protocol
 
 from langchain_core.runnables import Runnable, RunnableConfig
 from langchain_core.runnables.config import var_child_runnable_config
+from langgraph._internal._constants import CONFIG_KEY_RUNTIME
 from langgraph.config import get_config
-from langgraph.constants import CONF, CONFIG_KEY_STORE
+from langgraph.constants import CONF
+from langgraph.runtime import Runtime
 from langgraph.store.base import BaseStore
 from langgraph_sdk import get_client, get_sync_client
 from langsmith.utils import ContextThreadPoolExecutor
@@ -294,7 +296,9 @@ class LocalReflectionExecutor:
             with self._store_lock:
                 if self._store is None:
                     try:
-                        self._store = config[CONF][CONFIG_KEY_STORE]
+                        existing_store = config[CONF][CONFIG_KEY_RUNTIME].store
+                        if existing_store is None:
+                            raise KeyError()
                     except KeyError:
                         raise ValueError(
                             "ReflectionExecutor could not resolve store to persist memories to."
@@ -421,7 +425,13 @@ def _process_queue(self: "LocalReflectionExecutor"):
             try:
                 config = task.config or {}
                 configurable = config.setdefault(CONF, {})
-                configurable[CONFIG_KEY_STORE] = self._store
+                if (runtime := configurable.get(CONFIG_KEY_RUNTIME)) is None:
+                    patched_runtime = Runtime(store=self._store)
+                else:
+                    patched_runtime = typing.cast(Runtime, runtime).override(
+                        store=self._store
+                    )
+                configurable[CONFIG_KEY_RUNTIME] = patched_runtime
                 original = var_child_runnable_config.set(config)
                 result = self._reflector.invoke(task.payload)
                 var_child_runnable_config.set(original.old_value)
@@ -444,7 +454,13 @@ def _process_queue(self: "LocalReflectionExecutor"):
         try:
             config = task.config or {}
             configurable = config.setdefault(CONF, {})
-            configurable[CONFIG_KEY_STORE] = self._store
+            if (runtime := configurable.get(CONFIG_KEY_RUNTIME)) is None:
+                patched_runtime = Runtime(store=self._store)
+            else:
+                patched_runtime = typing.cast(Runtime, runtime).override(
+                    store=self._store
+                )
+            configurable[CONFIG_KEY_RUNTIME] = patched_runtime
             original = var_child_runnable_config.set(config)
             result = self._reflector.invoke(task.payload)
             var_child_runnable_config.set(original.old_value)
