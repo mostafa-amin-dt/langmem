@@ -1065,7 +1065,7 @@ requires-dist = [
     { name = "langchain-anthropic", specifier = ">=0.3.3" },
     { name = "langchain-core", specifier = ">=0.3.46" },
     { name = "langchain-openai", specifier = ">=0.3.1" },
-    { name = "langgraph", specifier = ">=0.6.0" },
+    { name = "langgraph", specifier = ">=0.6.0,<0.7.0" },
     { name = "langgraph-checkpoint", specifier = ">=2.0.12" },
     { name = "langsmith", specifier = ">=0.3.8" },
     { name = "trustcall", specifier = ">=0.0.39" },
